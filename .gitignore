@@ -1,0 +1,23 @@
+# Environment files
+.env
+*.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Mac junk
+.DS_Store
+
+# VSCode
+.vscode/
+
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
