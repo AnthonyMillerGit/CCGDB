@@ -13,7 +13,8 @@ CREATE TABLE sets (
     code            VARCHAR(20),
     release_date    DATE,
     total_cards     INTEGER,
-    created_at      TIMESTAMP DEFAULT NOW()
+    created_at      TIMESTAMP DEFAULT NOW(),
+    UNIQUE (game_id, code)
 );
 
 CREATE TABLE cards (
