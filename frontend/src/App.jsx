@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import GamesPage from './pages/GamesPage'
 import SetsPage from './pages/SetsPage'
+import CardsPage from './pages/CardsPage'
 
 function Header() {
   const navigate = useNavigate()
@@ -23,6 +24,7 @@ function App() {
           <Routes>
             <Route path="/" element={<GamesPage />} />
             <Route path="/games/:slug" element={<SetsPage />} />
+            <Route path="/sets/:setId" element={<CardsPage />} />
           </Routes>
         </main>
       </div>
