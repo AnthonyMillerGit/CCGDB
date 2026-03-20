@@ -43,16 +43,18 @@ def fetch_sets():
 def upsert_set(conn, game_id, scryfall_set):
     with conn.cursor() as cur:
         cur.execute("""
-            INSERT INTO sets (game_id, name, code, release_date, total_cards)
-            VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT DO NOTHING
+            INSERT INTO sets (game_id, name, code, release_date, total_cards, icon_url)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT (game_id, code) DO UPDATE
+                SET icon_url = EXCLUDED.icon_url
             RETURNING id;
         """, (
             game_id,
             scryfall_set["name"],
             scryfall_set["code"],
             scryfall_set.get("released_at"),
-            scryfall_set.get("card_count", 0)
+            scryfall_set.get("card_count", 0),
+            scryfall_set.get("icon_svg_uri")
         ))
         result = cur.fetchone()
         if result:
