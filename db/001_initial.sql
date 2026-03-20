@@ -36,5 +36,6 @@ CREATE TABLE printings (
     image_url           TEXT,
     artist              VARCHAR(200),
     flavor_text         TEXT,
-    created_at          TIMESTAMP DEFAULT NOW()
+    created_at          TIMESTAMP DEFAULT NOW(),
+    CONSTRAINT unique_printing UNIQUE (card_id, set_id, collector_number)
 );

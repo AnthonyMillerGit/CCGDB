@@ -69,7 +69,7 @@ def get_sets(slug: str):
     try:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT s.id, s.name, s.code, s.release_date, s.total_cards, s.icon_url
+                SELECT s.id, s.name, s.code, s.release_date, s.total_cards, s.icon_url, s.set_type
                 FROM sets s
                 JOIN games g ON g.id = s.game_id
                 WHERE g.slug = %s

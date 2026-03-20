@@ -43,10 +43,11 @@ def fetch_sets():
 def upsert_set(conn, game_id, scryfall_set):
     with conn.cursor() as cur:
         cur.execute("""
-            INSERT INTO sets (game_id, name, code, release_date, total_cards, icon_url)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO sets (game_id, name, code, release_date, total_cards, icon_url, set_type)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (game_id, code) DO UPDATE
-                SET icon_url = EXCLUDED.icon_url
+                SET icon_url = EXCLUDED.icon_url,
+                    set_type = EXCLUDED.set_type
             RETURNING id;
         """, (
             game_id,
@@ -54,7 +55,8 @@ def upsert_set(conn, game_id, scryfall_set):
             scryfall_set["code"],
             scryfall_set.get("released_at"),
             scryfall_set.get("card_count", 0),
-            scryfall_set.get("icon_svg_uri")
+            scryfall_set.get("icon_svg_uri"),
+            scryfall_set.get("set_type")
         ))
         result = cur.fetchone()
         if result:
@@ -92,18 +94,35 @@ def upsert_card_and_printing(conn, game_id, set_id, scryfall_card):
             "toughness": scryfall_card.get("toughness"),
             "loyalty": scryfall_card.get("loyalty"),
             "keywords": scryfall_card.get("keywords"),
+            "legalities": scryfall_card.get("legalities"),
+            "supertypes": scryfall_card.get("supertypes"),
+            "subtypes": scryfall_card.get("subtypes"),
+            "types": scryfall_card.get("types"),
         }
+
+        # Handle double-faced card oracle text
+        oracle_text = scryfall_card.get("oracle_text")
+        if not oracle_text and "card_faces" in scryfall_card:
+            faces = scryfall_card["card_faces"]
+            oracle_text = "\n//\n".join(
+                face.get("oracle_text", "")
+                for face in faces
+                if face.get("oracle_text")
+            )
 
         # Insert card
         cur.execute("""
             INSERT INTO cards (game_id, name, rules_text, card_type, attributes)
             VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT DO NOTHING
+            ON CONFLICT (id) DO UPDATE
+                SET attributes = EXCLUDED.attributes,
+                    rules_text = EXCLUDED.rules_text,
+                    card_type = EXCLUDED.card_type
             RETURNING id;
         """, (
             game_id,
             scryfall_card["name"],
-            scryfall_card.get("oracle_text"),
+            oracle_text,
             scryfall_card.get("type_line"),
             json.dumps(attributes)
         ))
@@ -118,15 +137,22 @@ def upsert_card_and_printing(conn, game_id, set_id, scryfall_card):
                 return
             card_id = row[0]
 
-        # Insert printing
+        # Handle double-faced card images
         image_url = None
         if "image_uris" in scryfall_card:
             image_url = scryfall_card["image_uris"].get("normal")
+        elif "card_faces" in scryfall_card:
+            faces = scryfall_card["card_faces"]
+            if faces and "image_uris" in faces[0]:
+                image_url = faces[0]["image_uris"].get("normal")
 
+        # Insert printing
         cur.execute("""
             INSERT INTO printings (card_id, set_id, collector_number, rarity, image_url, artist, flavor_text)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT DO NOTHING;
+            ON CONFLICT (card_id, set_id, collector_number) DO UPDATE
+                SET image_url = EXCLUDED.image_url
+            WHERE printings.image_url IS NULL;
         """, (
             card_id,
             set_id,
@@ -136,6 +162,16 @@ def upsert_card_and_printing(conn, game_id, set_id, scryfall_card):
             scryfall_card.get("artist"),
             scryfall_card.get("flavor_text")
         ))
+
+        # Explicitly update image_url for double-faced cards with null images
+        if image_url:
+            cur.execute("""
+                UPDATE printings
+                SET image_url = %s
+                WHERE card_id = %s
+                AND set_id = %s
+                AND image_url IS NULL
+            """, (image_url, card_id, set_id))
 
 # Main ingestion flow
 def main():
