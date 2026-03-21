@@ -148,7 +148,8 @@ def get_card(card_id: int):
             cur.execute("""
                     SELECT p.id, p.collector_number, p.rarity, p.image_url,
                         p.back_image_url, p.artist, p.flavor_text, 
-                        s.name AS set_name, s.code AS set_code
+                        p.set_id, s.name AS set_name, s.code AS set_code,
+                        s.release_date
                     FROM printings p
                     JOIN sets s ON s.id = p.set_id
                     WHERE p.card_id = %s
@@ -157,5 +158,30 @@ def get_card(card_id: int):
             printings = cur.fetchall()
 
             return {**card, "printings": printings}
+    finally:
+        conn.close()
+
+@app.get("/api/printings/{printing_id}")
+def get_printing(printing_id: int):
+    conn = get_db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT p.id, p.collector_number, p.rarity, p.image_url,
+                       p.back_image_url, p.artist, p.flavor_text,
+                       s.name AS set_name, s.code AS set_code, s.release_date,
+                       c.id AS card_id, c.name AS card_name, c.card_type,
+                       c.rules_text, c.attributes,
+                       g.name AS game, g.slug AS game_slug
+                FROM printings p
+                JOIN sets s ON s.id = p.set_id
+                JOIN cards c ON c.id = p.card_id
+                JOIN games g ON g.id = c.game_id
+                WHERE p.id = %s
+            """, (printing_id,))
+            printing = cur.fetchone()
+            if not printing:
+                raise HTTPException(status_code=404, detail="Printing not found")
+            return printing
     finally:
         conn.close()

@@ -8,10 +8,16 @@ function Header() {
   const navigate = useNavigate()
   return (
     <header
-      className="bg-gray-900 border-b border-gray-800 px-6 py-4 cursor-pointer"
+      className="border-b cursor-pointer px-6 py-4"
+      style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}
       onClick={() => navigate('/')}
     >
-      <h1 className="text-2xl font-bold text-indigo-400">CCG Platform</h1>
+      <h1
+        className="text-2xl font-bold"
+        style={{ color: '#08D9D6' }}
+      >
+        CCG Platform
+      </h1>
     </header>
   )
 }
@@ -19,7 +25,7 @@ function Header() {
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-950 text-white">
+      <div className="min-h-screen" style={{ backgroundColor: '#252A34', color: '#EAEAEA' }}>
         <Header />
         <main className="max-w-7xl mx-auto px-6 py-8">
           <Routes>
