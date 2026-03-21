@@ -25,17 +25,31 @@ export default function GamesPage() {
     <div>
       <h2 className="text-3xl font-bold mb-2">Games</h2>
       <p className="text-gray-400 mb-8">Select a game to browse cards</p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="flex flex-wrap gap-6">
         {games.map(game => (
           <div
             key={game.id}
             onClick={() => navigate(`/games/${game.slug}`)}
-            className="bg-gray-900 border border-gray-800 rounded-xl p-6 cursor-pointer hover:border-indigo-500 hover:bg-gray-800 transition-all duration-200"
+            className="cursor-pointer hover:scale-105 transition-all duration-200 flex flex-col items-center w-36"
           >
-            <h3 className="text-xl font-bold text-white mb-2">{game.name}</h3>
-            <p className="text-gray-400 text-sm">{game.description}</p>
-            <div className="mt-4">
-              <span className="text-indigo-400 text-sm font-medium">Browse cards →</span>
+            {/* Title box */}
+            <div className="w-full bg-gray-900 border border-gray-800 rounded-lg px-2 py-1 mb-2 text-center">
+              <h3 className="text-xs font-bold text-white leading-tight">{game.name}</h3>
+            </div>
+
+            {/* Card image box */}
+            <div className="w-full bg-gray-900 border border-gray-800 rounded-xl overflow-hidden hover:border-indigo-500 transition-all duration-200">
+              {game.card_back_image ? (
+                <img
+                  src={game.card_back_image}
+                  alt={game.name}
+                  className="w-full h-auto object-cover"
+                />
+              ) : (
+                <div className="w-full aspect-[2.5/3.5] bg-gray-800 flex items-center justify-center">
+                  <span className="text-gray-600 text-xs">No image</span>
+                </div>
+              )}
             </div>
           </div>
         ))}

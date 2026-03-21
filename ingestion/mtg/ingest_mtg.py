@@ -98,6 +98,18 @@ def upsert_card_and_printing(conn, game_id, set_id, scryfall_card):
             "supertypes": scryfall_card.get("supertypes"),
             "subtypes": scryfall_card.get("subtypes"),
             "types": scryfall_card.get("types"),
+            "card_faces": [
+                {
+                    "name": face.get("name"),
+                    "mana_cost": face.get("mana_cost"),
+                    "type_line": face.get("type_line"),
+                    "oracle_text": face.get("oracle_text"),
+                    "power": face.get("power"),
+                    "toughness": face.get("toughness"),
+                    "loyalty": face.get("loyalty"),
+                }
+                for face in scryfall_card.get("card_faces", [])
+            ] or None,
         }
 
         # Handle double-faced card oracle text

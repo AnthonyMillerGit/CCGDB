@@ -43,7 +43,7 @@ def get_games():
     conn = get_db()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT id, name, slug, description FROM games ORDER BY name")
+            cur.execute("SELECT id, name, slug, description, card_back_image FROM games ORDER BY name")
             return cur.fetchall()
     finally:
         conn.close()
@@ -146,13 +146,14 @@ def get_card(card_id: int):
 
             # Get all printings
             cur.execute("""
-                SELECT p.id, p.collector_number, p.rarity, p.image_url,
-                       p.artist, p.flavor_text, s.name AS set_name, s.code AS set_code
-                FROM printings p
-                JOIN sets s ON s.id = p.set_id
-                WHERE p.card_id = %s
-                ORDER BY s.release_date
-            """, (card_id,))
+                    SELECT p.id, p.collector_number, p.rarity, p.image_url,
+                        p.back_image_url, p.artist, p.flavor_text, 
+                        s.name AS set_name, s.code AS set_code
+                    FROM printings p
+                    JOIN sets s ON s.id = p.set_id
+                    WHERE p.card_id = %s
+                    ORDER BY s.release_date
+                """, (card_id,))
             printings = cur.fetchall()
 
             return {**card, "printings": printings}
