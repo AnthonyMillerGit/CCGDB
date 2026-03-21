@@ -21,3 +21,6 @@ node_modules/
 *.tfstate
 *.tfstate.backup
 .terraform/
+
+# Card back images
+frontend/public/card-backs/
