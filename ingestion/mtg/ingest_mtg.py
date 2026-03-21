@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 from pathlib import Path
 load_dotenv(Path(__file__).resolve().parents[2] / '.env')
 
-# Database connection
 def get_db_connection():
     return psycopg2.connect(
         host="localhost",
@@ -16,7 +15,6 @@ def get_db_connection():
         password=os.getenv("POSTGRES_PASSWORD")
     )
 
-# Step 1: Make sure MTG exists in the games table
 def upsert_game(conn):
     with conn.cursor() as cur:
         cur.execute("""
@@ -32,14 +30,12 @@ def upsert_game(conn):
             cur.execute("SELECT id FROM games WHERE slug = 'mtg'")
             return cur.fetchone()[0]
 
-# Step 2: Fetch all sets from Scryfall
 def fetch_sets():
     print("Fetching sets from Scryfall...")
     response = requests.get("https://api.scryfall.com/sets")
     response.raise_for_status()
     return response.json()["data"]
 
-# Step 3: Insert a set into the database
 def upsert_set(conn, game_id, scryfall_set):
     with conn.cursor() as cur:
         cur.execute("""
@@ -67,7 +63,6 @@ def upsert_set(conn, game_id, scryfall_set):
             row = cur.fetchone()
             return row[0] if row else None
 
-# Step 4: Fetch cards for a specific set
 def fetch_cards_for_set(set_code):
     url = f"https://api.scryfall.com/cards/search?q=set:{set_code}&unique=prints"
     cards = []
@@ -81,10 +76,8 @@ def fetch_cards_for_set(set_code):
         url = data.get("next_page")
     return cards
 
-# Step 5: Insert a card and its printing
 def upsert_card_and_printing(conn, game_id, set_id, scryfall_card):
     with conn.cursor() as cur:
-        # Build game-specific attributes as JSONB
         attributes = {
             "mana_cost": scryfall_card.get("mana_cost"),
             "cmc": scryfall_card.get("cmc"),
@@ -112,7 +105,6 @@ def upsert_card_and_printing(conn, game_id, set_id, scryfall_card):
             ] or None,
         }
 
-        # Handle double-faced card oracle text
         oracle_text = scryfall_card.get("oracle_text")
         if not oracle_text and "card_faces" in scryfall_card:
             faces = scryfall_card["card_faces"]
@@ -122,7 +114,6 @@ def upsert_card_and_printing(conn, game_id, set_id, scryfall_card):
                 if face.get("oracle_text")
             )
 
-        # Insert card
         cur.execute("""
             INSERT INTO cards (game_id, name, rules_text, card_type, attributes)
             VALUES (%s, %s, %s, %s, %s)
@@ -148,8 +139,15 @@ def upsert_card_and_printing(conn, game_id, set_id, scryfall_card):
             if not row:
                 return
             card_id = row[0]
+            # Explicitly update attributes for existing cards
+            cur.execute("""
+                UPDATE cards
+                SET attributes = %s,
+                    rules_text = %s,
+                    card_type = %s
+                WHERE id = %s
+            """, (json.dumps(attributes), oracle_text, scryfall_card.get("type_line"), card_id))
 
-        # Handle double-faced card images
         image_url = None
         if "image_uris" in scryfall_card:
             image_url = scryfall_card["image_uris"].get("normal")
@@ -158,7 +156,6 @@ def upsert_card_and_printing(conn, game_id, set_id, scryfall_card):
             if faces and "image_uris" in faces[0]:
                 image_url = faces[0]["image_uris"].get("normal")
 
-        # Insert printing
         cur.execute("""
             INSERT INTO printings (card_id, set_id, collector_number, rarity, image_url, artist, flavor_text)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -175,7 +172,6 @@ def upsert_card_and_printing(conn, game_id, set_id, scryfall_card):
             scryfall_card.get("flavor_text")
         ))
 
-        # Explicitly update image_url for double-faced cards with null images
         if image_url:
             cur.execute("""
                 UPDATE printings
@@ -185,7 +181,6 @@ def upsert_card_and_printing(conn, game_id, set_id, scryfall_card):
                 AND image_url IS NULL
             """, (image_url, card_id, set_id))
 
-# Main ingestion flow
 def main():
     print("Starting MTG ingestion...")
     conn = get_db_connection()
