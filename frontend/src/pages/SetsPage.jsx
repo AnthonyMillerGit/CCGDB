@@ -37,16 +37,14 @@ export default function SetsPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <p className="text-gray-400 text-lg">Loading sets...</p>
+      <p className="text-lg" style={{ color: '#8892a4' }}>Loading sets...</p>
     </div>
   )
 
-  // Filter sets based on active tab
   const filteredSets = activeTab === 'all'
     ? sets
     : sets.filter(s => s.set_type === activeTab)
 
-  // Only show tabs that have sets
   const availableTabs = SET_TYPE_TABS.filter(tab =>
     tab.key === 'all' || sets.some(s => s.set_type === tab.key)
   )
@@ -55,27 +53,28 @@ export default function SetsPage() {
     <div>
       <button
         onClick={() => navigate('/')}
-        className="text-indigo-400 hover:text-indigo-300 text-sm mb-6 flex items-center gap-1"
+        className="text-sm mb-6 flex items-center gap-1 hover:opacity-80 transition-opacity"
+        style={{ color: '#08D9D6' }}
       >
         ← Back to Games
       </button>
-      <h2 className="text-3xl font-bold mb-1">{game?.name}</h2>
-      <p className="text-gray-400 mb-6">{filteredSets.length} sets</p>
+      <h2 className="text-3xl font-bold mb-1" style={{ color: '#EAEAEA' }}>{game?.name}</h2>
+      <p className="mb-6" style={{ color: '#8892a4' }}>{filteredSets.length} sets</p>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2 mb-8 border-b border-gray-800 pb-4">
+      <div className="flex flex-wrap gap-2 mb-8 pb-4" style={{ borderBottom: '1px solid #363d52' }}>
         {availableTabs.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
-              ${activeTab === tab.key
-                ? 'bg-indigo-600 text-white'
-                : 'bg-gray-900 text-gray-400 hover:text-white hover:bg-gray-800'
-              }`}
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+            style={activeTab === tab.key
+              ? { backgroundColor: '#08D9D6', color: '#252A34' }
+              : { backgroundColor: '#2d3243', color: '#8892a4', border: '1px solid #363d52' }
+            }
           >
             {tab.label}
-            <span className={`ml-2 text-xs ${activeTab === tab.key ? 'text-indigo-200' : 'text-gray-600'}`}>
+            <span className="ml-2 text-xs opacity-60">
               {tab.key === 'all' ? sets.length : sets.filter(s => s.set_type === tab.key).length}
             </span>
           </button>
@@ -88,7 +87,16 @@ export default function SetsPage() {
           <div
             key={set.id}
             onClick={() => navigate(`/sets/${set.id}`)}
-            className="bg-gray-900 border border-gray-800 rounded-xl p-5 cursor-pointer hover:border-indigo-500 hover:bg-gray-800 transition-all duration-200"
+            className="rounded-xl p-5 cursor-pointer transition-all duration-200 border"
+            style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}
+            onMouseEnter={e => {
+              e.currentTarget.style.borderColor = '#08D9D6'
+              e.currentTarget.style.backgroundColor = '#363d52'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.borderColor = '#363d52'
+              e.currentTarget.style.backgroundColor = '#2d3243'
+            }}
           >
             <div className="flex items-center gap-3 mb-1">
               {set.icon_url && (
@@ -98,15 +106,17 @@ export default function SetsPage() {
                   className="w-8 h-8 invert opacity-70"
                 />
               )}
-              <h3 className="text-lg font-semibold text-white">{set.name}</h3>
+              <h3 className="text-lg font-semibold" style={{ color: '#EAEAEA' }}>{set.name}</h3>
             </div>
             <div className="mt-3">
-              <span className="text-gray-500 text-sm">
+              <span className="text-sm" style={{ color: '#8892a4' }}>
                 Released: {set.release_date?.split('T')[0] ?? 'Unknown'}
               </span>
             </div>
             <div className="mt-2">
-              <span className="text-indigo-400 text-sm">{set.total_cards} cards</span>
+              <span className="text-sm font-medium" style={{ color: '#08D9D6' }}>
+                {set.total_cards} cards
+              </span>
             </div>
           </div>
         ))}
