@@ -117,7 +117,7 @@ def upsert_card_and_printing(conn, game_id, set_id, scryfall_card):
         cur.execute("""
             INSERT INTO cards (game_id, name, rules_text, card_type, attributes)
             VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT (id) DO UPDATE
+            ON CONFLICT (name, game_id) DO UPDATE
                 SET attributes = EXCLUDED.attributes,
                     rules_text = EXCLUDED.rules_text,
                     card_type = EXCLUDED.card_type
@@ -139,14 +139,6 @@ def upsert_card_and_printing(conn, game_id, set_id, scryfall_card):
             if not row:
                 return
             card_id = row[0]
-            # Explicitly update attributes for existing cards
-            cur.execute("""
-                UPDATE cards
-                SET attributes = %s,
-                    rules_text = %s,
-                    card_type = %s
-                WHERE id = %s
-            """, (json.dumps(attributes), oracle_text, scryfall_card.get("type_line"), card_id))
 
         image_url = None
         if "image_uris" in scryfall_card:
