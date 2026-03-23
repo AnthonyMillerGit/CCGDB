@@ -3,21 +3,23 @@ import GamesPage from './pages/GamesPage'
 import SetsPage from './pages/SetsPage'
 import CardsPage from './pages/CardsPage'
 import CardDetailPage from './pages/CardDetailPage'
+import SearchBar from './components/SearchBar'
 
 function Header() {
   const navigate = useNavigate()
   return (
     <header
-      className="border-b cursor-pointer px-6 py-4"
+      className="border-b px-6 py-4 flex items-center justify-between"
       style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}
-      onClick={() => navigate('/')}
     >
       <h1
-        className="text-2xl font-bold"
+        className="text-2xl font-bold cursor-pointer"
         style={{ color: '#08D9D6' }}
+        onClick={() => navigate('/')}
       >
         CCG Platform
       </h1>
+      <SearchBar />
     </header>
   )
 }

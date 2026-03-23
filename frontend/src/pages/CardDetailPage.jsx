@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import PokemonCardInfo from '../components/card-templates/PokemonCardInfo'
 
 function ManaCost({ cost }) {
   if (!cost) return null
@@ -193,13 +194,22 @@ export default function CardDetailPage() {
             </div>
           )}
 
-          {rulesText && (
-            <div className="rounded-xl p-4 mb-4 border"
-              style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}>
-              <p className="whitespace-pre-line leading-relaxed" style={{ color: '#EAEAEA' }}>
-                {rulesText}
-              </p>
-            </div>
+          {/* Game specific card info */}
+          {card.game_slug === 'pokemon' ? (
+            <PokemonCardInfo
+              attrs={attrs}
+              rulesText={rulesText}
+              cardType={card.card_type}
+            />
+          ) : (
+            rulesText && (
+              <div className="rounded-xl p-4 mb-4 border"
+                style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}>
+                <p className="whitespace-pre-line leading-relaxed" style={{ color: '#EAEAEA' }}>
+                  {rulesText}
+                </p>
+              </div>
+            )
           )}
 
           {keywords.length > 0 && (
@@ -264,8 +274,8 @@ export default function CardDetailPage() {
         </div>{/* end card info */}
       </div>{/* end top section */}
 
-      {/* Legalities */}
-      {Object.keys(legalities).length > 0 && (
+      {/* Legalities - MTG only */}
+      {card.game_slug === 'mtg' && Object.keys(legalities).length > 0 && (
         <div className="mb-12">
           <h3 className="text-2xl font-bold mb-4" style={{ color: '#EAEAEA' }}>Format Legality</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
@@ -276,58 +286,60 @@ export default function CardDetailPage() {
         </div>
       )}
 
-      {/* All printings */}
-      <div>
-        <h3 className="text-2xl font-bold mb-4" style={{ color: '#EAEAEA' }}>
-          All Printings
-          <span className="text-lg font-normal ml-2" style={{ color: '#8892a4' }}>
-            ({card.printings?.length ?? 0})
-          </span>
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {card.printings?.map(printing => (
-            <div
-              key={printing.id}
-              onClick={() => handleSelectPrinting(printing)}
-              className="rounded-xl overflow-hidden border cursor-pointer transition-all duration-200"
-              style={{
-                backgroundColor: selectedPrinting?.id === printing.id ? '#363d52' : '#2d3243',
-                borderColor: selectedPrinting?.id === printing.id ? '#08D9D6' : '#363d52'
-              }}
-              onMouseEnter={e => {
-                if (selectedPrinting?.id !== printing.id) {
-                  e.currentTarget.style.borderColor = '#08D9D6'
-                }
-              }}
-              onMouseLeave={e => {
-                if (selectedPrinting?.id !== printing.id) {
-                  e.currentTarget.style.borderColor = '#363d52'
-                }
-              }}
-            >
-              {printing.image_url ? (
-                <img src={printing.image_url} alt={printing.set_name} className="w-full" />
-              ) : (
-                <div className="aspect-[2.5/3.5] flex items-center justify-center p-3"
-                  style={{ backgroundColor: '#363d52' }}>
-                  <span className="text-xs text-center" style={{ color: '#8892a4' }}>
+      {/* All printings - MTG only */}
+      {card.game_slug === 'mtg' && (
+        <div>
+          <h3 className="text-2xl font-bold mb-4" style={{ color: '#EAEAEA' }}>
+            All Printings
+            <span className="text-lg font-normal ml-2" style={{ color: '#8892a4' }}>
+              ({card.printings?.length ?? 0})
+            </span>
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {card.printings?.map(printing => (
+              <div
+                key={printing.id}
+                onClick={() => handleSelectPrinting(printing)}
+                className="rounded-xl overflow-hidden border cursor-pointer transition-all duration-200"
+                style={{
+                  backgroundColor: selectedPrinting?.id === printing.id ? '#363d52' : '#2d3243',
+                  borderColor: selectedPrinting?.id === printing.id ? '#08D9D6' : '#363d52'
+                }}
+                onMouseEnter={e => {
+                  if (selectedPrinting?.id !== printing.id) {
+                    e.currentTarget.style.borderColor = '#08D9D6'
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (selectedPrinting?.id !== printing.id) {
+                    e.currentTarget.style.borderColor = '#363d52'
+                  }
+                }}
+              >
+                {printing.image_url ? (
+                  <img src={printing.image_url} alt={printing.set_name} className="w-full" />
+                ) : (
+                  <div className="aspect-[2.5/3.5] flex items-center justify-center p-3"
+                    style={{ backgroundColor: '#363d52' }}>
+                    <span className="text-xs text-center" style={{ color: '#8892a4' }}>
+                      {printing.set_name}
+                    </span>
+                  </div>
+                )}
+                <div className="p-2">
+                  <p className="text-xs font-medium truncate" style={{ color: '#EAEAEA' }}>
                     {printing.set_name}
-                  </span>
+                  </p>
+                  <p className="text-xs capitalize"
+                    style={{ color: RARITY_COLORS[printing.rarity?.toLowerCase()] || '#8892a4' }}>
+                    {printing.rarity}
+                  </p>
                 </div>
-              )}
-              <div className="p-2">
-                <p className="text-xs font-medium truncate" style={{ color: '#EAEAEA' }}>
-                  {printing.set_name}
-                </p>
-                <p className="text-xs capitalize"
-                  style={{ color: RARITY_COLORS[printing.rarity?.toLowerCase()] || '#8892a4' }}>
-                  {printing.rarity}
-                </p>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
     </div>
   )

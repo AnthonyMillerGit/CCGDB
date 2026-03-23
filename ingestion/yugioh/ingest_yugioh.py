@@ -2,7 +2,6 @@ import requests
 import psycopg2
 import json
 import os
-import time
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -31,6 +30,12 @@ def upsert_game(conn):
             cur.execute("SELECT id FROM games WHERE slug = 'yugioh'")
             return cur.fetchone()[0]
 
+def fetch_all_sets():
+    print("Fetching Yu-Gi-Oh sets...")
+    response = requests.get("https://db.ygoprodeck.com/api/v7/cardsets.php")
+    response.raise_for_status()
+    return {s["set_code"]: s for s in response.json()}
+
 def fetch_all_cards():
     print("Fetching all Yu-Gi-Oh cards...")
     response = requests.get("https://db.ygoprodeck.com/api/v7/cardinfo.php?misc=yes")
@@ -38,29 +43,27 @@ def fetch_all_cards():
     data = response.json()
     return data["data"]
 
-def upsert_set(conn, game_id, set_name, set_code):
-    # Extract the set code prefix e.g. "JUSH" from "JUSH-EN040"
-    code_prefix = set_code.split("-")[0] if "-" in set_code else set_code
-
+def upsert_set(conn, game_id, set_name, set_code, set_date=None, set_image=None):
     with conn.cursor() as cur:
         cur.execute("""
-            INSERT INTO sets (game_id, name, code)
-            VALUES (%s, %s, %s)
-            ON CONFLICT DO NOTHING
+            INSERT INTO sets (game_id, name, code, release_date, icon_url)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (game_id, code) DO UPDATE
+                SET release_date = EXCLUDED.release_date,
+                    icon_url = EXCLUDED.icon_url
             RETURNING id;
-        """, (game_id, set_name, code_prefix))
+        """, (game_id, set_name, set_code, set_date, set_image))
         result = cur.fetchone()
         if result:
             return result[0]
         else:
             cur.execute("SELECT id FROM sets WHERE code = %s AND game_id = %s",
-                       (code_prefix, game_id))
+                       (set_code, game_id))
             row = cur.fetchone()
             return row[0] if row else None
 
-def upsert_card_and_printings(conn, game_id, card):
+def upsert_card_and_printings(conn, game_id, card, sets_data):
     with conn.cursor() as cur:
-        # Build YuGiOh specific attributes
         attributes = {
             "type": card.get("type"),
             "frameType": card.get("frameType"),
@@ -75,25 +78,28 @@ def upsert_card_and_printings(conn, game_id, card):
             "banlist_info": card.get("banlist_info"),
         }
 
-        # Insert card
         cur.execute("""
-            INSERT INTO cards (game_id, name, rules_text, card_type, attributes)
-            VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT DO NOTHING
+            INSERT INTO cards (game_id, name, rules_text, card_type, attributes, external_id)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT (game_id, external_id) DO UPDATE
+                SET attributes = EXCLUDED.attributes,
+                    rules_text = EXCLUDED.rules_text,
+                    card_type = EXCLUDED.card_type
             RETURNING id;
         """, (
             game_id,
             card["name"],
             card.get("desc"),
             card.get("humanReadableCardType"),
-            json.dumps(attributes)
+            json.dumps(attributes),
+            str(card.get("id"))
         ))
         result = cur.fetchone()
         if result:
             card_id = result[0]
         else:
-            cur.execute("SELECT id FROM cards WHERE name = %s AND game_id = %s",
-                       (card["name"], game_id))
+            cur.execute("SELECT id FROM cards WHERE external_id = %s AND game_id = %s",
+                       (str(card.get("id")), game_id))
             row = cur.fetchone()
             if not row:
                 return
@@ -106,14 +112,28 @@ def upsert_card_and_printings(conn, game_id, card):
 
         # Insert one printing per set the card appears in
         for card_set in card.get("card_sets", []):
-            set_id = upsert_set(conn, game_id, card_set["set_name"], card_set["set_code"])
+            # Extract set code prefix e.g. "JUSH" from "JUSH-EN040"
+            code_prefix = card_set["set_code"].split("-")[0] if "-" in card_set["set_code"] else card_set["set_code"]
+
+            # Look up set info for date and image
+            set_info = sets_data.get(code_prefix, {})
+
+            set_id = upsert_set(
+                conn, game_id,
+                card_set["set_name"],
+                code_prefix,
+                set_info.get("tcg_date"),
+                set_info.get("set_image")
+            )
             if not set_id:
                 continue
 
             cur.execute("""
                 INSERT INTO printings (card_id, set_id, collector_number, rarity, image_url)
                 VALUES (%s, %s, %s, %s, %s)
-                ON CONFLICT DO NOTHING;
+                ON CONFLICT (card_id, set_id, collector_number) DO UPDATE
+                    SET image_url = EXCLUDED.image_url
+                WHERE printings.image_url IS NULL;
             """, (
                 card_id,
                 set_id,
@@ -130,13 +150,15 @@ def main():
         game_id = upsert_game(conn)
         print(f"Game ID for Yu-Gi-Oh: {game_id}")
 
+        sets_data = fetch_all_sets()
+        print(f"Found {len(sets_data)} sets")
+
         cards = fetch_all_cards()
         print(f"Found {len(cards)} cards to process")
 
         for i, card in enumerate(cards):
-            upsert_card_and_printings(conn, game_id, card)
+            upsert_card_and_printings(conn, game_id, card, sets_data)
 
-            # Commit every 500 cards and show progress
             if (i + 1) % 500 == 0:
                 conn.commit()
                 print(f"  [{i+1}/{len(cards)}] cards processed...")
