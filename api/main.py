@@ -185,3 +185,23 @@ def get_printing(printing_id: int):
             return printing
     finally:
         conn.close()
+
+@app.get("/api/search/suggestions")
+def search_suggestions(q: str, limit: int = 8):
+    if len(q) < 2:
+        return []
+    conn = get_db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT DISTINCT ON (c.name, g.slug)
+                    c.id, c.name, c.card_type, g.name AS game, g.slug AS game_slug
+                FROM cards c
+                JOIN games g ON g.id = c.game_id
+                WHERE c.name ILIKE %s
+                ORDER BY c.name, g.slug, c.id
+                LIMIT %s
+            """, (f"%{q}%", limit))
+            return cur.fetchall()
+    finally:
+        conn.close()
