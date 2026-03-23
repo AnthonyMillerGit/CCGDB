@@ -77,23 +77,27 @@ def upsert_card_and_printings(conn, game_id, card):
 
         # Insert card
         cur.execute("""
-            INSERT INTO cards (game_id, name, rules_text, card_type, attributes)
-            VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT DO NOTHING
+            INSERT INTO cards (game_id, name, rules_text, card_type, attributes, external_id)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT (game_id, external_id) DO UPDATE
+                SET attributes = EXCLUDED.attributes,
+                    rules_text = EXCLUDED.rules_text,
+                    card_type = EXCLUDED.card_type
             RETURNING id;
         """, (
             game_id,
             card["name"],
             card.get("desc"),
             card.get("humanReadableCardType"),
-            json.dumps(attributes)
+            json.dumps(attributes),
+            str(card.get("id"))
         ))
         result = cur.fetchone()
         if result:
             card_id = result[0]
         else:
-            cur.execute("SELECT id FROM cards WHERE name = %s AND game_id = %s",
-                       (card["name"], game_id))
+            cur.execute("SELECT id FROM cards WHERE external_id = %s AND game_id = %s",
+                    (str(card.get("id")), game_id))
             row = cur.fetchone()
             if not row:
                 return

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import PokemonCardInfo from '../components/card-templates/PokemonCardInfo'
 
 function ManaCost({ cost }) {
   if (!cost) return null
@@ -193,13 +194,22 @@ export default function CardDetailPage() {
             </div>
           )}
 
-          {rulesText && (
-            <div className="rounded-xl p-4 mb-4 border"
-              style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}>
-              <p className="whitespace-pre-line leading-relaxed" style={{ color: '#EAEAEA' }}>
-                {rulesText}
-              </p>
-            </div>
+          {/* Game specific card info */}
+          {card.game_slug === 'pokemon' ? (
+            <PokemonCardInfo
+              attrs={attrs}
+              rulesText={rulesText}
+              cardType={card.card_type}
+            />
+          ) : (
+            rulesText && (
+              <div className="rounded-xl p-4 mb-4 border"
+                style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}>
+                <p className="whitespace-pre-line leading-relaxed" style={{ color: '#EAEAEA' }}>
+                  {rulesText}
+                </p>
+              </div>
+            )
           )}
 
           {keywords.length > 0 && (
