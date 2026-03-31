@@ -27,3 +27,4 @@ frontend/public/card-backs/
 
 # Raw card data source clones (large repos, cloned locally as needed)
 ingestion/startrek_1e_source/
+ingestion/startrek_2e_source/
