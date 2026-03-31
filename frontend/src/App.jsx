@@ -17,7 +17,7 @@ function Header() {
         style={{ color: '#08D9D6' }}
         onClick={() => navigate('/')}
       >
-        CCG Platform
+        CardVault
       </h1>
       <SearchBar />
     </header>

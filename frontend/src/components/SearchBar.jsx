@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { API_URL } from '../config'
 
 const GAME_COLORS = {
   mtg: '#08D9D6',
@@ -28,7 +29,7 @@ export default function SearchBar() {
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       setLoading(true)
-      fetch(`http://localhost:8000/api/search/suggestions?q=${encodeURIComponent(query)}`)
+      fetch(`${API_URL}/api/search/suggestions?q=${encodeURIComponent(query)}`)
         .then(r => r.json())
         .then(data => {
           setSuggestions(data)

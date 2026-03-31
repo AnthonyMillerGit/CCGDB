@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import PokemonCardInfo from '../components/card-templates/PokemonCardInfo'
+import { API_URL } from '../config'
 
 function ManaCost({ cost }) {
   if (!cost) return null
@@ -61,7 +62,7 @@ export default function CardDetailPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/cards/${cardId}`)
+    fetch(`${API_URL}/api/cards/${cardId}`)
       .then(r => r.json())
       .then(data => {
         setCard(data)

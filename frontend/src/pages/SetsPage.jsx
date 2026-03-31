@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { API_URL } from '../config'
 
 const SET_TYPE_TABS = [
   { key: 'all', label: 'All' },
@@ -26,8 +27,8 @@ export default function SetsPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`http://localhost:8000/api/games/${slug}`).then(r => r.json()),
-      fetch(`http://localhost:8000/api/games/${slug}/sets`).then(r => r.json())
+      fetch(`${API_URL}/api/games/${slug}`).then(r => r.json()),
+      fetch(`${API_URL}/api/games/${slug}/sets`).then(r => r.json())
     ]).then(([gameData, setsData]) => {
       setGame(gameData)
       setSets(setsData)

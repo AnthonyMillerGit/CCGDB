@@ -117,7 +117,7 @@ def upsert_card_and_printing(conn, game_id, set_id, scryfall_card):
         cur.execute("""
             INSERT INTO cards (game_id, name, rules_text, card_type, attributes)
             VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT (name, game_id) DO UPDATE
+            ON CONFLICT (name, game_id) WHERE external_id IS NULL DO UPDATE
                 SET attributes = EXCLUDED.attributes,
                     rules_text = EXCLUDED.rules_text,
                     card_type = EXCLUDED.card_type

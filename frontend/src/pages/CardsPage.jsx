@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { API_URL } from '../config'
 
 export default function CardsPage() {
   const { setId } = useParams()
@@ -8,7 +9,7 @@ export default function CardsPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/sets/${setId}/cards`)
+    fetch(`${API_URL}/api/sets/${setId}/cards`)
       .then(r => r.json())
       .then(data => {
         setCards(data)

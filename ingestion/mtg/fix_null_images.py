@@ -27,8 +27,9 @@ def main():
                 FROM printings p
                 JOIN cards c ON c.id = p.card_id
                 JOIN sets s ON s.id = p.set_id
+                JOIN games g ON g.id = c.game_id
                 WHERE p.image_url IS NULL
-                AND c.game_id = 1
+                AND g.slug = 'mtg'
                 ORDER BY s.code, p.collector_number
             """)
             null_printings = cur.fetchall()

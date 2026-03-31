@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { API_URL } from '../config'
 
 export default function GamesPage() {
   const [games, setGames] = useState([])
@@ -7,7 +8,7 @@ export default function GamesPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/games')
+    fetch(`${API_URL}/api/games`)
       .then(res => res.json())
       .then(data => {
         setGames(data)

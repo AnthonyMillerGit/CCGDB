@@ -28,7 +28,8 @@ def main():
                 FROM printings p
                 JOIN cards c ON c.id = p.card_id
                 JOIN sets s ON s.id = p.set_id
-                WHERE c.game_id = 1
+                JOIN games g ON g.id = c.game_id
+                WHERE g.slug = 'mtg'
                 AND c.name LIKE '%//%'
                 AND p.image_url IS NOT NULL
                 AND p.back_image_url IS NULL
