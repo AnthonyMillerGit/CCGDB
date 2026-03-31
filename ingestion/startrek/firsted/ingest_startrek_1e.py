@@ -23,6 +23,21 @@ IMAGE_BASE_URL = (
 )
 
 # ============================================================
+# 2E set codes to skip during 1E ingestion.
+# These belong to startrek_2e and are handled by migration 006
+# (and eventually a dedicated ingest_startrek_2e.py script).
+# Without this guard a re-run would re-create them in startrek_1e.
+# ============================================================
+SKIP_2E_CODES = {
+    # Decipher physical 2E sets
+    'se', 'en', 'ca', 'ne', 'sw', 'cl', 'tv',
+    # Continuing Committee official 2E sets
+    'bg', 'imd', 'ft', 'dm', 'ge', 'r2', 'ap', 'wylb',
+    # Virtual 2E sets
+    'ftb', 'rts',
+}
+
+# ============================================================
 # Set display names and approximate release dates.
 # Key = normalised primary release code (lowercase, stripped).
 # Value = (display_name, release_date | None)
@@ -335,6 +350,11 @@ def process_file(conn, game_id, filepath, is_virtual, set_cache):
 
             # Resolve set
             set_code, set_name, release_date = get_set_display_info(release_raw)
+
+            # Skip 2E sets — they belong to startrek_2e (see SKIP_2E_CODES)
+            if set_code in SKIP_2E_CODES:
+                skipped += 1
+                continue
 
             if set_code not in set_cache:
                 set_id = upsert_set(conn, game_id, set_code, set_name, release_date, set_type)

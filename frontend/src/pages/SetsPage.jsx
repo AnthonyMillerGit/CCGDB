@@ -24,9 +24,17 @@ const STARTREK_1E_TABS = [
   { key: 'virtual', label: 'Virtual Fan Expansions' },
 ]
 
+const STARTREK_2E_TABS = [
+  { key: 'all', label: 'All Sets' },
+  { key: 'official', label: 'Decipher (Official)' },
+  { key: 'community', label: 'Continuing Committee' },
+  { key: 'virtual', label: 'Virtual Sets' },
+]
+
 function getTabsForGame(slug) {
   if (slug === 'mtg') return MTG_TABS
   if (slug === 'startrek_1e') return STARTREK_1E_TABS
+  if (slug === 'startrek_2e') return STARTREK_2E_TABS
   // Fallback: just All tab (other tabs will be added dynamically from data)
   return [{ key: 'all', label: 'All' }]
 }

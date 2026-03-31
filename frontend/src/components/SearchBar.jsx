@@ -7,6 +7,7 @@ const GAME_COLORS = {
   pokemon: '#FFCC00',
   yugioh: '#8844FF',
   startrek_1e: '#4B9CD3',  // Starfleet blue
+  startrek_2e: '#C0A060',  // gold/amber — 2E used a gold card frame
 }
 
 export default function SearchBar() {
