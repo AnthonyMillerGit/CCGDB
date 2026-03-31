@@ -6,6 +6,7 @@ const GAME_COLORS = {
   mtg: '#08D9D6',
   pokemon: '#FFCC00',
   yugioh: '#8844FF',
+  startrek_1e: '#4B9CD3',  // Starfleet blue
 }
 
 export default function SearchBar() {
