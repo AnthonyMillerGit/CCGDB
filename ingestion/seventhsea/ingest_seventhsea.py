@@ -30,7 +30,7 @@ try:
 except ImportError:
     raise SystemExit("Install odfpy:  pip install odfpy --break-system-packages")
 
-load_dotenv(Path(__file__).resolve().parents[3] / '.env')
+load_dotenv(Path(__file__).resolve().parents[2] / '.env')
 
 # ============================================================
 # Paths
@@ -49,7 +49,8 @@ IMAGE_BASE_URL = '/cards/seventhsea/'
 # Column indices (0-based) within each ODS data row.
 # Cols 0-2 are OCTGN metadata; card data begins at col 3.
 # ============================================================
-COL_FILENAME        = 3   # e.g. "HE_alesiossacrifice"  → also gives set code
+COL_UUID            = 2   # OCTGN card UUID — used as external_id AND image filename
+COL_FILENAME        = 3   # e.g. "HE_alesiossacrifice"  → gives set code
 COL_NAME            = 4
 COL_RARITY          = 5   # C / U / R / F / V / VP
 COL_TYPE            = 6   # crew / attachments / actions / adventures / ships / chanteys
@@ -174,7 +175,7 @@ def upsert_set(conn, game_id, code, name, release_date, set_type):
 
 def upsert_card(conn, game_id, vals):
     """Insert or update a card. Returns card_id."""
-    external_id = _col(vals, COL_FILENAME)   # e.g. "HE_alesiossacrifice"
+    external_id = _col(vals, COL_UUID)       # OCTGN UUID — stable unique key
     name        = _col(vals, COL_NAME)
     card_type   = _col(vals, COL_TYPE)
     rules_text  = _col(vals, COL_TEXT)
@@ -223,14 +224,16 @@ def upsert_card(conn, game_id, vals):
 
 def upsert_printing(conn, card_id, set_id, rarity, image_url):
     with conn.cursor() as cur:
+        # Try updating first; if no row exists, insert
         cur.execute("""
-            INSERT INTO printings (card_id, set_id, rarity, image_url)
-            SELECT %s, %s, %s, %s
-            WHERE NOT EXISTS (
-                SELECT 1 FROM printings
-                WHERE card_id = %s AND set_id = %s
-            )
-        """, (card_id, set_id, rarity, image_url, card_id, set_id))
+            UPDATE printings SET image_url = %s, rarity = %s
+            WHERE card_id = %s AND set_id = %s
+        """, (image_url, rarity, card_id, set_id))
+        if cur.rowcount == 0:
+            cur.execute("""
+                INSERT INTO printings (card_id, set_id, rarity, image_url)
+                VALUES (%s, %s, %s, %s)
+            """, (card_id, set_id, rarity, image_url))
 
 
 # ============================================================
@@ -266,16 +269,17 @@ def process_ods(conn, game_id, ods_path, set_cache):
     for row in data_rows:
         vals = _row_values(row)
 
+        uuid     = _col(vals, COL_UUID)
         filename = _col(vals, COL_FILENAME)
         name     = _col(vals, COL_NAME)
 
-        # Skip rows without a valid card filename or name
-        if not filename or not name:
+        # Skip rows without a valid UUID or name
+        if not uuid or not name:
             skipped += 1
             continue
 
-        # Build image URL from filename
-        image_url = IMAGE_BASE_URL + filename + '.jpg'
+        # Images in the OCTGN bundle (7thSea-Sets-Bundle.o8c) are named by UUID
+        image_url = IMAGE_BASE_URL + uuid + '.jpg'
 
         rarity  = _col(vals, COL_RARITY)
         card_id = upsert_card(conn, game_id, vals)
