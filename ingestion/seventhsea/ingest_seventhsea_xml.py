@@ -17,6 +17,7 @@ Sets covered:
 import xml.etree.ElementTree as ET
 import json
 import os
+
 from pathlib import Path
 from dotenv import load_dotenv
 import psycopg2
@@ -30,7 +31,7 @@ SETS_DIR = (
     Path(__file__).resolve().parent
     / 'octgn_source' / 'o8g' / 'Sets'
 )
-IMAGE_BASE_URL = '/cards/seventhsea/'
+IMAGE_BASE_URL = os.getenv('ASSET_BASE_URL', 'http://localhost:8000/assets') + '/cards/seventhsea/'
 
 # ============================================================
 # Sets to ingest from XML

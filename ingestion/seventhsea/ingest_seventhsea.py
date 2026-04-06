@@ -38,12 +38,12 @@ load_dotenv(Path(__file__).resolve().parents[2] / '.env')
 SOURCE_DIR = Path(__file__).resolve().parent / 'source'
 
 # ============================================================
-# Image URL base
-# Cards are named like "HE_alesiossacrifice.jpg"
-# Put extracted images in frontend/public/cards/seventhsea/
-# or update to a remote base URL.
+# Image URL base — reads ASSET_BASE_URL from .env.
+# Dev default:  http://localhost:8000/assets
+# Production:   https://your-bucket.s3.amazonaws.com
+# Images live at {ASSET_BASE_URL}/cards/seventhsea/{uuid}.jpg
 # ============================================================
-IMAGE_BASE_URL = '/cards/seventhsea/'
+IMAGE_BASE_URL = os.getenv('ASSET_BASE_URL', 'http://localhost:8000/assets') + '/cards/seventhsea/'
 
 # ============================================================
 # Column indices (0-based) within each ODS data row.

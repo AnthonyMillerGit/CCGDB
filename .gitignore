@@ -33,3 +33,4 @@ ingestion/seventhsea/source/
 
 # Card images (large binary assets, served locally or from S3)
 frontend/public/cards/
+assets/cards/
