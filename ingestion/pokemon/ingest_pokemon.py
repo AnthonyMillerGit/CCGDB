@@ -48,19 +48,23 @@ def fetch_sets():
 def upsert_set(conn, game_id, poke_set):
     # Fix date format from 1999/01/09 to 1999-01-09
     release_date = poke_set.get("releaseDate", "").replace("/", "-") or None
+    # Prefer symbol image, fall back to logo
+    icon_url = poke_set.get("images", {}).get("symbol") or poke_set.get("images", {}).get("logo")
 
     with conn.cursor() as cur:
         cur.execute("""
-            INSERT INTO sets (game_id, name, code, release_date, total_cards)
-            VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT DO NOTHING
+            INSERT INTO sets (game_id, name, code, release_date, total_cards, icon_url)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT (game_id, code) DO UPDATE
+                SET icon_url = EXCLUDED.icon_url
             RETURNING id;
         """, (
             game_id,
             poke_set["name"],
             poke_set["id"],
             release_date,
-            poke_set.get("total", 0)
+            poke_set.get("total", 0),
+            icon_url
         ))
         result = cur.fetchone()
         if result:

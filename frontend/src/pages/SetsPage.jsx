@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { API_URL } from '../config'
 
-const SET_TYPE_TABS = [
+// MTG uses Scryfall set_type values; other games use their own taxonomy.
+const MTG_TABS = [
   { key: 'all', label: 'All' },
   { key: 'expansion', label: 'Expansions' },
   { key: 'core', label: 'Core Sets' },
@@ -16,6 +18,34 @@ const SET_TYPE_TABS = [
   { key: 'memorabilia', label: 'Memorabilia' },
 ]
 
+const STARTREK_1E_TABS = [
+  { key: 'all', label: 'All Sets' },
+  { key: 'official', label: 'Official Licensed Sets' },
+  { key: 'virtual', label: 'Virtual Fan Expansions' },
+]
+
+const STARTREK_2E_TABS = [
+  { key: 'all', label: 'All Sets' },
+  { key: 'official', label: 'Decipher (Official)' },
+  { key: 'community', label: 'Continuing Committee' },
+  { key: 'virtual', label: 'Virtual Sets' },
+]
+
+const SEVENTHSEA_TABS = [
+  { key: 'all', label: 'All Sets' },
+  { key: 'official', label: 'AEG (Official)' },
+  { key: 'community', label: 'Fan Expansions' },
+]
+
+function getTabsForGame(slug) {
+  if (slug === 'mtg') return MTG_TABS
+  if (slug === 'startrek_1e') return STARTREK_1E_TABS
+  if (slug === 'startrek_2e') return STARTREK_2E_TABS
+  if (slug === 'seventhsea') return SEVENTHSEA_TABS
+  // Fallback: just All tab (other tabs will be added dynamically from data)
+  return [{ key: 'all', label: 'All' }]
+}
+
 export default function SetsPage() {
   const { slug } = useParams()
   const [sets, setSets] = useState([])
@@ -26,8 +56,8 @@ export default function SetsPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`http://localhost:8000/api/games/${slug}`).then(r => r.json()),
-      fetch(`http://localhost:8000/api/games/${slug}/sets`).then(r => r.json())
+      fetch(`${API_URL}/api/games/${slug}`).then(r => r.json()),
+      fetch(`${API_URL}/api/games/${slug}/sets`).then(r => r.json())
     ]).then(([gameData, setsData]) => {
       setGame(gameData)
       setSets(setsData)
@@ -45,6 +75,7 @@ export default function SetsPage() {
     ? sets
     : sets.filter(s => s.set_type === activeTab)
 
+  const SET_TYPE_TABS = getTabsForGame(slug)
   const availableTabs = SET_TYPE_TABS.filter(tab =>
     tab.key === 'all' || sets.some(s => s.set_type === tab.key)
   )

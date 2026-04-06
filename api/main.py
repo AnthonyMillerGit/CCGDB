@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import psycopg2
 import psycopg2.extras
@@ -31,6 +32,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve card images and card backs from the project-level assets/ folder.
+# In production replace with S3 — just update ASSET_BASE_URL in .env and
+# the image URLs stored in the printings table; no code changes needed.
+_assets_dir = Path(__file__).resolve().parents[1] / 'assets'
+if _assets_dir.exists():
+    app.mount("/assets", StaticFiles(directory=str(_assets_dir)), name="assets")
 
 # Root endpoint
 @app.get("/")
