@@ -9,7 +9,6 @@ load_dotenv(Path(__file__).resolve().parents[2] / '.env')
 
 CARDS_URL = "https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/main/json/english/card.json"
 SETS_URL = "https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/main/json/english/set.json"
-IMAGE_BASE = "https://storage.googleapis.com/fabmaster/media/images"
 
 def get_db_connection():
     return psycopg2.connect(
@@ -151,14 +150,15 @@ def upsert_card(conn, game_id, card, sets_data, set_cache):
                 continue
 
             printing_id = printing.get("id", "")
-            image_url = f"{IMAGE_BASE}/{printing_id}.width-450.png" if printing_id else None
+            image_url = printing.get("image_url")
             artist = ", ".join(printing.get("artists", [])) if printing.get("artists") else None
             flavor_text = printing.get("flavor_text") or None
 
             cur.execute("""
                 INSERT INTO printings (card_id, set_id, rarity, image_url, flavor_text, collector_number, artist)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT DO NOTHING;
+                ON CONFLICT (card_id, set_id, collector_number) DO UPDATE
+                    SET image_url = EXCLUDED.image_url;
             """, (
                 card_id,
                 db_set_id,
