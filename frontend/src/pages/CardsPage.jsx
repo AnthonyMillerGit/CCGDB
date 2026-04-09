@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { API_URL } from '../config'
 
@@ -6,6 +6,8 @@ export default function CardsPage() {
   const { setId } = useParams()
   const [cards, setCards] = useState([])
   const [loading, setLoading] = useState(true)
+  const [hoveredCard, setHoveredCard] = useState(null)
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0, side: 'right' })
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -16,6 +18,28 @@ export default function CardsPage() {
         setLoading(false)
       })
   }, [setId])
+
+  const handleMouseEnter = (e, card) => {
+    if (!card.image_url) return
+    e.currentTarget.style.borderColor = '#08D9D6'
+    e.currentTarget.style.transform = 'scale(1.05)'
+
+    const rect = e.currentTarget.getBoundingClientRect()
+    const tooltipWidth = 360
+    const tooltipHeight = 500
+
+    setTooltipPos({
+      x: rect.left + rect.width / 2 - tooltipWidth / 2,
+      y: rect.top + rect.height / 2 - tooltipHeight / 2,
+    })
+    setHoveredCard(card)
+  }
+
+  const handleMouseLeave = (e) => {
+    e.currentTarget.style.borderColor = '#363d52'
+    e.currentTarget.style.transform = 'scale(1)'
+    setHoveredCard(null)
+  }
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
@@ -43,14 +67,8 @@ export default function CardsPage() {
             onClick={() => navigate(`/cards/${card.id}`)}
             className="rounded-xl overflow-hidden cursor-pointer transition-all duration-200 border"
             style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}
-            onMouseEnter={e => {
-              e.currentTarget.style.borderColor = '#08D9D6'
-              e.currentTarget.style.transform = 'scale(1.05)'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.borderColor = '#363d52'
-              e.currentTarget.style.transform = 'scale(1)'
-            }}
+            onMouseEnter={e => handleMouseEnter(e, card)}
+            onMouseLeave={handleMouseLeave}
           >
             {card.image_url ? (
               <img
@@ -71,6 +89,36 @@ export default function CardsPage() {
           </div>
         ))}
       </div>
+
+  {/* Hover magnification tooltip */}
+  {hoveredCard && hoveredCard.image_url && (
+          <div
+            className="fixed pointer-events-none z-50 rounded-xl overflow-hidden shadow-2xl"
+            style={{
+              left: Math.max(8, Math.min(tooltipPos.x, window.innerWidth - 368)),
+              top: Math.max(8, Math.min(tooltipPos.y, window.innerHeight - 508)),
+              width: 360,
+              border: '2px solid #08D9D6',
+              backgroundColor: '#2d3243',
+              transition: 'opacity 0.15s ease',
+              boxShadow: '0 0 40px rgba(8, 217, 214, 0.3)',
+            }}
+          >
+            <img
+              src={hoveredCard.image_url}
+              alt={hoveredCard.name}
+              className="w-full"
+            />
+            <div className="p-2">
+              <p className="text-sm font-semibold truncate" style={{ color: '#EAEAEA' }}>
+                {hoveredCard.name}
+              </p>
+              {hoveredCard.rarity && (
+                <p className="text-xs" style={{ color: '#08D9D6' }}>{hoveredCard.rarity}</p>
+              )}
+            </div>
+          </div>
+        )}
     </div>
   )
 }
