@@ -72,7 +72,7 @@ def fetch_cards_for_set(set_id):
             f"&fields%5B2%5D=number"
             f"&fields%5B3%5D=subtitle"
             f"&fields%5B4%5D=rarity"
-            f"&fields%5B5%5D=image.data.full_url"
+            f"&fields%5B5%5D=image.data.asset_url"
             f"&fields%5B6%5D=type"
             f"&filter%5Bset%5D%5Beq%5D={set_id}"
             f"&limit=4999&sort=number,type,name"
@@ -170,11 +170,13 @@ def upsert_card(conn, game_id, set_id, card, rarities):
                 return
             card_id = row[0]
 
-        # Get image URL
+        # Get image URL using asset_url endpoint
         image_url = None
         image_data = card.get("image")
         if image_data and isinstance(image_data, dict):
-            image_url = image_data.get("data", {}).get("full_url")
+            asset_url = image_data.get("data", {}).get("asset_url")
+            if asset_url:
+                image_url = f"https://api.ccgtrader.co.uk{asset_url}"
 
         collector_number = str(card.get("number", "")) if card.get("number") else None
 
@@ -203,7 +205,6 @@ def main():
         games = fetch_all_games()
         print(f"Found {len(games)} games on CCGTrader")
 
-        # Filter out games we already have
         games_to_process = [g for g in games if g["url_title"] not in SKIP_SLUGS]
         print(f"Processing {len(games_to_process)} new games (skipping {len(games) - len(games_to_process)} already ingested)")
 
@@ -229,7 +230,7 @@ def main():
                 print(f"  [{s_idx+1}/{len(sets)}] {ccg_set['name']}: {len(cards)} cards")
 
                 conn.commit()
-                time.sleep(1)  # be respectful to their servers
+                time.sleep(1)
 
             print(f"  Total: {total_cards} cards ingested")
 
