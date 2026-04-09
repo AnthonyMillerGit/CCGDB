@@ -94,13 +94,13 @@ def get_cards_for_set(set_id: int):
     try:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT DISTINCT ON (c.id)
+                SELECT DISTINCT ON (c.name)
                        c.id, c.name, c.card_type, c.rules_text,
                        p.collector_number, p.rarity, p.image_url, p.artist
                 FROM cards c
                 JOIN printings p ON p.card_id = c.id
                 WHERE p.set_id = %s
-                ORDER BY c.id, p.collector_number
+                ORDER BY c.name, p.image_url NULLS LAST, p.id
             """, (set_id,))
             return cur.fetchall()
     finally:
