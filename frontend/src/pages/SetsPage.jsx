@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { API_URL } from '../config'
 
-// MTG uses Scryfall set_type values; other games use their own taxonomy.
 const MTG_TABS = [
   { key: 'all', label: 'All' },
   { key: 'expansion', label: 'Expansions' },
@@ -42,8 +41,48 @@ function getTabsForGame(slug) {
   if (slug === 'startrek_1e') return STARTREK_1E_TABS
   if (slug === 'startrek_2e') return STARTREK_2E_TABS
   if (slug === 'seventhsea') return SEVENTHSEA_TABS
-  // Fallback: just All tab (other tabs will be added dynamically from data)
   return [{ key: 'all', label: 'All' }]
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return 'Unknown'
+  const d = new Date(dateStr)
+  if (isNaN(d)) return dateStr
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+function SetRow({ set, isLast, onClick }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div
+      onClick={onClick}
+      className="flex items-center justify-between px-5 py-4 cursor-pointer transition-all duration-150"
+      style={{
+        backgroundColor: hovered ? '#363d52' : '#2d3243',
+        borderBottom: isLast ? 'none' : '1px solid #363d52',
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div className="flex items-center gap-3">
+        {set.icon_url && (
+          <img src={set.icon_url} alt="" className="w-5 h-5 invert opacity-50" />
+        )}
+        <span className="font-medium" style={{ color: '#EAEAEA' }}>{set.name}</span>
+      </div>
+      <div className="flex items-center gap-6 shrink-0">
+        <span className="text-sm" style={{ color: '#8892a4' }}>
+          {formatDate(set.release_date)}
+        </span>
+        <span
+          className="text-sm transition-colors duration-150"
+          style={{ color: hovered ? '#08D9D6' : '#363d52' }}
+        >
+          →
+        </span>
+      </div>
+    </div>
+  )
 }
 
 export default function SetsPage() {
@@ -71,14 +110,16 @@ export default function SetsPage() {
     </div>
   )
 
-  const filteredSets = activeTab === 'all'
-    ? sets
-    : sets.filter(s => s.set_type === activeTab)
-
   const SET_TYPE_TABS = getTabsForGame(slug)
   const availableTabs = SET_TYPE_TABS.filter(tab =>
     tab.key === 'all' || sets.some(s => s.set_type === tab.key)
   )
+
+  const filteredSets = activeTab === 'all'
+    ? sets
+    : sets.filter(s => s.set_type === activeTab)
+
+  const showGrouped = activeTab === 'all' && availableTabs.length > 1
 
   return (
     <div>
@@ -89,69 +130,104 @@ export default function SetsPage() {
       >
         ← Back to Games
       </button>
+
       <h2 className="text-3xl font-bold mb-1" style={{ color: '#EAEAEA' }}>{game?.name}</h2>
-      <p className="mb-6" style={{ color: '#8892a4' }}>{filteredSets.length} sets</p>
+      <p className="mb-6" style={{ color: '#8892a4' }}>
+        {filteredSets.length} set{filteredSets.length !== 1 ? 's' : ''}
+      </p>
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-2 mb-8 pb-4" style={{ borderBottom: '1px solid #363d52' }}>
-        {availableTabs.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-            style={activeTab === tab.key
-              ? { backgroundColor: '#08D9D6', color: '#252A34' }
-              : { backgroundColor: '#2d3243', color: '#8892a4', border: '1px solid #363d52' }
-            }
-          >
-            {tab.label}
-            <span className="ml-2 text-xs opacity-60">
-              {tab.key === 'all' ? sets.length : sets.filter(s => s.set_type === tab.key).length}
-            </span>
-          </button>
-        ))}
-      </div>
+      {/* Filter row — only show if more than one tab available */}
+      {availableTabs.length > 1 && (
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-6 text-sm">
+          <span style={{ color: '#8892a4' }}>Show:</span>
+          {availableTabs.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className="transition-all duration-150 hover:opacity-100"
+              style={{
+                color: activeTab === tab.key ? '#08D9D6' : '#8892a4',
+                fontWeight: activeTab === tab.key ? '600' : '400',
+                textDecoration: activeTab === tab.key ? 'underline' : 'none',
+                textUnderlineOffset: '3px',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {/* Sets grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredSets.map(set => (
-          <div
-            key={set.id}
-            onClick={() => navigate(`/sets/${set.id}`)}
-            className="rounded-xl p-5 cursor-pointer transition-all duration-200 border"
-            style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}
-            onMouseEnter={e => {
-              e.currentTarget.style.borderColor = '#08D9D6'
-              e.currentTarget.style.backgroundColor = '#363d52'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.borderColor = '#363d52'
-              e.currentTarget.style.backgroundColor = '#2d3243'
-            }}
-          >
-            <div className="flex items-center gap-3 mb-1">
-              {set.icon_url && (
-                <img
-                  src={set.icon_url}
-                  alt={set.name}
-                  className="w-8 h-8 invert opacity-70"
-                />
-              )}
-              <h3 className="text-lg font-semibold" style={{ color: '#EAEAEA' }}>{set.name}</h3>
+      {/* Grouped view — when showing All for a game with categories */}
+      {showGrouped ? (
+        <div className="flex flex-col gap-6">
+          {availableTabs
+            .filter(tab => tab.key !== 'all')
+            .filter(tab => sets.some(s => s.set_type === tab.key))
+            .map(tab => (
+              <div key={tab.key}>
+                <p
+                  className="text-xs font-semibold uppercase tracking-widest mb-2"
+                  style={{ color: '#8892a4' }}
+                >
+                  {tab.label}
+                </p>
+                <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#363d52' }}>
+                  {sets
+                    .filter(s => s.set_type === tab.key)
+                    .map((set, index, arr) => (
+                      <SetRow
+                        key={set.id}
+                        set={set}
+                        isLast={index === arr.length - 1}
+                        onClick={() => navigate(`/sets/${set.id}`)}
+                      />
+                    ))}
+                </div>
+              </div>
+            ))}
+
+          {/* Sets with no matching type — show under Other */}
+          {sets.some(s => !availableTabs.find(t => t.key !== 'all' && t.key === s.set_type)) && (
+            <div>
+              <p
+                className="text-xs font-semibold uppercase tracking-widest mb-2"
+                style={{ color: '#8892a4' }}
+              >
+                Other
+              </p>
+              <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#363d52' }}>
+                {sets
+                  .filter(s => !availableTabs.find(t => t.key !== 'all' && t.key === s.set_type))
+                  .map((set, index, arr) => (
+                    <SetRow
+                      key={set.id}
+                      set={set}
+                      isLast={index === arr.length - 1}
+                      onClick={() => navigate(`/sets/${set.id}`)}
+                    />
+                  ))}
+              </div>
             </div>
-            <div className="mt-3">
-              <span className="text-sm" style={{ color: '#8892a4' }}>
-                Released: {set.release_date?.split('T')[0] ?? 'Unknown'}
-              </span>
-            </div>
-            <div className="mt-2">
-              <span className="text-sm font-medium" style={{ color: '#08D9D6' }}>
-                {set.total_cards} cards
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+          )}
+        </div>
+      ) : (
+        /* Flat list — filtered view or games with no categories */
+        <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#363d52' }}>
+          {filteredSets.map((set, index) => (
+            <SetRow
+              key={set.id}
+              set={set}
+              isLast={index === filteredSets.length - 1}
+              onClick={() => navigate(`/sets/${set.id}`)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
