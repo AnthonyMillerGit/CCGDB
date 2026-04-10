@@ -37,6 +37,12 @@ GAMES = [
         "endpoint": "union-arena",
         "description": "Union Arena Trading Card Game by Bandai"
     },
+    {
+    "slug": "hololive",
+    "name": "Hololive Official Card Game",
+    "endpoint": "hololive",
+    "description": "Hololive Official Card Game by Bushiroad"
+    },
 ]
 
 def get_db_connection():
