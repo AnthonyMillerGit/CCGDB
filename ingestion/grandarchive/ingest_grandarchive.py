@@ -10,6 +10,12 @@ load_dotenv(Path(__file__).resolve().parents[2] / '.env')
 
 BASE_URL = "https://api.gatcg.com"
 
+RARITY_MAP = {
+    0: "Common", 1: "Uncommon", 2: "Rare", 3: "Super Rare",
+    4: "Ultra Rare", 5: "Collector Rare", 6: "Promo",
+    7: "Legendary", 8: "Champion", 9: "Special"
+}
+
 def get_db_connection():
     return psycopg2.connect(
         host="localhost",
@@ -38,23 +44,18 @@ def fetch_all_sets():
     response = requests.get(f"{BASE_URL}/featured-sets")
     response.raise_for_status()
     featured = response.json()
-    sets = {}
+    sets = []
     for group in featured:
         for s in group.get("sets", []):
             if s.get("language") == "EN":
-                sets[s["prefix"]] = {
-                    "id": s["id"],
+                sets.append({
                     "name": s["name"],
                     "code": s["prefix"],
                     "release_date": s.get("release_date", "")[:10] if s.get("release_date") else None
-                }
+                })
     return sets
 
-def upsert_set(conn, game_id, set_data, set_cache):
-    code = set_data["code"]
-    if code in set_cache:
-        return set_cache[code]
-
+def upsert_set(conn, game_id, set_data):
     with conn.cursor() as cur:
         cur.execute("""
             INSERT INTO sets (game_id, name, code, release_date)
@@ -63,20 +64,60 @@ def upsert_set(conn, game_id, set_data, set_cache):
                 SET name = EXCLUDED.name,
                     release_date = EXCLUDED.release_date
             RETURNING id;
-        """, (game_id, set_data["name"], code, set_data["release_date"]))
+        """, (game_id, set_data["name"], set_data["code"], set_data["release_date"]))
         result = cur.fetchone()
         if result:
-            set_id = result[0]
+            return result[0]
+        cur.execute("SELECT id FROM sets WHERE code = %s AND game_id = %s",
+                   (set_data["code"], game_id))
+        row = cur.fetchone()
+        return row[0] if row else None
+
+def upsert_card(conn, game_id, set_id, card, prefix):
+    # Explicit prefix-to-slug-segment mapping for inconsistent cases
+    PREFIX_SLUG_MAP = {
+        "DOA 1st": ("doa1e", "contains"),
+        "ALC 1st": ("alc1e", "contains"),
+        "FTC 1st": ("ftc1e", "contains"),
+        "MRC 1st": ("mrc-csr", "contains"),
+        "AMB 1st": ("amb-csr", "contains"),
+        "HVN 1st": ("hvn1e", "contains"),
+        "DTR 1st": ("dtr1e", "contains"),
+        "PTM 1st": ("ptm1e", "contains"),
+        "RDO 1st": ("rdo1e", "contains"),
+    }
+
+    prefix_lower = prefix.lower()
+
+    if prefix in PREFIX_SLUG_MAP:
+        slug_segment, match_type = PREFIX_SLUG_MAP[prefix]
+    elif " alter" in prefix_lower:
+        base = prefix_lower.replace(" alter", "")
+        slug_segment = f"{base}-alter"
+        match_type = "endswith"
+    elif "1st" in prefix_lower:
+        base = prefix_lower.replace(" 1st", "")
+        slug_segment = f"{base}1e"
+        match_type = "contains"
+    else:
+        slug_segment = prefix_lower.replace(" ", "")
+        match_type = "endswith"
+
+    matching_edition = None
+    for edition in card.get("editions", []):
+        slug = edition.get("slug", "")
+        if match_type == "contains":
+            if f"-{slug_segment}" in slug:
+                matching_edition = edition
+                break
         else:
-            cur.execute("SELECT id FROM sets WHERE code = %s AND game_id = %s",
-                       (code, game_id))
-            row = cur.fetchone()
-            set_id = row[0] if row else None
+            if slug.endswith(f"-{slug_segment}"):
+                matching_edition = edition
+                break
 
-    set_cache[code] = set_id
-    return set_id
+    if not matching_edition:
+        return
 
-def upsert_card(conn, game_id, card, sets_data, set_cache):
     with conn.cursor() as cur:
         attributes = {
             "classes": card.get("classes"),
@@ -105,12 +146,8 @@ def upsert_card(conn, game_id, card, sets_data, set_cache):
                     attributes = EXCLUDED.attributes
             RETURNING id;
         """, (
-            game_id,
-            name,
-            rules_text,
-            card_type,
-            json.dumps(attributes),
-            str(external_id)
+            game_id, name, rules_text, card_type,
+            json.dumps(attributes), str(external_id)
         ))
         result = cur.fetchone()
         if result:
@@ -123,56 +160,47 @@ def upsert_card(conn, game_id, card, sets_data, set_cache):
                 return
             card_id = row[0]
 
-        # Process each edition as a printing
-        for edition in card.get("editions", []):
-            # Find the set by matching prefix from collector_number
-            collector_number = edition.get("collector_number", "")
-            slug = edition.get("slug", "")
+        image_path = matching_edition.get("image", "")
+        image_url = f"{BASE_URL}{image_path}" if image_path else None
+        rarity_id = matching_edition.get("rarity")
+        rarity = RARITY_MAP.get(rarity_id, str(rarity_id)) if rarity_id is not None else None
+        edition_slug = matching_edition.get("slug", "")
 
-            # Try to match set from the slug prefix
-            set_id = None
-            for prefix, set_info in sets_data.items():
-                if slug.startswith(prefix.lower().replace(" ", "-")):
-                    set_id = upsert_set(conn, game_id, set_info, set_cache)
-                    break
+        cur.execute("""
+            INSERT INTO printings (card_id, set_id, rarity, image_url,
+                                   flavor_text, collector_number, artist)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (card_id, set_id, collector_number) DO UPDATE
+                SET image_url = EXCLUDED.image_url,
+                    rarity = EXCLUDED.rarity;
+        """, (
+            card_id, set_id, rarity, image_url,
+            matching_edition.get("flavor"),
+            edition_slug,
+            matching_edition.get("illustrator")
+        ))
 
-            # Fall back to first available set
-            if not set_id and sets_data:
-                first_set = next(iter(sets_data.values()))
-                set_id = upsert_set(conn, game_id, first_set, set_cache)
-
-            if not set_id:
-                continue
-
-            image_path = edition.get("image", "")
-            image_url = f"{BASE_URL}{image_path}" if image_path else None
-
-            rarity_map = {
-                0: "Common", 1: "Uncommon", 2: "Rare", 3: "Super Rare",
-                4: "Ultra Rare", 5: "Collector Rare", 6: "Promo",
-                7: "Legendary", 8: "Champion", 9: "Special"
-            }
-            rarity_id = edition.get("rarity")
-            rarity = rarity_map.get(rarity_id, str(rarity_id)) if rarity_id is not None else None
-
-            edition_slug = edition.get("slug", "")
-
-            cur.execute("""
-                INSERT INTO printings (card_id, set_id, rarity, image_url,
-                                       flavor_text, collector_number, artist)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (card_id, set_id, collector_number) DO UPDATE
-                    SET image_url = EXCLUDED.image_url,
-                        rarity = EXCLUDED.rarity;
-            """, (
-                card_id,
-                set_id,
-                rarity,
-                image_url,
-                edition.get("flavor"),
-                edition_slug,
-                edition.get("illustrator")
-            ))
+def fetch_cards_for_prefix(prefix):
+    all_cards = []
+    page = 1
+    while True:
+        response = requests.get(
+            f"{BASE_URL}/cards/search",
+            params={"page": page, "results_per_page": 30, "prefix": prefix},
+            timeout=30
+        )
+        response.raise_for_status()
+        data = response.json()
+        cards = data.get("data", [])
+        if not cards:
+            break
+        all_cards.extend(cards)
+        total_pages = data.get("total_pages", 1)
+        if page >= total_pages:
+            break
+        page += 1
+        time.sleep(0.2)
+    return all_cards
 
 def main():
     print("Starting Grand Archive TCG ingestion...")
@@ -182,39 +210,29 @@ def main():
         game_id = upsert_game(conn)
         print(f"Game ID: {game_id}")
 
-        sets_data = fetch_all_sets()
-        print(f"Found {len(sets_data)} sets")
+        all_sets = fetch_all_sets()
+        print(f"Found {len(all_sets)} sets")
 
-        set_cache = {}
-        page = 1
         total_cards = 0
+        for i, set_data in enumerate(all_sets):
+            prefix = set_data["code"]
+            print(f"\n[{i+1}/{len(all_sets)}] {set_data['name']} ({prefix})")
 
-        while True:
-            print(f"Fetching page {page}...")
-            response = requests.get(
-                f"{BASE_URL}/cards/search",
-                params={"page": page, "results_per_page": 30},
-                timeout=30
-            )
-            response.raise_for_status()
-            data = response.json()
-            cards = data.get("data", [])
+            set_id = upsert_set(conn, game_id, set_data)
+            if not set_id:
+                print(f"  Skipping — could not create set")
+                continue
 
-            if not cards:
-                break
+            cards = fetch_cards_for_prefix(prefix)
+            print(f"  Fetched {len(cards)} cards")
 
             for card in cards:
-                upsert_card(conn, game_id, card, sets_data, set_cache)
+                upsert_card(conn, game_id, set_id, card, prefix)
 
             total_cards += len(cards)
             conn.commit()
-            print(f"  Page {page}/{data.get('total_pages', '?')} — {total_cards} cards processed")
-
-            if page >= data.get("total_pages", 1):
-                break
-
-            page += 1
-            time.sleep(0.3)
+            print(f"  Done — {len(cards)} cards committed")
+            time.sleep(0.5)
 
     except Exception as e:
         conn.rollback()
@@ -223,7 +241,7 @@ def main():
     finally:
         conn.close()
 
-    print(f"\nGrand Archive ingestion complete! {total_cards} cards")
+    print(f"\nGrand Archive ingestion complete! {total_cards} total card-set entries")
 
 if __name__ == "__main__":
     main()
