@@ -8,7 +8,7 @@ from urllib.parse import urlparse, urlencode
 
 load_dotenv(Path(__file__).resolve().parents[2] / '.env')
 
-ASSETS_DIR = Path(__file__).resolve().parents[3] / 'assets' / 'cards'
+ASSETS_DIR = Path(__file__).resolve().parents[2] / 'assets' / 'cards'
 HEADERS = {
     'Referer': 'https://www.ccgtrader.net',
 }

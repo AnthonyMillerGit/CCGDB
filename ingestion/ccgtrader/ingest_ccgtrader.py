@@ -205,16 +205,25 @@ def main():
         games = fetch_all_games()
         print(f"Found {len(games)} games on CCGTrader")
 
-        games_to_process = [g for g in games if g["url_title"] not in SKIP_SLUGS]
-        print(f"Processing {len(games_to_process)} new games (skipping {len(games) - len(games_to_process)} already ingested)")
+        TARGET_SLUGS = set()  # Set to empty set to process all
+        if TARGET_SLUGS:
+            games_to_process = [g for g in games if g["url_title"] in TARGET_SLUGS]
+        else:
+            games_to_process = [g for g in games if g["url_title"] not in SKIP_SLUGS]
+        print(f"Processing {len(games_to_process)} games")
 
         for g_idx, game in enumerate(games_to_process):
             print(f"\n[{g_idx+1}/{len(games_to_process)}] {game['name']}")
 
             game_id = upsert_game(conn, game)
 
-            sets = fetch_sets_for_series(game["id"])
-            print(f"  Found {len(sets)} sets")
+            # Fetch series for this game first
+            series_response = requests.get(f"{BASE_URL}/series?filter%5Bgame%5D%5Beq%5D={game['id']}&limit=100")
+            series_list = series_response.json().get("data", [])
+            sets = []
+            for series in series_list:
+                sets.extend(fetch_sets_for_series(series["id"]))
+            print(f"  Found {len(sets)} sets across {len(series_list)} series")
 
             total_cards = 0
             for s_idx, ccg_set in enumerate(sets):
