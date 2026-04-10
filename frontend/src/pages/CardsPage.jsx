@@ -5,18 +5,21 @@ import { API_URL } from '../config'
 export default function CardsPage() {
   const { setId } = useParams()
   const [cards, setCards] = useState([])
+  const [setInfo, setSetInfo] = useState(null)
   const [loading, setLoading] = useState(true)
   const [hoveredCard, setHoveredCard] = useState(null)
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0, side: 'right' })
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 })
   const navigate = useNavigate()
 
   useEffect(() => {
-    fetch(`${API_URL}/api/sets/${setId}/cards`)
-      .then(r => r.json())
-      .then(data => {
-        setCards(data)
-        setLoading(false)
-      })
+    Promise.all([
+      fetch(`${API_URL}/api/sets/${setId}`).then(r => r.json()),
+      fetch(`${API_URL}/api/sets/${setId}/cards`).then(r => r.json()),
+    ]).then(([setData, cardsData]) => {
+      setSetInfo(setData)
+      setCards(cardsData)
+      setLoading(false)
+    })
   }, [setId])
 
   const handleMouseEnter = (e, card) => {
@@ -57,8 +60,27 @@ export default function CardsPage() {
         ← Back to Sets
       </button>
 
-      <h2 className="text-3xl font-bold mb-1" style={{ color: '#EAEAEA' }}>Cards</h2>
-      <p className="mb-8" style={{ color: '#8892a4' }}>{cards.length} cards in this set</p>
+      {/* Game + Set header */}
+      {setInfo && (
+        <div className="mb-8">
+          <p
+            className="text-sm font-medium mb-1 cursor-pointer hover:opacity-80 transition-opacity"
+            style={{ color: '#08D9D6' }}
+            onClick={() => navigate(`/games/${setInfo.game_slug}`)}
+          >
+            {setInfo.game_name}
+          </p>
+          <h2 className="text-3xl font-bold mb-1" style={{ color: '#EAEAEA' }}>
+            {setInfo.name}
+          </h2>
+          <p style={{ color: '#8892a4' }}>
+            {cards.length} cards
+            {setInfo.release_date && (
+              <span> · {new Date(setInfo.release_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            )}
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {cards.map(card => (
@@ -90,35 +112,35 @@ export default function CardsPage() {
         ))}
       </div>
 
-  {/* Hover magnification tooltip */}
-  {hoveredCard && hoveredCard.image_url && (
-          <div
-            className="fixed pointer-events-none z-50 rounded-xl overflow-hidden shadow-2xl"
-            style={{
-              left: Math.max(8, Math.min(tooltipPos.x, window.innerWidth - 368)),
-              top: Math.max(8, Math.min(tooltipPos.y, window.innerHeight - 508)),
-              width: 360,
-              border: '2px solid #08D9D6',
-              backgroundColor: '#2d3243',
-              transition: 'opacity 0.15s ease',
-              boxShadow: '0 0 40px rgba(8, 217, 214, 0.3)',
-            }}
-          >
-            <img
-              src={hoveredCard.image_url}
-              alt={hoveredCard.name}
-              className="w-full"
-            />
-            <div className="p-2">
-              <p className="text-sm font-semibold truncate" style={{ color: '#EAEAEA' }}>
-                {hoveredCard.name}
-              </p>
-              {hoveredCard.rarity && (
-                <p className="text-xs" style={{ color: '#08D9D6' }}>{hoveredCard.rarity}</p>
-              )}
-            </div>
+      {/* Hover magnification tooltip */}
+      {hoveredCard && hoveredCard.image_url && (
+        <div
+          className="fixed pointer-events-none z-50 rounded-xl overflow-hidden shadow-2xl"
+          style={{
+            left: Math.max(8, Math.min(tooltipPos.x, window.innerWidth - 368)),
+            top: Math.max(8, Math.min(tooltipPos.y, window.innerHeight - 508)),
+            width: 360,
+            border: '2px solid #08D9D6',
+            backgroundColor: '#2d3243',
+            transition: 'opacity 0.15s ease',
+            boxShadow: '0 0 40px rgba(8, 217, 214, 0.3)',
+          }}
+        >
+          <img
+            src={hoveredCard.image_url}
+            alt={hoveredCard.name}
+            className="w-full"
+          />
+          <div className="p-2">
+            <p className="text-sm font-semibold truncate" style={{ color: '#EAEAEA' }}>
+              {hoveredCard.name}
+            </p>
+            {hoveredCard.rarity && (
+              <p className="text-xs" style={{ color: '#08D9D6' }}>{hoveredCard.rarity}</p>
+            )}
           </div>
-        )}
+        </div>
+      )}
     </div>
   )
 }

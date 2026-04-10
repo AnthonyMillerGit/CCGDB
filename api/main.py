@@ -213,3 +213,23 @@ def search_suggestions(q: str, limit: int = 8):
             return cur.fetchall()
     finally:
         conn.close()
+
+# Get a single set by ID
+@app.get("/api/sets/{set_id}")
+def get_set(set_id: int):
+    conn = get_db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT s.id, s.name, s.code, s.release_date,
+                       g.name AS game_name, g.slug AS game_slug
+                FROM sets s
+                JOIN games g ON g.id = s.game_id
+                WHERE s.id = %s
+            """, (set_id,))
+            set_data = cur.fetchone()
+            if not set_data:
+                raise HTTPException(status_code=404, detail="Set not found")
+            return set_data
+    finally:
+        conn.close()
