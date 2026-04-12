@@ -6,9 +6,9 @@ const GAME_COLORS = {
   mtg: '#08D9D6',
   pokemon: '#FFCC00',
   yugioh: '#8844FF',
-  startrek_1e: '#4B9CD3',  // Starfleet blue
-  startrek_2e: '#C0A060',  // gold/amber — 2E used a gold card frame
-  seventhsea:  '#C84820',  // deep crimson — pirate flags, red sails
+  startrek_1e: '#4B9CD3',
+  startrek_2e: '#C0A060',
+  seventhsea: '#C84820',
 }
 
 export default function SearchBar() {
@@ -28,7 +28,6 @@ export default function SearchBar() {
       return
     }
 
-    // Debounce the search
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       setLoading(true)
@@ -67,7 +66,7 @@ export default function SearchBar() {
   }
 
   return (
-    <div className="relative" style={{ width: '320px' }}>
+    <div className="relative" style={{ width: '420px' }}>
       <div className="relative">
         <input
           ref={inputRef}
@@ -105,22 +104,48 @@ export default function SearchBar() {
             <div
               key={`${card.id}-${card.game_slug}`}
               onClick={() => handleSelect(card)}
-              className="px-4 py-2 cursor-pointer flex items-center justify-between"
+              className="px-3 py-2 cursor-pointer flex items-center gap-3"
               style={{
                 backgroundColor: i === activeIndex ? '#363d52' : 'transparent',
               }}
               onMouseEnter={() => setActiveIndex(i)}
             >
-              <div>
-                <p className="text-sm font-medium" style={{ color: '#EAEAEA' }}>
+              {/* Card thumbnail */}
+              <div
+                className="rounded overflow-hidden flex-shrink-0"
+                style={{
+                  width: '36px',
+                  height: '50px',
+                  backgroundColor: '#1a1f2e',
+                  border: '1px solid #363d52',
+                }}
+              >
+                {card.image_url ? (
+                  <img
+                    src={card.image_url}
+                    alt={card.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span style={{ color: '#363d52', fontSize: '16px' }}>🃏</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Card info */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate" style={{ color: '#EAEAEA' }}>
                   {card.name}
                 </p>
-                <p className="text-xs" style={{ color: '#8892a4' }}>
-                  {card.card_type}
+                <p className="text-xs truncate" style={{ color: '#8892a4' }}>
+                  {card.card_type || card.game}
                 </p>
               </div>
+
+              {/* Game badge */}
               <span
-                className="text-xs font-bold px-2 py-0.5 rounded"
+                className="text-xs font-bold px-2 py-0.5 rounded flex-shrink-0"
                 style={{
                   backgroundColor: '#1a1f2e',
                   color: GAME_COLORS[card.game_slug] || '#8892a4'

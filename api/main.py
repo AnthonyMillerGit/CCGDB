@@ -203,11 +203,13 @@ def search_suggestions(q: str, limit: int = 8):
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT DISTINCT ON (c.name, g.slug)
-                    c.id, c.name, c.card_type, g.name AS game, g.slug AS game_slug
+                    c.id, c.name, c.card_type, g.name AS game, g.slug AS game_slug,
+                    p.image_url
                 FROM cards c
                 JOIN games g ON g.id = c.game_id
+                JOIN printings p ON p.card_id = c.id
                 WHERE c.name ILIKE %s
-                ORDER BY c.name, g.slug, c.id
+                ORDER BY c.name, g.slug, p.image_url NULLS LAST, c.id
                 LIMIT %s
             """, (f"%{q}%", limit))
             return cur.fetchall()
