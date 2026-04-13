@@ -163,7 +163,7 @@ def upsert_card(conn, game_id, card, title_name, set_cache):
     else:
         set_code = card_number[:10]
 
-    set_id = upsert_set(conn, game_id, set_code, title_name, set_cache)
+    set_id = upsert_set(conn, game_id, set_code, set_code, set_cache)
 
     # card_kind: 1=Character, 2=Event, 3=Climax
     kind_map = {1: "Character", 2: "Event", 3: "Climax"}
