@@ -1,0 +1,64 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { API_URL } from '../config'
+
+export default function ForgotPasswordPage() {
+  const [email, setEmail] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setLoading(true)
+    await fetch(`${API_URL}/api/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
+    setSubmitted(true)
+    setLoading(false)
+  }
+
+  if (submitted) {
+    return (
+      <div className="max-w-md mx-auto mt-16 text-center">
+        <h2 className="text-2xl font-bold mb-4" style={{ color: '#08D9D6' }}>Check your email</h2>
+        <p className="text-gray-400 mb-6">
+          If <strong style={{ color: '#EAEAEA' }}>{email}</strong> is registered, you'll receive a password reset link shortly.
+        </p>
+        <Link to="/login" style={{ color: '#08D9D6' }} className="text-sm">← Back to login</Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-md mx-auto mt-16">
+      <h2 className="text-2xl font-bold mb-2" style={{ color: '#08D9D6' }}>Forgot password</h2>
+      <p className="text-gray-400 text-sm mb-6">Enter your email and we'll send you a reset link.</p>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div>
+          <label className="block text-sm mb-1 text-gray-400">Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            className="w-full px-3 py-2 rounded text-white"
+            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="py-2 rounded font-semibold disabled:opacity-50"
+          style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
+        >
+          {loading ? 'Sending…' : 'Send Reset Link'}
+        </button>
+      </form>
+      <p className="mt-4 text-sm">
+        <Link to="/login" style={{ color: '#08D9D6' }}>← Back to login</Link>
+      </p>
+    </div>
+  )
+}
