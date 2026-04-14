@@ -59,7 +59,7 @@ func loadConfig() *Config {
 		JWTSecret:             getEnv("JWT_SECRET", "change-me"),
 		AccessTokenExpireDays: expireDays,
 
-		AppName:        getEnv("APP_NAME", "CardVault"),
+		AppName:        getEnv("APP_NAME", "CCGVault"),
 		AppURL:         getEnv("APP_URL", "http://localhost:5173"),
 		AllowedOrigins: getEnv("ALLOWED_ORIGINS", "http://localhost:5173"),
 		Port:           getEnv("PORT", "8000"),

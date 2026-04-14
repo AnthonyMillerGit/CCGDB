@@ -26,7 +26,7 @@ function Header() {
         style={{ color: '#08D9D6' }}
         onClick={() => navigate('/')}
       >
-        CardVault
+        CCGVault
       </h1>
       <div className="flex items-center gap-4">
         <SearchBar />
