@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import PokemonCardInfo from '../components/card-templates/PokemonCardInfo'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
+import { RARITY_COLORS } from '../theme'
 
 function ManaCost({ cost }) {
   if (!cost) return null
@@ -44,14 +45,6 @@ function LegalityBadge({ format, status }) {
       <p className="text-sm font-medium">{labels[status] ?? status}</p>
     </div>
   )
-}
-
-const RARITY_COLORS = {
-  common: '#8892a4',
-  uncommon: '#a8c4bc',
-  rare: '#d4af37',
-  mythic: '#e8632a',
-  special: '#9b59b6',
 }
 
 export default function CardDetailPage() {

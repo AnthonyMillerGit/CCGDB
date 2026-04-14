@@ -1,15 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { API_URL } from '../config'
-
-const GAME_COLORS = {
-  mtg: '#08D9D6',
-  pokemon: '#FFCC00',
-  yugioh: '#8844FF',
-  startrek_1e: '#4B9CD3',
-  startrek_2e: '#C0A060',
-  seventhsea: '#C84820',
-}
+import { GAME_COLORS } from '../theme'
 
 export default function SearchBar() {
   const [query, setQuery] = useState('')

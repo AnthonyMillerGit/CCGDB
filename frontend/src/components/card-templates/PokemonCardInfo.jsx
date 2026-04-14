@@ -1,18 +1,5 @@
 import { EnergySymbol, EnergyCost } from '../PokemonEnergy'
-
-const TYPE_COLORS = {
-  Fire:      '#FF4422',
-  Water:     '#4488FF',
-  Grass:     '#44AA44',
-  Lightning: '#FFCC00',
-  Psychic:   '#FF44AA',
-  Fighting:  '#CC7722',
-  Darkness:  '#442288',
-  Metal:     '#AAAAAA',
-  Fairy:     '#FF88CC',
-  Dragon:    '#7766EE',
-  Colorless: '#888888',
-}
+import { TYPE_COLORS } from '../../theme'
 
 function PokemonStats({ attrs }) {
   return (
