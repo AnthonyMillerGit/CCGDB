@@ -1,14 +1,12 @@
 import requests
-import psycopg2
 import json
-import os
 import time
 import re
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import upsert_game, ingestion_db
 from bs4 import BeautifulSoup
-
-load_dotenv(Path(__file__).resolve().parents[2] / '.env')
 
 CGC_BASE = "https://www.cardgamecollector.com"
 CGC_IMG  = "https://cgc.chakra42.net/images/metazoo"
@@ -30,29 +28,6 @@ CGC_SETS = {
 # DB helpers
 # ---------------------------------------------------------------------------
 
-def get_db_connection():
-    load_dotenv(Path(__file__).resolve().parents[2] / '.env')
-    return psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD")
-    )
-
-
-def upsert_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO games (name, slug, description)
-            VALUES ('MetaZoo', 'metazoo', 'MetaZoo CCG — cryptid and folklore-based card game')
-            ON CONFLICT (slug) DO NOTHING
-            RETURNING id;
-        """)
-        result = cur.fetchone()
-        if result:
-            return result[0]
-        cur.execute("SELECT id FROM games WHERE slug = 'metazoo'")
-        return cur.fetchone()[0]
 
 
 def upsert_set(conn, game_id, set_code, name, release_date):
@@ -209,11 +184,11 @@ def main():
     print("MetaZoo Ingestion (cardgamecollector.com source)")
     print("=" * 60)
 
-    conn = get_db_connection()
     total = 0
 
-    try:
-        game_id = upsert_game(conn)
+    with ingestion_db() as conn:
+        game_id = upsert_game(conn, 'MetaZoo', 'metazoo',
+                              'MetaZoo CCG — cryptid and folklore-based card game')
         print(f"Game ID: {game_id}\n")
 
         for set_code, (name, release_date, path, img_folder, img_prefix) in CGC_SETS.items():
@@ -231,13 +206,6 @@ def main():
             time.sleep(0.5)
 
         print(f"Total cards processed: {total}")
-
-    except Exception as e:
-        conn.rollback()
-        print(f"\nError: {e}")
-        raise
-    finally:
-        conn.close()
 
     print("\nMetaZoo ingestion complete!")
 

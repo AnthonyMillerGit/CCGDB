@@ -1,27 +1,18 @@
 import requests
-import psycopg2
 import json
-import os
 import time
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import upsert_game, ingestion_db
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-
-load_dotenv(Path(__file__).resolve().parents[2] / '.env')
 
 DECKLOG_BASE = "https://decklog-en.bushiroad.com"
 IMAGE_BASE = "https://en.cf-vanguard.com/wordpress/wp-content/images/cardlist"
 GAME_ID_DECKLOG = 1  # Vanguard is game 1 on decklog
 
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD")
-    )
 
 def get_session_cookie():
     print("Getting fresh session cookie via Selenium...")
@@ -88,20 +79,6 @@ def search_cards(cookie, clan="", nation="", page=1):
     data = response.json()
     return data if isinstance(data, list) else []
 
-def upsert_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO games (name, slug, description)
-            VALUES ('Cardfight!! Vanguard', 'vanguard',
-                    'Cardfight!! Vanguard Trading Card Game by Bushiroad')
-            ON CONFLICT (slug) DO NOTHING
-            RETURNING id;
-        """)
-        result = cur.fetchone()
-        if result:
-            return result[0]
-        cur.execute("SELECT id FROM games WHERE slug = 'vanguard'")
-        return cur.fetchone()[0]
 
 def upsert_set(conn, game_id, set_code, set_name, set_cache):
     if set_code in set_cache:
@@ -216,9 +193,7 @@ def fetch_all_cards_for_filter(cookie, clan="", nation="", label=""):
 
 def main():
     print("Starting Cardfight!! Vanguard ingestion...")
-    conn = get_db_connection()
-
-    try:
+    with ingestion_db() as conn:
         cookie = get_session_cookie()
         params = get_card_params(cookie)
 
@@ -227,7 +202,8 @@ def main():
 
         print(f"Found {len(clans)} clans, {len(nations)} nations")
 
-        game_id = upsert_game(conn)
+        game_id = upsert_game(conn, 'Cardfight!! Vanguard', 'vanguard',
+                              'Cardfight!! Vanguard Trading Card Game by Bushiroad')
         print(f"Game ID: {game_id}")
 
         set_cache = {}
@@ -268,13 +244,6 @@ def main():
             time.sleep(0.5)
 
         print(f"\nVanguard ingestion complete! {total} unique cards")
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error: {e}")
-        raise
-    finally:
-        conn.close()
 
 if __name__ == "__main__":
     main()

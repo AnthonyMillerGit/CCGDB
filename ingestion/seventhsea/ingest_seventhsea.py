@@ -18,9 +18,11 @@ Setup:
 
 import json
 import os
+import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import upsert_game, ingestion_db
 from dotenv import load_dotenv
-import psycopg2
 
 # ── odfpy for reading .ods files ──────────────────────────────────────────────
 try:
@@ -134,24 +136,6 @@ def _col(vals, idx):
 # Database helpers
 # ============================================================
 
-def get_or_create_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("SELECT id FROM games WHERE slug = 'seventhsea'")
-        row = cur.fetchone()
-        if row:
-            return row[0]
-        cur.execute("""
-            INSERT INTO games (name, slug, description, card_back_image)
-            VALUES (%s, %s, %s, %s)
-            RETURNING id
-        """, (
-            '7th Sea CCG',
-            'seventhsea',
-            '7th Sea Collectible Card Game (1999–2002) by Alderac Entertainment Group, '
-            'set in the swashbuckling world of Théah.  Continued by community fans.',
-            '/card-backs/seventhsea.jpg',
-        ))
-        return cur.fetchone()[0]
 
 
 def upsert_set(conn, game_id, code, name, release_date, set_type):
@@ -299,15 +283,11 @@ def main():
             'Copy the 8 spreadsheets from the OCTGN plugin into that folder first.'
         )
 
-    conn = psycopg2.connect(
-        host='localhost',
-        database=os.getenv('POSTGRES_DB'),
-        user=os.getenv('POSTGRES_USER'),
-        password=os.getenv('POSTGRES_PASSWORD'),
-    )
-
-    try:
-        game_id = get_or_create_game(conn)
+    with ingestion_db() as conn:
+        game_id = upsert_game(conn, '7th Sea CCG', 'seventhsea',
+                              '7th Sea Collectible Card Game (1999–2002) by Alderac Entertainment Group, '
+                              'set in the swashbuckling world of Théah.  Continued by community fans.',
+                              card_back_image='/card-backs/seventhsea.jpg')
         conn.commit()
         print(f'7th Sea CCG game_id: {game_id}')
 
@@ -319,12 +299,6 @@ def main():
         print('\nIngestion complete!')
         print(f'Sets processed: {list(set_cache.keys())}')
 
-    except Exception as e:
-        conn.rollback()
-        print(f'Error: {e}')
-        raise
-    finally:
-        conn.close()
 
 
 if __name__ == '__main__':

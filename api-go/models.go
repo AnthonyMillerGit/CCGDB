@@ -1,0 +1,239 @@
+package main
+
+import (
+	"encoding/json"
+	"time"
+)
+
+// ── Games ─────────────────────────────────────────────────────────────────────
+
+type Game struct {
+	ID            int     `json:"id"`
+	Name          string  `json:"name"`
+	Slug          string  `json:"slug"`
+	Description   string  `json:"description"`
+	CardBackImage *string `json:"card_back_image"`
+}
+
+// ── Sets ──────────────────────────────────────────────────────────────────────
+
+type SetSummary struct {
+	ID          int     `json:"id"`
+	Name        string  `json:"name"`
+	Code        string  `json:"code"`
+	ReleaseDate *string `json:"release_date"`
+	TotalCards  *int    `json:"total_cards"`
+	IconURL     *string `json:"icon_url"`
+	SetType     *string `json:"set_type"`
+}
+
+type SetDetail struct {
+	ID          int     `json:"id"`
+	Name        string  `json:"name"`
+	Code        string  `json:"code"`
+	ReleaseDate *string `json:"release_date"`
+	GameName    string  `json:"game_name"`
+	GameSlug    string  `json:"game_slug"`
+}
+
+type SetCard struct {
+	ID              int     `json:"id"`
+	Name            string  `json:"name"`
+	CardType        string  `json:"card_type"`
+	RulesText       *string `json:"rules_text"`
+	PrintingID      int     `json:"printing_id"`
+	CollectorNumber *string `json:"collector_number"`
+	Rarity          *string `json:"rarity"`
+	ImageURL        *string `json:"image_url"`
+	Artist          *string `json:"artist"`
+}
+
+// ── Cards ─────────────────────────────────────────────────────────────────────
+
+type CardSummary struct {
+	ID       int     `json:"id"`
+	Name     string  `json:"name"`
+	CardType string  `json:"card_type"`
+	RulesText *string `json:"rules_text"`
+	Game     string  `json:"game"`
+	GameName string  `json:"game_name"`
+	ImageURL *string `json:"image_url"`
+}
+
+type Printing struct {
+	ID              int     `json:"id"`
+	CollectorNumber *string `json:"collector_number"`
+	Rarity          *string `json:"rarity"`
+	ImageURL        *string `json:"image_url"`
+	BackImageURL    *string `json:"back_image_url"`
+	Artist          *string `json:"artist"`
+	FlavorText      *string `json:"flavor_text"`
+	SetID           int     `json:"set_id"`
+	SetName         string  `json:"set_name"`
+	SetCode         string  `json:"set_code"`
+	ReleaseDate     *string `json:"release_date"`
+}
+
+type CardDetail struct {
+	ID         int             `json:"id"`
+	Name       string          `json:"name"`
+	CardType   string          `json:"card_type"`
+	RulesText  *string         `json:"rules_text"`
+	Attributes json.RawMessage `json:"attributes"`
+	GameID     int             `json:"game_id"`
+	Game       string          `json:"game"`
+	GameSlug   string          `json:"game_slug"`
+	Printings  []Printing      `json:"printings"`
+}
+
+type PrintingDetail struct {
+	ID              int             `json:"id"`
+	CollectorNumber *string         `json:"collector_number"`
+	Rarity          *string         `json:"rarity"`
+	ImageURL        *string         `json:"image_url"`
+	BackImageURL    *string         `json:"back_image_url"`
+	Artist          *string         `json:"artist"`
+	FlavorText      *string         `json:"flavor_text"`
+	SetName         string          `json:"set_name"`
+	SetCode         string          `json:"set_code"`
+	ReleaseDate     *string         `json:"release_date"`
+	CardID          int             `json:"card_id"`
+	CardName        string          `json:"card_name"`
+	CardType        string          `json:"card_type"`
+	RulesText       *string         `json:"rules_text"`
+	Attributes      json.RawMessage `json:"attributes"`
+	Game            string          `json:"game"`
+	GameSlug        string          `json:"game_slug"`
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+
+type User struct {
+	ID         int       `json:"id"`
+	Username   string    `json:"username"`
+	Email      string    `json:"email"`
+	IsVerified bool      `json:"is_verified"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+type AuthResponse struct {
+	Token string `json:"token"`
+	User  User   `json:"user"`
+}
+
+type RegisterRequest struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type ForgotPasswordRequest struct {
+	Email string `json:"email"`
+}
+
+type ResetPasswordRequest struct {
+	Token    string `json:"token"`
+	Password string `json:"password"`
+}
+
+// ── Collection ────────────────────────────────────────────────────────────────
+
+type CollectionCard struct {
+	ID              int       `json:"id"`
+	PrintingID      int       `json:"printing_id"`
+	Quantity        int       `json:"quantity"`
+	AddedAt         time.Time `json:"added_at"`
+	ImageURL        *string   `json:"image_url"`
+	Rarity          *string   `json:"rarity"`
+	CollectorNumber *string   `json:"collector_number"`
+	CardID          int       `json:"card_id"`
+	CardName        string    `json:"card_name"`
+	SetID           int       `json:"set_id"`
+	SetName         string    `json:"set_name"`
+}
+
+type CollectionGroup struct {
+	GameID   int              `json:"game_id"`
+	GameName string           `json:"game_name"`
+	GameSlug string           `json:"game_slug"`
+	Cards    []CollectionCard `json:"cards"`
+}
+
+type CollectionItem struct {
+	ID         int       `json:"id"`
+	PrintingID int       `json:"printing_id"`
+	Quantity   int       `json:"quantity"`
+	AddedAt    time.Time `json:"added_at"`
+}
+
+type CollectionAddRequest struct {
+	PrintingID int `json:"printing_id"`
+	Quantity   int `json:"quantity"`
+}
+
+type CollectionUpdateRequest struct {
+	Quantity int `json:"quantity"`
+}
+
+// ── Decks ─────────────────────────────────────────────────────────────────────
+
+type DeckSummary struct {
+	ID          int       `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	GameID      int       `json:"game_id"`
+	GameName    string    `json:"game_name"`
+	GameSlug    string    `json:"game_slug"`
+	CardCount   int       `json:"card_count"`
+	TotalCards  int       `json:"total_cards"`
+}
+
+type DeckCard struct {
+	ID         int             `json:"id"`
+	CardID     int             `json:"card_id"`
+	Quantity   int             `json:"quantity"`
+	CardName   string          `json:"card_name"`
+	CardType   string          `json:"card_type"`
+	Attributes json.RawMessage `json:"attributes"`
+	GameName   string          `json:"game_name"`
+	GameSlug   string          `json:"game_slug"`
+	ImageURL   *string         `json:"image_url"`
+}
+
+type DeckDetail struct {
+	ID          int        `json:"id"`
+	Name        string     `json:"name"`
+	Description string     `json:"description"`
+	UserID      int        `json:"user_id"`
+	GameID      int        `json:"game_id"`
+	GameName    string     `json:"game_name"`
+	GameSlug    string     `json:"game_slug"`
+	Cards       []DeckCard `json:"cards"`
+}
+
+type CreateDeckRequest struct {
+	GameID      int    `json:"game_id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+type UpdateDeckRequest struct {
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+}
+
+type DeckCardRequest struct {
+	CardID   int `json:"card_id"`
+	Quantity int `json:"quantity"`
+}
+
+type DeckCardUpdateRequest struct {
+	Quantity int `json:"quantity"`
+}

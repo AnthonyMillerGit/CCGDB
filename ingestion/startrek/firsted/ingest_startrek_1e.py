@@ -1,11 +1,9 @@
 import csv
-import psycopg2
 import json
-import os
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).resolve().parents[3] / '.env')
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from common import upsert_game, ingestion_db
 
 # ============================================================
 # Source data — cloned from lackeyccg-stccg/startrek1e
@@ -169,32 +167,6 @@ COL_NAMES        = 'Names'
 COL_TEXT         = 'Text'
 
 
-def get_db_connection():
-    return psycopg2.connect(
-        host='localhost',
-        database=os.getenv('POSTGRES_DB'),
-        user=os.getenv('POSTGRES_USER'),
-        password=os.getenv('POSTGRES_PASSWORD'),
-    )
-
-
-def upsert_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO games (name, slug, description)
-            VALUES (
-                'Star Trek CCG (First Edition)',
-                'startrek_1e',
-                'Star Trek: The Next Generation Customizable Card Game First Edition by Decipher Inc.'
-            )
-            ON CONFLICT (slug) DO NOTHING
-            RETURNING id;
-        """)
-        result = cur.fetchone()
-        if result:
-            return result[0]
-        cur.execute("SELECT id FROM games WHERE slug = 'startrek_1e'")
-        return cur.fetchone()[0]
 
 
 def get_set_display_info(release_raw):
@@ -380,10 +352,9 @@ def process_file(conn, game_id, filepath, is_virtual, set_cache):
 
 def main():
     print('Starting Star Trek CCG First Edition ingestion...')
-    conn = get_db_connection()
-
-    try:
-        game_id = upsert_game(conn)
+    with ingestion_db() as conn:
+        game_id = upsert_game(conn, 'Star Trek CCG (First Edition)', 'startrek_1e',
+                              'Star Trek: The Next Generation Customizable Card Game First Edition by Decipher Inc.')
         print(f'Game ID for Star Trek 1E: {game_id}')
 
         set_cache = {}  # set_code → set_id, shared across both files
@@ -393,13 +364,6 @@ def main():
         total += process_file(conn, game_id, VIRTUAL_FILE,  is_virtual=True,  set_cache=set_cache)
 
         print(f'\nStar Trek CCG 1E ingestion complete — {total} total cards across {len(set_cache)} sets.')
-
-    except Exception as e:
-        conn.rollback()
-        print(f'Error: {e}')
-        raise
-    finally:
-        conn.close()
 
 
 if __name__ == '__main__':

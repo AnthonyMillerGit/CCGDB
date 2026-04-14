@@ -1,34 +1,9 @@
 import requests
-import psycopg2
 import json
-import os
-from dotenv import load_dotenv
-
+import sys
 from pathlib import Path
-load_dotenv(Path(__file__).resolve().parents[2] / '.env')
-
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD")
-    )
-
-def upsert_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO games (name, slug, description)
-            VALUES ('Magic: The Gathering', 'mtg', 'The original trading card game by Wizards of the Coast')
-            ON CONFLICT (slug) DO NOTHING
-            RETURNING id;
-        """)
-        result = cur.fetchone()
-        if result:
-            return result[0]
-        else:
-            cur.execute("SELECT id FROM games WHERE slug = 'mtg'")
-            return cur.fetchone()[0]
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import upsert_game, ingestion_db
 
 def fetch_sets():
     print("Fetching sets from Scryfall...")
@@ -175,10 +150,9 @@ def upsert_card_and_printing(conn, game_id, set_id, scryfall_card):
 
 def main():
     print("Starting MTG ingestion...")
-    conn = get_db_connection()
-
-    try:
-        game_id = upsert_game(conn)
+    with ingestion_db() as conn:
+        game_id = upsert_game(conn, 'Magic: The Gathering', 'mtg',
+                              'The original trading card game by Wizards of the Coast')
         print(f"Game ID for MTG: {game_id}")
 
         sets = fetch_sets()
@@ -197,13 +171,6 @@ def main():
 
             conn.commit()
             print(f"  -> {len(cards)} cards committed")
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error: {e}")
-        raise
-    finally:
-        conn.close()
 
     print("MTG ingestion complete!")
 

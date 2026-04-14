@@ -140,9 +140,16 @@ function MyDecksTab({ authFetch }) {
   const [creating, setCreating] = useState(false)
 
   useEffect(() => {
-    authFetch(`${API_URL}/api/users/me/decks`)
-      .then(r => r.json())
-      .then(data => { setDecks(Array.isArray(data) ? data : []); setLoading(false) })
+    async function load() {
+      try {
+        const res = await authFetch(`${API_URL}/api/users/me/decks`)
+        const data = await res.json()
+        setDecks(Array.isArray(data) ? data : [])
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
   }, [authFetch])
 
   async function openForm() {
@@ -282,14 +289,20 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') === 'decks' ? 'decks' : 'collection')
 
   useEffect(() => {
-    Promise.all([
-      authFetch(`${API_URL}/api/auth/me`).then(r => r.json()),
-      authFetch(`${API_URL}/api/users/me/collection`).then(r => r.json()),
-    ]).then(([userData, collectionData]) => {
-      setFullUser(userData)
-      setCollection(Array.isArray(collectionData) ? collectionData : [])
-      setLoading(false)
-    })
+    async function load() {
+      try {
+        const [userRes, collRes] = await Promise.all([
+          authFetch(`${API_URL}/api/auth/me`),
+          authFetch(`${API_URL}/api/users/me/collection`),
+        ])
+        const [userData, collectionData] = await Promise.all([userRes.json(), collRes.json()])
+        setFullUser(userData)
+        setCollection(Array.isArray(collectionData) ? collectionData : [])
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
   }, [authFetch])
 
   const handleIncrease = useCallback(async (gameId, card) => {

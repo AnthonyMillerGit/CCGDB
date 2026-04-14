@@ -1,36 +1,12 @@
 import requests
-import psycopg2
 import json
-import os
 import time
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).resolve().parents[2] / '.env')
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import upsert_game, ingestion_db
 
 BASE_URL = "https://api.swu-db.com"
-
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD")
-    )
-
-def upsert_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO games (name, slug, description)
-            VALUES ('Star Wars Unlimited', 'swu', 'Star Wars Unlimited Trading Card Game by Fantasy Flight Games')
-            ON CONFLICT (slug) DO NOTHING
-            RETURNING id;
-        """)
-        result = cur.fetchone()
-        if result:
-            return result[0]
-        cur.execute("SELECT id FROM games WHERE slug = 'swu'")
-        return cur.fetchone()[0]
 
 def fetch_sets():
     print("Fetching SWU sets...")
@@ -157,10 +133,9 @@ def upsert_card(conn, game_id, set_id, card):
 
 def main():
     print("Starting Star Wars Unlimited ingestion...")
-    conn = get_db_connection()
-
-    try:
-        game_id = upsert_game(conn)
+    with ingestion_db() as conn:
+        game_id = upsert_game(conn, 'Star Wars Unlimited', 'swu',
+                              'Star Wars Unlimited Trading Card Game by Fantasy Flight Games')
         print(f"Game ID: {game_id}")
 
         sets = fetch_sets()
@@ -187,13 +162,6 @@ def main():
             conn.commit()
             print(f"  -> {len(cards)} cards")
             time.sleep(0.3)
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error: {e}")
-        raise
-    finally:
-        conn.close()
 
     print(f"\nStar Wars Unlimited ingestion complete! Total cards: {total_cards}")
 

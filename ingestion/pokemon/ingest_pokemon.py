@@ -1,35 +1,10 @@
 import requests
-import psycopg2
 import json
-import os
 import time
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).resolve().parents[2] / '.env')
-
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD")
-    )
-
-def upsert_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO games (name, slug, description)
-            VALUES ('Pokemon Trading Card Game', 'pokemon', 'The Pokemon Trading Card Game by Nintendo/Game Freak')
-            ON CONFLICT (slug) DO NOTHING
-            RETURNING id;
-        """)
-        result = cur.fetchone()
-        if result:
-            return result[0]
-        else:
-            cur.execute("SELECT id FROM games WHERE slug = 'pokemon'")
-            return cur.fetchone()[0]
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import upsert_game, ingestion_db
 
 def fetch_sets():
     print("Fetching Pokemon sets...")
@@ -158,10 +133,9 @@ def upsert_card_and_printing(conn, game_id, set_id, card):
 
 def main():
     print("Starting Pokemon TCG ingestion...")
-    conn = get_db_connection()
-
-    try:
-        game_id = upsert_game(conn)
+    with ingestion_db() as conn:
+        game_id = upsert_game(conn, 'Pokemon Trading Card Game', 'pokemon',
+                              'The Pokemon Trading Card Game by Nintendo/Game Freak')
         print(f"Game ID for Pokemon: {game_id}")
 
         sets = fetch_sets()
@@ -183,13 +157,6 @@ def main():
 
             # Be polite to the API
             time.sleep(0.1)
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error: {e}")
-        raise
-    finally:
-        conn.close()
 
     print("Pokemon ingestion complete!")
 

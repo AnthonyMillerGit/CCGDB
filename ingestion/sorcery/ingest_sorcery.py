@@ -1,38 +1,14 @@
 import requests
-import psycopg2
 import json
-import os
 import time
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).resolve().parents[2] / '.env')
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import upsert_game, ingestion_db
 
 CARDS_URL = "https://api.sorcerytcg.com/api/cards"
 IMAGE_CDN = "https://d27a44hjr9gen3.cloudfront.net/cards"
 
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD")
-    )
-
-def upsert_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO games (name, slug, description)
-            VALUES ('Sorcery: Contested Realm', 'sorcery', 
-                    'Sorcery: Contested Realm by Erik''s Curiosa — a fantasy CCG featuring hand-painted artwork.')
-            ON CONFLICT (slug) DO NOTHING
-            RETURNING id;
-        """)
-        result = cur.fetchone()
-        if result:
-            return result[0]
-        cur.execute("SELECT id FROM games WHERE slug = 'sorcery'")
-        return cur.fetchone()[0]
 
 def upsert_set(conn, game_id, set_name, release_date, set_cache):
     # Use set name as code since there's no short code
@@ -134,10 +110,9 @@ def upsert_card(conn, game_id, card, set_id, set_name, variant):
 
 def main():
     print("Starting Sorcery: Contested Realm ingestion...")
-    conn = get_db_connection()
-
-    try:
-        game_id = upsert_game(conn)
+    with ingestion_db() as conn:
+        game_id = upsert_game(conn, 'Sorcery: Contested Realm', 'sorcery',
+                              "Sorcery: Contested Realm by Erik's Curiosa — a fantasy CCG featuring hand-painted artwork.")
         print(f"Game ID: {game_id}")
 
         print("Fetching all cards...")
@@ -167,13 +142,6 @@ def main():
                 print(f"  [{i+1}/{len(cards)}] cards processed, {total_printings} printings...")
 
         conn.commit()
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error: {e}")
-        raise
-    finally:
-        conn.close()
 
     print(f"\nSorcery ingestion complete! {len(cards)} cards, {total_printings} printings")
 

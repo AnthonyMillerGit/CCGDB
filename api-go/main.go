@@ -1,0 +1,111 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"strings"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rs/cors"
+)
+
+type App struct {
+	db  *pgxpool.Pool
+	cfg *Config
+}
+
+func main() {
+	cfg := loadConfig()
+
+	db, err := connectDB(cfg)
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+	defer db.Close()
+
+	app := &App{db: db, cfg: cfg}
+
+	addr := fmt.Sprintf(":%s", cfg.Port)
+	log.Printf("Server starting on %s", addr)
+	if err := http.ListenAndServe(addr, app.routes()); err != nil {
+		log.Fatalf("server error: %v", err)
+	}
+}
+
+func (a *App) routes() http.Handler {
+	r := chi.NewRouter()
+
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	c := cors.New(cors.Options{
+		AllowedOrigins:   strings.Split(a.cfg.AllowedOrigins, ","),
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		AllowCredentials: true,
+	})
+	r.Use(c.Handler)
+
+	// Static assets (card images, card backs)
+	if _, err := os.Stat(a.cfg.AssetsDir); err == nil {
+		r.Handle("/assets/*",
+			http.StripPrefix("/assets", http.FileServer(http.Dir(a.cfg.AssetsDir))))
+	}
+
+	// ── Public routes ─────────────────────────────────────────────────────────
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		jsonResponse(w, map[string]string{"message": "CCG Platform API", "version": "0.1.0"}, http.StatusOK)
+	})
+
+	r.Get("/api/games", a.getGames)
+	r.Get("/api/games/{slug}", a.getGame)
+	r.Get("/api/games/{slug}/sets", a.getGameSets)
+
+	// Specific set routes before parameterized card route
+	r.Get("/api/sets/{setID}", a.getSet)
+	r.Get("/api/sets/{setID}/cards", a.getSetCards)
+
+	// /api/cards/search must be registered before /api/cards/{cardID}
+	r.Get("/api/cards/search", a.searchCards)
+	r.Get("/api/cards/{cardID}", a.getCard)
+	r.Get("/api/printings/{printingID}", a.getPrinting)
+	r.Get("/api/search/suggestions", a.searchSuggestions)
+
+	r.Post("/api/auth/register", a.register)
+	r.Post("/api/auth/login", a.login)
+	r.Get("/api/auth/verify-email", a.verifyEmail)
+	r.Post("/api/auth/forgot-password", a.forgotPassword)
+	r.Post("/api/auth/reset-password", a.resetPassword)
+
+	// ── Authenticated routes ──────────────────────────────────────────────────
+	r.Group(func(r chi.Router) {
+		r.Use(a.requireAuth)
+
+		r.Get("/api/auth/me", a.me)
+		r.Post("/api/auth/resend-verification", a.resendVerification)
+
+		// Collection — specific paths before parameterized ones
+		r.Get("/api/users/me/collection", a.getCollection)
+		r.Post("/api/users/me/collection", a.addToCollection)
+		r.Get("/api/users/me/collection/set/{setID}", a.getCollectionForSet)
+		r.Get("/api/users/me/collection/printing/{printingID}", a.getCollectionItem)
+		r.Patch("/api/users/me/collection/{printingID}", a.updateCollectionQuantity)
+		r.Delete("/api/users/me/collection/{printingID}", a.removeFromCollection)
+
+		// Decks
+		r.Get("/api/users/me/decks", a.listDecks)
+		r.Post("/api/users/me/decks", a.createDeck)
+		r.Get("/api/decks/{deckID}", a.getDeck)
+		r.Patch("/api/decks/{deckID}", a.updateDeck)
+		r.Delete("/api/decks/{deckID}", a.deleteDeck)
+		r.Post("/api/decks/{deckID}/cards", a.addCardToDeck)
+		r.Patch("/api/decks/{deckID}/cards/{cardID}", a.updateDeckCard)
+		r.Delete("/api/decks/{deckID}/cards/{cardID}", a.removeCardFromDeck)
+	})
+
+	return r
+}
