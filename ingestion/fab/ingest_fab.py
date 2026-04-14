@@ -1,37 +1,12 @@
 import requests
-import psycopg2
 import json
-import os
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).resolve().parents[2] / '.env')
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import upsert_game, ingestion_db
 
 CARDS_URL = "https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/main/json/english/card.json"
 SETS_URL = "https://raw.githubusercontent.com/the-fab-cube/flesh-and-blood-cards/main/json/english/set.json"
-
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD")
-    )
-
-def upsert_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO games (name, slug, description)
-            VALUES ('Flesh and Blood TCG', 'fab', 'Flesh and Blood Trading Card Game by Legend Story Studios')
-            ON CONFLICT (slug) DO NOTHING
-            RETURNING id;
-        """)
-        result = cur.fetchone()
-        if result:
-            return result[0]
-        else:
-            cur.execute("SELECT id FROM games WHERE slug = 'fab'")
-            return cur.fetchone()[0]
 
 def fetch_sets():
     print("Fetching FAB sets...")
@@ -171,10 +146,9 @@ def upsert_card(conn, game_id, card, sets_data, set_cache):
 
 def main():
     print("Starting Flesh and Blood TCG ingestion...")
-    conn = get_db_connection()
-
-    try:
-        game_id = upsert_game(conn)
+    with ingestion_db() as conn:
+        game_id = upsert_game(conn, 'Flesh and Blood TCG', 'fab',
+                              'Flesh and Blood Trading Card Game by Legend Story Studios')
         print(f"Game ID for FAB: {game_id}")
 
         sets_data = fetch_sets()
@@ -192,13 +166,6 @@ def main():
                 print(f"  [{i+1}/{len(cards)}] cards processed...")
 
         conn.commit()
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error: {e}")
-        raise
-    finally:
-        conn.close()
 
     print("Flesh and Blood ingestion complete!")
 

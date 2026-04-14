@@ -1,37 +1,12 @@
 import requests
-import psycopg2
 import json
-import os
 import time
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).resolve().parents[2] / '.env')
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import upsert_game, ingestion_db
 
 BASE_URL = "https://api.altered.gg"
-
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD")
-    )
-
-def upsert_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO games (name, slug, description)
-            VALUES ('Altered TCG', 'altered',
-                    'Altered Trading Card Game by Equinox')
-            ON CONFLICT (slug) DO NOTHING
-            RETURNING id;
-        """)
-        result = cur.fetchone()
-        if result:
-            return result[0]
-        cur.execute("SELECT id FROM games WHERE slug = 'altered'")
-        return cur.fetchone()[0]
 
 def fetch_all_sets():
     print("Fetching Altered sets...")
@@ -135,10 +110,8 @@ def upsert_card(conn, game_id, set_id, card):
 
 def main():
     print("Starting Altered TCG ingestion...")
-    conn = get_db_connection()
-
-    try:
-        game_id = upsert_game(conn)
+    with ingestion_db() as conn:
+        game_id = upsert_game(conn, 'Altered TCG', 'altered', 'Altered Trading Card Game by Equinox')
         print(f"Game ID: {game_id}")
 
         sets_data = fetch_all_sets()
@@ -184,13 +157,6 @@ def main():
                 break
             page += 1
             time.sleep(0.3)
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error: {e}")
-        raise
-    finally:
-        conn.close()
 
     print(f"\nAltered TCG ingestion complete! {total_cards} cards")
 

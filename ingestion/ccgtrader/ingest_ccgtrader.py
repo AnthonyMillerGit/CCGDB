@@ -1,12 +1,10 @@
 import requests
-import psycopg2
 import json
-import os
 import time
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).resolve().parents[2] / '.env')
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import get_db_connection, ingestion_db
 
 BASE_URL = "https://api.ccgtrader.co.uk/_/items"
 
@@ -24,14 +22,6 @@ SKIP_SLUGS = {
     'disney-lorcana',
     'flesh-and-blood-tcg',
 }
-
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD")
-    )
 
 def fetch_rarities():
     print("Fetching rarities...")
@@ -196,9 +186,7 @@ def upsert_card(conn, game_id, set_id, card, rarities):
 
 def main():
     print("Starting CCGTrader universal ingestion...")
-    conn = get_db_connection()
-
-    try:
+    with ingestion_db() as conn:
         rarities = fetch_rarities()
         print(f"Loaded {len(rarities)} rarities")
 
@@ -242,13 +230,6 @@ def main():
                 time.sleep(1)
 
             print(f"  Total: {total_cards} cards ingested")
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error: {e}")
-        raise
-    finally:
-        conn.close()
 
     print("\nCCGTrader ingestion complete!")
 

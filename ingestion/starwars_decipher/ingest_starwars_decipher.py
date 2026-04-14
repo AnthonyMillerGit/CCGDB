@@ -1,34 +1,9 @@
 import requests
-import psycopg2
 import json
-import os
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).resolve().parents[2] / '.env')
-
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD")
-    )
-
-def upsert_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO games (name, slug, description)
-            VALUES ('Star Wars CCG (Decipher)', 'starwars_decipher', 'Star Wars Customizable Card Game by Decipher Inc.')
-            ON CONFLICT (slug) DO NOTHING
-            RETURNING id;
-        """)
-        result = cur.fetchone()
-        if result:
-            return result[0]
-        else:
-            cur.execute("SELECT id FROM games WHERE slug = 'starwars_decipher'")
-            return cur.fetchone()[0]
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import upsert_game, ingestion_db
 
 def fetch_sets():
     print("Fetching Star Wars CCG sets...")
@@ -149,10 +124,9 @@ def upsert_card(conn, game_id, set_id, card, sets_data):
 
 def main():
     print("Starting Star Wars CCG (Decipher) ingestion...")
-    conn = get_db_connection()
-
-    try:
-        game_id = upsert_game(conn)
+    with ingestion_db() as conn:
+        game_id = upsert_game(conn, 'Star Wars CCG (Decipher)', 'starwars_decipher',
+                              'Star Wars Customizable Card Game by Decipher Inc.')
         print(f"Game ID for Star Wars CCG: {game_id}")
 
         sets_data = fetch_sets()
@@ -172,13 +146,6 @@ def main():
                 print(f"  [{i+1}/{len(cards)}] cards processed...")
 
         conn.commit()
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error: {e}")
-        raise
-    finally:
-        conn.close()
 
     print("Star Wars CCG (Decipher) ingestion complete!")
 

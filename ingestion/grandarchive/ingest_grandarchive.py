@@ -1,12 +1,10 @@
 import requests
-import psycopg2
 import json
-import os
 import time
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).resolve().parents[2] / '.env')
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import upsert_game, ingestion_db
 
 BASE_URL = "https://api.gatcg.com"
 
@@ -16,28 +14,6 @@ RARITY_MAP = {
     7: "Legendary", 8: "Champion", 9: "Special"
 }
 
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD")
-    )
-
-def upsert_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO games (name, slug, description)
-            VALUES ('Grand Archive TCG', 'grand-archive',
-                    'Grand Archive Trading Card Game by Cool Stuff Inc.')
-            ON CONFLICT (slug) DO NOTHING
-            RETURNING id;
-        """)
-        result = cur.fetchone()
-        if result:
-            return result[0]
-        cur.execute("SELECT id FROM games WHERE slug = 'grand-archive'")
-        return cur.fetchone()[0]
 
 def fetch_all_sets():
     print("Fetching Grand Archive sets...")
@@ -204,10 +180,9 @@ def fetch_cards_for_prefix(prefix):
 
 def main():
     print("Starting Grand Archive TCG ingestion...")
-    conn = get_db_connection()
-
-    try:
-        game_id = upsert_game(conn)
+    with ingestion_db() as conn:
+        game_id = upsert_game(conn, 'Grand Archive TCG', 'grand-archive',
+                              'Grand Archive Trading Card Game by Cool Stuff Inc.')
         print(f"Game ID: {game_id}")
 
         all_sets = fetch_all_sets()
@@ -233,13 +208,6 @@ def main():
             conn.commit()
             print(f"  Done — {len(cards)} cards committed")
             time.sleep(0.5)
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error: {e}")
-        raise
-    finally:
-        conn.close()
 
     print(f"\nGrand Archive ingestion complete! {total_cards} total card-set entries")
 

@@ -17,10 +17,11 @@ Sets covered:
 import xml.etree.ElementTree as ET
 import json
 import os
-
+import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import ingestion_db
 from dotenv import load_dotenv
-import psycopg2
 
 load_dotenv(Path(__file__).resolve().parents[2] / '.env')
 
@@ -234,14 +235,7 @@ def backfill_no_quarter(conn, game_id):
 
 
 def main():
-    conn = psycopg2.connect(
-        host='localhost',
-        database=os.getenv('POSTGRES_DB'),
-        user=os.getenv('POSTGRES_USER'),
-        password=os.getenv('POSTGRES_PASSWORD'),
-    )
-
-    try:
+    with ingestion_db() as conn:
         game_id = get_game_id(conn)
         print(f'7th Sea CCG game_id: {game_id}')
 
@@ -253,13 +247,6 @@ def main():
 
         conn.commit()
         print('\nXML ingestion complete!')
-
-    except Exception as e:
-        conn.rollback()
-        print(f'Error: {e}')
-        raise
-    finally:
-        conn.close()
 
 
 if __name__ == '__main__':

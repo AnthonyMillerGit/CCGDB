@@ -1,12 +1,10 @@
 import requests
-import psycopg2
 import json
-import os
 import time
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).resolve().parents[2] / '.env')
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import upsert_game, ingestion_db
 
 API_URL = "https://fftcg.square-enix-games.com/en/get-cards"
 PAYLOAD = {
@@ -47,28 +45,6 @@ RARITY_MAP = {
     "P": "Promo",
 }
 
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD")
-    )
-
-def upsert_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO games (name, slug, description)
-            VALUES ('Final Fantasy TCG', 'fftcg',
-                    'Final Fantasy Trading Card Game by Square Enix')
-            ON CONFLICT (slug) DO NOTHING
-            RETURNING id;
-        """)
-        result = cur.fetchone()
-        if result:
-            return result[0]
-        cur.execute("SELECT id FROM games WHERE slug = 'fftcg'")
-        return cur.fetchone()[0]
 
 def upsert_set(conn, game_id, set_name, set_cache):
     if set_name in set_cache:
@@ -170,10 +146,9 @@ def upsert_card(conn, game_id, card, set_id):
 
 def main():
     print("Starting Final Fantasy TCG ingestion...")
-    conn = get_db_connection()
-
-    try:
-        game_id = upsert_game(conn)
+    with ingestion_db() as conn:
+        game_id = upsert_game(conn, 'Final Fantasy TCG', 'fftcg',
+                              'Final Fantasy Trading Card Game by Square Enix')
         print(f"Game ID: {game_id}")
 
         print("Fetching all cards from Square Enix API...")
@@ -200,13 +175,6 @@ def main():
                 print(f"  [{i+1}/{len(cards)}] cards processed...")
 
         conn.commit()
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error: {e}")
-        raise
-    finally:
-        conn.close()
 
     print("Final Fantasy TCG ingestion complete!")
 

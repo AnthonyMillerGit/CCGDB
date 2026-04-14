@@ -1,27 +1,18 @@
 import requests
-import psycopg2
 import json
-import os
 import time
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import upsert_game, ingestion_db
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-
-load_dotenv(Path(__file__).resolve().parents[2] / '.env')
 
 DECKLOG_BASE = "https://decklog-en.bushiroad.com"
 IMAGE_BASE = "https://en.ws-tcg.com/wordpress/wp-content/images/cardimages"
 GAME_ID_DECKLOG = 2
 
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD")
-    )
 
 def get_session_cookie():
     print("Getting fresh session cookie via Selenium...")
@@ -119,20 +110,6 @@ def fetch_all_cards_for_title(cookie, title_code, title_name):
 
     return all_cards
 
-def upsert_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO games (name, slug, description)
-            VALUES ('Weiss Schwarz', 'weissschwarz',
-                    'Weiss Schwarz Trading Card Game by Bushiroad')
-            ON CONFLICT (slug) DO NOTHING
-            RETURNING id;
-        """)
-        result = cur.fetchone()
-        if result:
-            return result[0]
-        cur.execute("SELECT id FROM games WHERE slug = 'weissschwarz'")
-        return cur.fetchone()[0]
 
 def upsert_set(conn, game_id, set_code, set_name, set_cache):
     if set_code in set_cache:
@@ -221,17 +198,16 @@ def upsert_card(conn, game_id, card, title_name, set_cache):
 
 def main():
     print("Starting Weiss Schwarz ingestion...")
-    conn = get_db_connection()
+    with ingestion_db() as conn:
+        # Resume support — set to 0 to start fresh
+        START_FROM_INDEX = 0
 
-    # Resume support — set to 0 to start fresh
-    START_FROM_INDEX = 0
-
-    try:
         cookie = get_session_cookie()
         titles = get_titles(cookie)
         print(f"Found {len(titles)} titles")
 
-        game_id = upsert_game(conn)
+        game_id = upsert_game(conn, 'Weiss Schwarz', 'weissschwarz',
+                              'Weiss Schwarz Trading Card Game by Bushiroad')
         print(f"Game ID: {game_id}")
 
         set_cache = {}
@@ -266,15 +242,6 @@ def main():
             if (i + 1) % 25 == 0:
                 print("\n  Refreshing session cookie...")
                 cookie = get_session_cookie()
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error: {e}")
-        import traceback
-        traceback.print_exc()
-        raise
-    finally:
-        conn.close()
 
     print(f"\nWeiss Schwarz ingestion complete! {total} unique cards")
 

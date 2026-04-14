@@ -1,37 +1,12 @@
 import requests
-import psycopg2
 import json
-import os
 import time
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).resolve().parents[2] / '.env')
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import upsert_game, ingestion_db
 
 BASE_URL = "https://api.lorcast.com/v0"
-
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD")
-    )
-
-def upsert_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO games (name, slug, description)
-            VALUES ('Disney Lorcana TCG', 'lorcana', 'Disney Lorcana Trading Card Game by Ravensburger')
-            ON CONFLICT (slug) DO NOTHING
-            RETURNING id;
-        """)
-        result = cur.fetchone()
-        if result:
-            return result[0]
-        else:
-            cur.execute("SELECT id FROM games WHERE slug = 'lorcana'")
-            return cur.fetchone()[0]
 
 def fetch_sets():
     print("Fetching Lorcana sets...")
@@ -140,10 +115,9 @@ def upsert_card(conn, game_id, set_id, card):
 
 def main():
     print("Starting Disney Lorcana TCG ingestion...")
-    conn = get_db_connection()
-
-    try:
-        game_id = upsert_game(conn)
+    with ingestion_db() as conn:
+        game_id = upsert_game(conn, 'Disney Lorcana TCG', 'lorcana',
+                              'Disney Lorcana Trading Card Game by Ravensburger')
         print(f"Game ID for Lorcana: {game_id}")
 
         sets = fetch_sets()
@@ -166,13 +140,6 @@ def main():
             print(f"  -> {len(cards)} cards committed")
 
             time.sleep(0.1)  # respect rate limit
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error: {e}")
-        raise
-    finally:
-        conn.close()
 
     print(f"Lorcana ingestion complete! Total cards: {total_cards}")
 

@@ -1,11 +1,9 @@
 import csv
-import psycopg2
 import json
-import os
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).resolve().parents[3] / '.env')
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from common import upsert_game, ingestion_db
 
 # ============================================================
 # Source data — cloned from lackeyccg-stccg/startrek2e
@@ -127,24 +125,6 @@ def get_set_info(raw_code):
     return code, name, release_date
 
 
-def get_or_create_game(conn):
-    with conn.cursor() as cur:
-        cur.execute("SELECT id FROM games WHERE slug = 'startrek_2e'")
-        row = cur.fetchone()
-        if row:
-            return row[0]
-        cur.execute("""
-            INSERT INTO games (name, slug, description, card_back_image)
-            VALUES (%s, %s, %s, %s)
-            RETURNING id
-        """, (
-            'Star Trek CCG: Second Edition',
-            'startrek_2e',
-            'Star Trek CCG Second Edition (2002–2012), published by Decipher '
-            'and continued by the Continuing Committee.',
-            '/card-backs/startrek_2e.jpg',
-        ))
-        return cur.fetchone()[0]
 
 
 def upsert_set(conn, game_id, code, name, release_date, set_type):
@@ -285,15 +265,11 @@ def process_file(conn, game_id, filepath, is_virtual, set_cache):
 
 
 def main():
-    conn = psycopg2.connect(
-        host='localhost',
-        database=os.getenv('POSTGRES_DB'),
-        user=os.getenv('POSTGRES_USER'),
-        password=os.getenv('POSTGRES_PASSWORD'),
-    )
-
-    try:
-        game_id = get_or_create_game(conn)
+    with ingestion_db() as conn:
+        game_id = upsert_game(conn, 'Star Trek CCG: Second Edition', 'startrek_2e',
+                              'Star Trek CCG Second Edition (2002–2012), published by Decipher '
+                              'and continued by the Continuing Committee.',
+                              card_back_image='/card-backs/startrek_2e.jpg')
         print(f'Star Trek 2E game_id: {game_id}')
 
         set_cache = {}
@@ -302,13 +278,6 @@ def main():
 
         conn.commit()
         print('\nIngestion complete!')
-
-    except Exception as e:
-        conn.rollback()
-        print(f'Error: {e}')
-        raise
-    finally:
-        conn.close()
 
 
 if __name__ == '__main__':

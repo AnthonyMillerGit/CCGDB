@@ -1,9 +1,11 @@
 import requests
-import psycopg2
 import json
 import os
 import time
+import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from common import ingestion_db
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parents[2] / '.env')
@@ -44,14 +46,6 @@ GAMES = [
     "description": "Hololive Official Card Game by Bushiroad"
     },
 ]
-
-def get_db_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database=os.getenv("POSTGRES_DB"),
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD")
-    )
 
 def upsert_game(conn, game):
     with conn.cursor() as cur:
@@ -193,9 +187,7 @@ def fetch_all_cards(endpoint):
 
 def main():
     print("Starting apitcg.com ingestion...")
-    conn = get_db_connection()
-
-    try:
+    with ingestion_db() as conn:
         for game_config in GAMES:
             print(f"\n{'='*50}")
             print(f"Processing: {game_config['name']}")
@@ -216,13 +208,6 @@ def main():
             conn.commit()
             print(f"Done! {len(cards)} cards, {len(set_cache)} sets")
             time.sleep(1)
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error: {e}")
-        raise
-    finally:
-        conn.close()
 
     print("\napitcg.com ingestion complete!")
 
