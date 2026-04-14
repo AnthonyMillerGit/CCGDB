@@ -1,9 +1,148 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import PokemonCardInfo from '../components/card-templates/PokemonCardInfo'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
 import { RARITY_COLORS } from '../theme'
+
+function AddToDeckButton({ card, authFetch }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [gameDecks, setGameDecks] = useState(null)
+  const [deckSuccess, setDeckSuccess] = useState('')
+  const [newDeckName, setNewDeckName] = useState('')
+  const [showNewDeckInput, setShowNewDeckInput] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const menuRef = useRef(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false)
+        setShowNewDeckInput(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuOpen])
+
+  async function openMenu() {
+    setMenuOpen(true)
+    setDeckSuccess('')
+    if (gameDecks === null) {
+      const res = await authFetch(`${API_URL}/api/users/me/decks`)
+      const data = await res.json()
+      setGameDecks(Array.isArray(data) ? data.filter(d => d.game_id === card.game_id) : [])
+    }
+  }
+
+  async function handleAddToDeck(deckId, deckName) {
+    await authFetch(`${API_URL}/api/decks/${deckId}/cards`, {
+      method: 'POST',
+      body: JSON.stringify({ card_id: card.id, quantity: 1 }),
+    })
+    setDeckSuccess(deckName)
+    setGameDecks(prev => prev.map(d => d.id === deckId ? { ...d, total_cards: (d.total_cards || 0) + 1 } : d))
+    setTimeout(() => { setMenuOpen(false); setDeckSuccess('') }, 1500)
+  }
+
+  async function handleCreateDeck() {
+    if (!newDeckName.trim()) return
+    setCreating(true)
+    const res = await authFetch(`${API_URL}/api/users/me/decks`, {
+      method: 'POST',
+      body: JSON.stringify({ game_id: card.game_id, name: newDeckName.trim() }),
+    })
+    const deck = await res.json()
+    await handleAddToDeck(deck.id, deck.name)
+    setGameDecks(prev => [...(prev || []), { ...deck, total_cards: 1 }])
+    setNewDeckName('')
+    setShowNewDeckInput(false)
+    setCreating(false)
+  }
+
+  return (
+    <div className="relative mt-3" ref={menuRef}>
+      <button
+        onClick={openMenu}
+        className="px-4 py-2 rounded text-sm font-semibold"
+        style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }}
+      >
+        Add to Deck
+      </button>
+
+      {menuOpen && (
+        <div
+          className="absolute left-0 top-full mt-1 z-20 rounded-xl overflow-hidden shadow-2xl"
+          style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', minWidth: '220px' }}
+        >
+          {deckSuccess ? (
+            <div className="px-4 py-3 text-sm font-medium" style={{ color: '#08D9D6' }}>
+              Added to "{deckSuccess}"
+            </div>
+          ) : gameDecks === null ? (
+            <p className="px-4 py-3 text-sm" style={{ color: '#8892a4' }}>Loading decks…</p>
+          ) : (
+            <>
+              {gameDecks.length === 0 && !showNewDeckInput && (
+                <p className="px-4 py-3 text-xs" style={{ color: '#8892a4' }}>
+                  No {card.game} decks yet.
+                </p>
+              )}
+              {gameDecks.map(deck => (
+                <button
+                  key={deck.id}
+                  onClick={() => handleAddToDeck(deck.id, deck.name)}
+                  className="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:opacity-80 transition-opacity"
+                  style={{ borderBottom: '1px solid #363d52', color: '#EAEAEA' }}
+                >
+                  <span className="truncate mr-3">{deck.name}</span>
+                  <span className="text-xs flex-shrink-0" style={{ color: '#8892a4' }}>
+                    {deck.total_cards} cards
+                  </span>
+                </button>
+              ))}
+
+              {showNewDeckInput ? (
+                <div className="px-3 py-2 flex gap-2">
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="Deck name…"
+                    value={newDeckName}
+                    onChange={e => setNewDeckName(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') handleCreateDeck()
+                      if (e.key === 'Escape') setShowNewDeckInput(false)
+                    }}
+                    className="flex-1 px-2 py-1 rounded text-sm outline-none"
+                    style={{ backgroundColor: '#1e2330', border: '1px solid #363d52', color: '#EAEAEA' }}
+                  />
+                  <button
+                    onClick={handleCreateDeck}
+                    disabled={creating || !newDeckName.trim()}
+                    className="px-2 py-1 rounded text-xs font-semibold disabled:opacity-50"
+                    style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
+                  >
+                    {creating ? '…' : 'Create'}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowNewDeckInput(true)}
+                  className="w-full text-left px-4 py-2.5 text-sm hover:opacity-80 transition-opacity"
+                  style={{ color: '#08D9D6' }}
+                >
+                  + New Deck
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function ManaCost({ cost }) {
   if (!cost) return null
@@ -59,13 +198,19 @@ export default function CardDetailPage() {
   const { user, authFetch } = useAuth()
 
   useEffect(() => {
-    fetch(`${API_URL}/api/cards/${cardId}`)
-      .then(r => r.json())
-      .then(data => {
+    async function load() {
+      try {
+        const res = await fetch(`${API_URL}/api/cards/${cardId}`)
+        const data = await res.json()
         setCard(data)
         setSelectedPrinting(data.printings?.[0] || null)
+      } catch {
+        // card stays null → "Card not found" shown below
+      } finally {
         setLoading(false)
-      })
+      }
+    }
+    load()
   }, [cardId])
 
   const fetchCollectionItem = useCallback((printingId) => {
@@ -103,63 +248,6 @@ export default function CardDetailPage() {
     } finally {
       setCollectionLoading(false)
     }
-  }
-
-  // Deck dropdown state
-  const [deckMenuOpen, setDeckMenuOpen] = useState(false)
-  const [gameDecks, setGameDecks] = useState(null) // null = not loaded yet
-  const [deckSuccess, setDeckSuccess] = useState('')
-  const [newDeckName, setNewDeckName] = useState('')
-  const [showNewDeckInput, setShowNewDeckInput] = useState(false)
-  const [creatingDeck, setCreatingDeck] = useState(false)
-  const deckMenuRef = useRef(null)
-
-  useEffect(() => {
-    if (!deckMenuOpen) return
-    function handleClickOutside(e) {
-      if (deckMenuRef.current && !deckMenuRef.current.contains(e.target)) {
-        setDeckMenuOpen(false)
-        setShowNewDeckInput(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [deckMenuOpen])
-
-  async function openDeckMenu() {
-    setDeckMenuOpen(true)
-    setDeckSuccess('')
-    if (gameDecks === null && card) {
-      const res = await authFetch(`${API_URL}/api/users/me/decks`)
-      const data = await res.json()
-      const filtered = Array.isArray(data) ? data.filter(d => d.game_id === card.game_id) : []
-      setGameDecks(filtered)
-    }
-  }
-
-  async function handleAddToDeck(deckId, deckName) {
-    await authFetch(`${API_URL}/api/decks/${deckId}/cards`, {
-      method: 'POST',
-      body: JSON.stringify({ card_id: card.id, quantity: 1 }),
-    })
-    setDeckSuccess(deckName)
-    setGameDecks(prev => prev.map(d => d.id === deckId ? { ...d, total_cards: (d.total_cards || 0) + 1 } : d))
-    setTimeout(() => { setDeckMenuOpen(false); setDeckSuccess('') }, 1500)
-  }
-
-  async function handleCreateDeck() {
-    if (!newDeckName.trim()) return
-    setCreatingDeck(true)
-    const res = await authFetch(`${API_URL}/api/users/me/decks`, {
-      method: 'POST',
-      body: JSON.stringify({ game_id: card.game_id, name: newDeckName.trim() }),
-    })
-    const deck = await res.json()
-    await handleAddToDeck(deck.id, deck.name)
-    setGameDecks(prev => [...(prev || []), { ...deck, total_cards: 1 }])
-    setNewDeckName('')
-    setShowNewDeckInput(false)
-    setCreatingDeck(false)
   }
 
   const handleSelectPrinting = (printing) => {
@@ -402,84 +490,7 @@ export default function CardDetailPage() {
           )}
 
           {/* Add to Deck button */}
-          {user && card && (
-            <div className="relative mt-3" ref={deckMenuRef}>
-              <button
-                onClick={openDeckMenu}
-                className="px-4 py-2 rounded text-sm font-semibold"
-                style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }}
-              >
-                Add to Deck
-              </button>
-
-              {deckMenuOpen && (
-                <div
-                  className="absolute left-0 top-full mt-1 z-20 rounded-xl overflow-hidden shadow-2xl"
-                  style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', minWidth: '220px' }}
-                >
-                  {deckSuccess ? (
-                    <div className="px-4 py-3 text-sm font-medium" style={{ color: '#08D9D6' }}>
-                      Added to "{deckSuccess}"
-                    </div>
-                  ) : gameDecks === null ? (
-                    <p className="px-4 py-3 text-sm" style={{ color: '#8892a4' }}>Loading decks…</p>
-                  ) : (
-                    <>
-                      {gameDecks.length === 0 && !showNewDeckInput && (
-                        <p className="px-4 py-3 text-xs" style={{ color: '#8892a4' }}>
-                          No {card.game} decks yet.
-                        </p>
-                      )}
-                      {gameDecks.map(deck => (
-                        <button
-                          key={deck.id}
-                          onClick={() => handleAddToDeck(deck.id, deck.name)}
-                          className="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:opacity-80 transition-opacity"
-                          style={{ borderBottom: '1px solid #363d52', color: '#EAEAEA' }}
-                        >
-                          <span className="truncate mr-3">{deck.name}</span>
-                          <span className="text-xs flex-shrink-0" style={{ color: '#8892a4' }}>
-                            {deck.total_cards} cards
-                          </span>
-                        </button>
-                      ))}
-
-                      {showNewDeckInput ? (
-                        <div className="px-3 py-2 flex gap-2">
-                          <input
-                            autoFocus
-                            type="text"
-                            placeholder="Deck name…"
-                            value={newDeckName}
-                            onChange={e => setNewDeckName(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') handleCreateDeck(); if (e.key === 'Escape') setShowNewDeckInput(false) }}
-                            className="flex-1 px-2 py-1 rounded text-sm outline-none"
-                            style={{ backgroundColor: '#1e2330', border: '1px solid #363d52', color: '#EAEAEA' }}
-                          />
-                          <button
-                            onClick={handleCreateDeck}
-                            disabled={creatingDeck || !newDeckName.trim()}
-                            className="px-2 py-1 rounded text-xs font-semibold disabled:opacity-50"
-                            style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
-                          >
-                            {creatingDeck ? '…' : 'Create'}
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setShowNewDeckInput(true)}
-                          className="w-full text-left px-4 py-2.5 text-sm hover:opacity-80 transition-opacity"
-                          style={{ color: '#08D9D6' }}
-                        >
-                          + New Deck
-                        </button>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
+          {user && card && <AddToDeckButton card={card} authFetch={authFetch} />}
 
         </div>{/* end card info */}
       </div>{/* end top section */}
