@@ -58,13 +58,33 @@ function Header() {
   )
 }
 
+function Footer() {
+  return (
+    <footer
+      className="border-t mt-12 px-6 py-6 flex flex-col items-center gap-2"
+      style={{ borderColor: '#363d52', color: '#8892a4' }}
+    >
+      <p className="text-sm">© {new Date().getFullYear()} CCGVault — built by a collector, for collectors</p>
+      <a
+        href="https://ko-fi.com/ccgvault"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 text-sm px-4 py-2 rounded transition-opacity hover:opacity-80"
+        style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#08D9D6' }}
+      >
+        ☕ Buy me a coffee
+      </a>
+    </footer>
+  )
+}
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <div className="min-h-screen" style={{ backgroundColor: '#252A34', color: '#EAEAEA' }}>
+        <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#252A34', color: '#EAEAEA' }}>
           <Header />
-          <main className="max-w-7xl mx-auto px-6 py-8">
+          <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
             <Routes>
               <Route path="/" element={<GamesPage />} />
               <Route path="/games/:slug" element={<SetsPage />} />
@@ -78,6 +98,7 @@ function App() {
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             </Routes>
           </main>
+          <Footer />
         </div>
       </AuthProvider>
     </BrowserRouter>
