@@ -14,6 +14,9 @@ node_modules/
 # Mac junk
 .DS_Store
 
+# Local backup script (contains no secrets but is machine-specific)
+backup.sh
+
 # VSCode
 .vscode/
 
