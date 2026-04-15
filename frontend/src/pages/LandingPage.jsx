@@ -32,10 +32,6 @@ export default function LandingPage() {
         <p className="text-xl mb-2" style={{ color: '#EAEAEA' }}>
           The collectible card game database for everyone.
         </p>
-        <p className="text-base mb-10 max-w-xl mx-auto" style={{ color: '#8892a4' }}>
-          From Magic: The Gathering to obscure 90s games you forgot existed —
-          browse cards, track your collection, and build decks across hundreds of games.
-        </p>
         <div className="flex items-center justify-center gap-4">
           <button
             onClick={() => navigate('/games')}
@@ -70,6 +66,10 @@ export default function LandingPage() {
             <p className="text-3xl font-bold" style={{ color: '#08D9D6' }}>500k+</p>
             <p className="text-sm" style={{ color: '#8892a4' }}>Cards</p>
           </div>
+          <p className="text-sm text-center max-w-sm" style={{ color: '#8892a4' }}>
+            From Magic: The Gathering to obscure 90s games you forgot existed —
+            browse cards, track your collection, and build decks across hundreds of games.
+          </p>
         </div>
       )}
 
