@@ -91,6 +91,7 @@ func (a *App) routes() http.Handler {
 		// Collection — specific paths before parameterized ones
 		r.Get("/api/users/me/collection", a.getCollection)
 		r.Post("/api/users/me/collection", a.addToCollection)
+		r.Get("/api/users/me/collection/export", a.exportCollection)
 		r.Get("/api/users/me/collection/set/{setID}", a.getCollectionForSet)
 		r.Get("/api/users/me/collection/printing/{printingID}", a.getCollectionItem)
 		r.Patch("/api/users/me/collection/{printingID}", a.updateCollectionQuantity)
@@ -100,6 +101,7 @@ func (a *App) routes() http.Handler {
 		r.Get("/api/users/me/decks", a.listDecks)
 		r.Post("/api/users/me/decks", a.createDeck)
 		r.Get("/api/decks/{deckID}", a.getDeck)
+		r.Get("/api/decks/{deckID}/export", a.exportDeck)
 		r.Patch("/api/decks/{deckID}", a.updateDeck)
 		r.Delete("/api/decks/{deckID}", a.deleteDeck)
 		r.Post("/api/decks/{deckID}/cards", a.addCardToDeck)
