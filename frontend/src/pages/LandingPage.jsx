@@ -55,7 +55,7 @@ export default function LandingPage() {
       {/* Stats bar */}
       {stats && (
         <div
-          className="flex flex-col items-center gap-6 py-8 rounded-xl mb-16"
+          className="inline-flex flex-col items-center gap-6 py-8 px-16 rounded-xl mb-16 w-full max-w-lg mx-auto"
           style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
         >
           <div className="flex items-center justify-center gap-12">
