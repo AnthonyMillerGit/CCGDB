@@ -58,7 +58,7 @@ export default function SearchBar() {
   }
 
   return (
-    <div className="relative" style={{ width: '420px' }}>
+    <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md">
       <div className="relative">
         <input
           ref={inputRef}
@@ -89,7 +89,7 @@ export default function SearchBar() {
 
       {showSuggestions && suggestions.length > 0 && (
         <div
-          className="absolute top-full left-0 right-0 mt-1 rounded-lg overflow-hidden z-50 border"
+          className="absolute top-full left-0 right-0 mt-1 rounded-lg overflow-hidden z-50 border max-h-80 overflow-y-auto"
           style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}
         >
           {suggestions.map((card, i) => (

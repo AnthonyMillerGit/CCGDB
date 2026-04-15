@@ -89,7 +89,7 @@ function QuantityControl({ quantity, onIncrease, onDecrease }) {
     <div className="flex items-center gap-1" onClick={e => e.preventDefault()}>
       <button
         onClick={onDecrease}
-        className="w-6 h-6 rounded text-sm font-bold flex items-center justify-center transition-colors"
+        className="w-8 h-8 rounded text-sm font-bold flex items-center justify-center transition-colors"
         style={{ backgroundColor: '#363d52', color: quantity === 1 ? '#FF2E63' : '#EAEAEA' }}
         title={quantity === 1 ? 'Remove from collection' : 'Remove one copy'}
       >
@@ -100,7 +100,7 @@ function QuantityControl({ quantity, onIncrease, onDecrease }) {
       </span>
       <button
         onClick={onIncrease}
-        className="w-6 h-6 rounded text-sm font-bold flex items-center justify-center transition-colors"
+        className="w-8 h-8 rounded text-sm font-bold flex items-center justify-center transition-colors"
         style={{ backgroundColor: '#363d52', color: '#EAEAEA' }}
         title="Add one copy"
       >

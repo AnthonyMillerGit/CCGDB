@@ -297,23 +297,23 @@ export default function CardDetailPage() {
       </button>
 
       {/* Top section */}
-      <div className="flex flex-col md:flex-row gap-8 mb-12">
+      <div className="flex flex-col md:flex-row gap-10 mb-12">
 
         {/* Card image */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 flex flex-col items-center gap-4 w-full md:w-auto">
           {selectedPrinting?.image_url ? (
-            <div className="flex flex-col items-center gap-3">
+            <>
               <img
                 src={flipped && selectedPrinting.back_image_url
                   ? selectedPrinting.back_image_url
                   : selectedPrinting.image_url}
                 alt={card.name}
-                className="w-72 rounded-xl shadow-2xl"
+                className="w-full max-w-xs sm:max-w-sm md:w-80 lg:w-96 rounded-xl shadow-2xl"
               />
               {selectedPrinting.back_image_url && (
                 <button
                   onClick={() => setFlipped(!flipped)}
-                  className="text-sm font-medium px-4 py-2 rounded-lg transition-all duration-200"
+                  className="text-sm font-medium px-4 py-2 rounded-lg transition-all duration-200 w-full"
                   style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
                   onMouseEnter={e => e.currentTarget.style.backgroundColor = '#06b6b4'}
                   onMouseLeave={e => e.currentTarget.style.backgroundColor = '#08D9D6'}
@@ -321,9 +321,9 @@ export default function CardDetailPage() {
                   {flipped ? '← Front' : 'Flip Card →'}
                 </button>
               )}
-            </div>
+            </>
           ) : (
-            <div className="w-72 aspect-[2.5/3.5] rounded-xl flex items-center justify-center"
+            <div className="w-full max-w-xs sm:max-w-sm md:w-80 lg:w-96 aspect-[2.5/3.5] rounded-xl flex items-center justify-center"
               style={{ backgroundColor: '#2d3243' }}>
               <span style={{ color: '#8892a4' }}>No image</span>
             </div>
@@ -331,27 +331,27 @@ export default function CardDetailPage() {
         </div>
 
         {/* Card info */}
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
 
-          <span className="text-sm font-medium uppercase tracking-wide" style={{ color: '#08D9D6' }}>
+          <span className="text-base font-semibold uppercase tracking-widest" style={{ color: '#08D9D6' }}>
             {card.game}
           </span>
 
-          <div className="flex items-center gap-4 mt-1 mb-1">
-            <h2 className="text-4xl font-bold" style={{ color: '#EAEAEA' }}>{card.name}</h2>
-            <ManaCost cost={manaCost} />
+          <div className="flex items-start gap-4 mt-2 mb-2 flex-wrap">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight" style={{ color: '#EAEAEA' }}>{card.name}</h2>
+            <div className="mt-2"><ManaCost cost={manaCost} /></div>
           </div>
 
-          <div className="flex items-center gap-4 mb-3">
-            <p className="text-lg" style={{ color: '#8892a4' }}>{typeLine}</p>
+          <div className="flex items-center gap-4 mb-4 flex-wrap">
+            <p className="text-xl" style={{ color: '#8892a4' }}>{typeLine}</p>
             {power && toughness && (
-              <span className="font-bold text-lg px-2 py-0.5 rounded border"
+              <span className="font-bold text-xl px-3 py-1 rounded border"
                 style={{ color: '#EAEAEA', borderColor: '#363d52', backgroundColor: '#2d3243' }}>
                 {power}/{toughness}
               </span>
             )}
             {loyalty && (
-              <span className="font-bold text-lg px-2 py-0.5 rounded border"
+              <span className="font-bold text-xl px-3 py-1 rounded border"
                 style={{ color: '#EAEAEA', borderColor: '#363d52', backgroundColor: '#2d3243' }}>
                 Loyalty: {loyalty}
               </span>
@@ -359,16 +359,16 @@ export default function CardDetailPage() {
           </div>
 
           {selectedPrinting && (
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-6">
               <button
                 onClick={() => navigate(`/sets/${selectedPrinting.set_id}`)}
-                className="text-base font-semibold hover:opacity-80 transition-opacity underline underline-offset-2"
+                className="text-lg font-semibold hover:opacity-80 transition-opacity underline underline-offset-2"
                 style={{ color: '#08D9D6' }}
               >
                 {selectedPrinting.set_name}
               </button>
               <span style={{ color: '#363d52' }}>•</span>
-              <span className="text-base font-semibold capitalize" style={{ color: rarityColor }}>
+              <span className="text-lg font-semibold capitalize" style={{ color: rarityColor }}>
                 {selectedPrinting.rarity}
               </span>
             </div>
@@ -383,17 +383,27 @@ export default function CardDetailPage() {
             />
           ) : (
             rulesText && (
-              <div className="rounded-xl p-4 mb-4 border"
+              <div className="rounded-xl p-5 mb-5 border"
                 style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}>
-                <p className="whitespace-pre-line leading-relaxed" style={{ color: '#EAEAEA' }}>
+                <p className="whitespace-pre-line leading-relaxed text-base" style={{ color: '#EAEAEA' }}>
                   {rulesText}
                 </p>
               </div>
             )
           )}
 
+          {/* Flavor text */}
+          {selectedPrinting?.flavor_text && (
+            <div className="rounded-xl px-5 py-4 mb-5 border"
+              style={{ backgroundColor: '#1e2330', borderColor: '#363d52' }}>
+              <p className="italic text-base leading-relaxed" style={{ color: '#8892a4' }}>
+                "{selectedPrinting.flavor_text}"
+              </p>
+            </div>
+          )}
+
           {keywords.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-5">
               {keywords.map(kw => (
                 <span
                   key={kw}
@@ -407,62 +417,47 @@ export default function CardDetailPage() {
           )}
 
           {selectedPrinting && (
-            <div className="flex flex-wrap gap-x-6 gap-y-2 mb-4">
+            <div className="grid grid-cols-2 gap-4 mb-6 p-4 rounded-xl border"
+              style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}>
               {selectedPrinting.collector_number && (
                 <div>
-                  <span className="text-xs uppercase tracking-wide mr-2" style={{ color: '#8892a4' }}>
-                    Collector #
-                  </span>
-                  <span className="text-sm font-medium" style={{ color: '#EAEAEA' }}>
-                    {selectedPrinting.collector_number}
-                  </span>
+                  <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#8892a4' }}>Collector #</p>
+                  <p className="text-base font-medium" style={{ color: '#EAEAEA' }}>{selectedPrinting.collector_number}</p>
                 </div>
               )}
               {selectedPrinting.release_date && (
                 <div>
-                  <span className="text-xs uppercase tracking-wide mr-2" style={{ color: '#8892a4' }}>
-                    Released
-                  </span>
-                  <span className="text-sm font-medium" style={{ color: '#EAEAEA' }}>
-                    {selectedPrinting.release_date}
-                  </span>
+                  <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#8892a4' }}>Released</p>
+                  <p className="text-base font-medium" style={{ color: '#EAEAEA' }}>{selectedPrinting.release_date}</p>
                 </div>
               )}
               {selectedPrinting.artist && (
                 <div>
-                  <span className="text-xs uppercase tracking-wide mr-2" style={{ color: '#8892a4' }}>
-                    Artist
-                  </span>
-                  <span className="text-sm font-medium" style={{ color: '#EAEAEA' }}>
-                    ✏️ {selectedPrinting.artist}
-                  </span>
+                  <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#8892a4' }}>Artist</p>
+                  <p className="text-base font-medium" style={{ color: '#EAEAEA' }}>✏️ {selectedPrinting.artist}</p>
                 </div>
               )}
               {selectedPrinting.set_code && (
                 <div>
-                  <span className="text-xs uppercase tracking-wide mr-2" style={{ color: '#8892a4' }}>
-                    Set Code
-                  </span>
-                  <span className="text-sm font-medium" style={{ color: '#EAEAEA' }}>
-                    {selectedPrinting.set_code?.toUpperCase()}
-                  </span>
+                  <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#8892a4' }}>Set Code</p>
+                  <p className="text-base font-medium" style={{ color: '#EAEAEA' }}>{selectedPrinting.set_code?.toUpperCase()}</p>
                 </div>
               )}
             </div>
           )}
 
-          {/* Collection button */}
+          {/* Collection buttons */}
           {user && selectedPrinting && (
-            <div className="flex items-center gap-3 mt-4">
+            <div className="flex items-center gap-3 mt-2">
               {collectionItem ? (
                 <>
-                  <span className="text-sm text-gray-400">
+                  <span className="text-base text-gray-400">
                     In collection: <strong style={{ color: '#08D9D6' }}>×{collectionItem.quantity}</strong>
                   </span>
                   <button
                     onClick={handleAddToCollection}
                     disabled={collectionLoading}
-                    className="px-3 py-1.5 rounded text-sm font-medium disabled:opacity-50"
+                    className="px-4 py-2 rounded text-sm font-medium disabled:opacity-50"
                     style={{ backgroundColor: '#2d3243', border: '1px solid #08D9D6', color: '#08D9D6' }}
                   >
                     + Add Another
@@ -470,7 +465,7 @@ export default function CardDetailPage() {
                   <button
                     onClick={handleRemoveFromCollection}
                     disabled={collectionLoading}
-                    className="px-3 py-1.5 rounded text-sm font-medium disabled:opacity-50"
+                    className="px-4 py-2 rounded text-sm font-medium disabled:opacity-50"
                     style={{ backgroundColor: '#2d3243', border: '1px solid #FF2E63', color: '#FF2E63' }}
                   >
                     Remove
@@ -480,7 +475,7 @@ export default function CardDetailPage() {
                 <button
                   onClick={handleAddToCollection}
                   disabled={collectionLoading}
-                  className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
+                  className="px-5 py-2.5 rounded text-base font-semibold disabled:opacity-50"
                   style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
                 >
                   {collectionLoading ? 'Adding…' : '+ Add to Collection'}
@@ -495,8 +490,8 @@ export default function CardDetailPage() {
         </div>{/* end card info */}
       </div>{/* end top section */}
 
-      {/* Legalities - MTG only */}
-      {card.game_slug === 'mtg' && Object.keys(legalities).length > 0 && (
+      {/* Format Legality */}
+      {Object.keys(legalities).length > 0 && (
         <div className="mb-12">
           <h3 className="text-2xl font-bold mb-4" style={{ color: '#EAEAEA' }}>Format Legality</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
@@ -507,17 +502,17 @@ export default function CardDetailPage() {
         </div>
       )}
 
-      {/* All printings - MTG only */}
-      {card.game_slug === 'mtg' && (
+      {/* All Printings — all games */}
+      {card.printings?.length > 1 && (
         <div>
           <h3 className="text-2xl font-bold mb-4" style={{ color: '#EAEAEA' }}>
             All Printings
             <span className="text-lg font-normal ml-2" style={{ color: '#8892a4' }}>
-              ({card.printings?.length ?? 0})
+              ({card.printings.length})
             </span>
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {card.printings?.map(printing => (
+            {card.printings.map(printing => (
               <div
                 key={printing.id}
                 onClick={() => handleSelectPrinting(printing)}
@@ -527,14 +522,10 @@ export default function CardDetailPage() {
                   borderColor: selectedPrinting?.id === printing.id ? '#08D9D6' : '#363d52'
                 }}
                 onMouseEnter={e => {
-                  if (selectedPrinting?.id !== printing.id) {
-                    e.currentTarget.style.borderColor = '#08D9D6'
-                  }
+                  if (selectedPrinting?.id !== printing.id) e.currentTarget.style.borderColor = '#08D9D6'
                 }}
                 onMouseLeave={e => {
-                  if (selectedPrinting?.id !== printing.id) {
-                    e.currentTarget.style.borderColor = '#363d52'
-                  }
+                  if (selectedPrinting?.id !== printing.id) e.currentTarget.style.borderColor = '#363d52'
                 }}
               >
                 {printing.image_url ? (
@@ -542,15 +533,11 @@ export default function CardDetailPage() {
                 ) : (
                   <div className="aspect-[2.5/3.5] flex items-center justify-center p-3"
                     style={{ backgroundColor: '#363d52' }}>
-                    <span className="text-xs text-center" style={{ color: '#8892a4' }}>
-                      {printing.set_name}
-                    </span>
+                    <span className="text-xs text-center" style={{ color: '#8892a4' }}>{printing.set_name}</span>
                   </div>
                 )}
                 <div className="p-2">
-                  <p className="text-xs font-medium truncate" style={{ color: '#EAEAEA' }}>
-                    {printing.set_name}
-                  </p>
+                  <p className="text-xs font-medium truncate" style={{ color: '#EAEAEA' }}>{printing.set_name}</p>
                   <p className="text-xs capitalize"
                     style={{ color: RARITY_COLORS[printing.rarity?.toLowerCase()] || '#8892a4' }}>
                     {printing.rarity}

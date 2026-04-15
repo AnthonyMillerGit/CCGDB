@@ -22,15 +22,15 @@ function DeckCardRow({ card, onIncrease, onDecrease }) {
       </div>
       <div className="flex items-center gap-1 flex-shrink-0">
         <button onClick={onDecrease}
-          className="w-5 h-5 rounded text-xs font-bold flex items-center justify-center transition-colors"
+          className="w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors"
           style={{ backgroundColor: '#363d52', color: card.quantity === 1 ? '#FF2E63' : '#EAEAEA' }}>
           −
         </button>
-        <span className="w-5 text-center text-xs font-bold" style={{ color: '#08D9D6' }}>
+        <span className="w-6 text-center text-xs font-bold" style={{ color: '#08D9D6' }}>
           {card.quantity}
         </span>
         <button onClick={onIncrease}
-          className="w-5 h-5 rounded text-xs font-bold flex items-center justify-center transition-colors"
+          className="w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors"
           style={{ backgroundColor: '#363d52', color: '#EAEAEA' }}>
           +
         </button>

@@ -43,7 +43,7 @@ const MentionList = forwardRef(({ items, command }, ref) => {
   }
 
   return (
-    <div style={{ minWidth: 260, maxWidth: 360 }}>
+    <div style={{ minWidth: 220, maxWidth: 'min(360px, 90vw)' }}>
       {items.map((item, index) => {
         const ts = TYPE_STYLES[item.type] || TYPE_STYLES.card
         return (
