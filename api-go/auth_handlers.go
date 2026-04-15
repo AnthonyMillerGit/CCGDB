@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -22,10 +23,13 @@ func (a *App) register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	username := strings.ToLower(strings.TrimSpace(body.Username))
+	email := strings.ToLower(strings.TrimSpace(body.Email))
+
 	var exists bool
 	a.db.QueryRow(r.Context(),
 		"SELECT EXISTS(SELECT 1 FROM users WHERE email = $1 OR username = $2)",
-		body.Email, body.Username,
+		email, username,
 	).Scan(&exists)
 	if exists {
 		jsonError(w, "Username or email already in use", http.StatusConflict)
@@ -40,9 +44,9 @@ func (a *App) register(w http.ResponseWriter, r *http.Request) {
 
 	var user User
 	err = a.db.QueryRow(r.Context(),
-		"INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email, is_verified, created_at",
-		body.Username, body.Email, hash,
-	).Scan(&user.ID, &user.Username, &user.Email, &user.IsVerified, &user.CreatedAt)
+		"INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email, is_verified, is_admin, created_at",
+		username, email, hash,
+	).Scan(&user.ID, &user.Username, &user.Email, &user.IsVerified, &user.IsAdmin, &user.CreatedAt)
 	if err != nil {
 		jsonError(w, "Server error", http.StatusInternalServerError)
 		return
@@ -84,9 +88,9 @@ func (a *App) login(w http.ResponseWriter, r *http.Request) {
 	var user User
 	var passwordHash string
 	err := a.db.QueryRow(r.Context(),
-		"SELECT id, username, email, password_hash, is_verified, created_at FROM users WHERE email = $1",
-		body.Email,
-	).Scan(&user.ID, &user.Username, &user.Email, &passwordHash, &user.IsVerified, &user.CreatedAt)
+		"SELECT id, username, email, password_hash, is_verified, is_admin, created_at FROM users WHERE email = $1",
+		strings.ToLower(strings.TrimSpace(body.Email)),
+	).Scan(&user.ID, &user.Username, &user.Email, &passwordHash, &user.IsVerified, &user.IsAdmin, &user.CreatedAt)
 	if err != nil || !verifyPassword(body.Password, passwordHash) {
 		jsonError(w, "Invalid email or password", http.StatusUnauthorized)
 		return
