@@ -96,15 +96,13 @@ export default function LandingPage() {
                 className="flex flex-col items-center gap-2 p-4 rounded-xl transition-colors hover:border-[#08D9D6]"
                 style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
               >
-                {game.card_back_image ? (
-                  <img
-                    src={`${API_URL}/assets${game.card_back_image}`}
-                    alt={game.name}
-                    className="w-12 h-12 object-cover rounded"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded" style={{ backgroundColor: '#363d52' }} />
-                )}
+                <img
+                  src={`${API_URL}/assets${game.card_back_image}`}
+                  alt={game.name}
+                  className="w-12 h-12 object-cover rounded"
+                  onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }}
+                />
+                <div className="w-12 h-12 rounded hidden" style={{ backgroundColor: '#363d52' }} />
                 <span className="text-xs text-center font-medium leading-tight" style={{ color: '#EAEAEA' }}>
                   {game.name}
                 </span>
