@@ -20,6 +20,7 @@ import hashlib
 import requests
 import psycopg2
 import psycopg2.extras
+import psycopg2.extensions
 from pathlib import Path
 from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -117,6 +118,24 @@ def download_one(url, dest_path, session):
     return False
 
 
+def flush_with_retry(cur, conn, updates, retries=5):
+    """Commit a batch of URL updates, retrying on deadlock."""
+    for attempt in range(retries):
+        try:
+            cur.executemany(
+                "UPDATE printings SET image_url = %s WHERE id = %s",
+                updates,
+            )
+            conn.commit()
+            return
+        except psycopg2.errors.DeadlockDetected:
+            conn.rollback()
+            if attempt < retries - 1:
+                time.sleep(2 ** attempt)
+            else:
+                raise
+
+
 # ── Core download logic ───────────────────────────────────────────────────────
 
 def download_game(slug):
@@ -184,20 +203,12 @@ def download_game(slug):
                 print(f"  [{i:>{len(str(total))}}/{total}] {pct:.1f}%  "
                       f"downloaded={downloaded:,}  failed={failed:,}")
                 if pending_updates:
-                    cur.executemany(
-                        "UPDATE printings SET image_url = %s WHERE id = %s",
-                        pending_updates,
-                    )
-                    conn.commit()
+                    flush_with_retry(cur, conn, pending_updates)
                     pending_updates = []
 
     # Final flush
     if pending_updates:
-        cur.executemany(
-            "UPDATE printings SET image_url = %s WHERE id = %s",
-            pending_updates,
-        )
-        conn.commit()
+        flush_with_retry(cur, conn, pending_updates)
 
     conn.close()
     print(f"\n  {slug} done — downloaded: {downloaded:,}, "
