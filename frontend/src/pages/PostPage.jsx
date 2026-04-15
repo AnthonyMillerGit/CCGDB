@@ -4,6 +4,7 @@ import { generateHTML } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import DOMPurify from 'dompurify'
 import { API_URL } from '../config'
+import '../styles/editor.css'
 import { useAuth } from '../context/AuthContext'
 
 function renderBody(body) {
@@ -67,7 +68,7 @@ export default function PostPage() {
 
       {/* Body */}
       <div
-        className="prose prose-invert max-w-none mb-12"
+        className="editor-content max-w-none mb-12"
         dangerouslySetInnerHTML={{ __html: html }}
         style={{ color: '#EAEAEA' }}
       />

@@ -3,15 +3,30 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
+import Image from '@tiptap/extension-image'
+import Link from '@tiptap/extension-link'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
+import '../styles/editor.css'
 
 function MenuBar({ editor }) {
   if (!editor) return null
+
+  function insertImage() {
+    const url = window.prompt('Image URL:')
+    if (url) editor.chain().focus().setImage({ src: url }).run()
+  }
+
+  function insertLink() {
+    const url = window.prompt('Link URL:')
+    if (url) editor.chain().focus().setLink({ href: url }).run()
+  }
+
   const btn = (action, label, active) => (
     <button
       type="button"
       onMouseDown={e => { e.preventDefault(); action() }}
+      title={label}
       className="px-2 py-1 rounded text-xs font-medium transition-colors"
       style={{
         backgroundColor: active ? '#08D9D6' : '#363d52',
@@ -21,19 +36,29 @@ function MenuBar({ editor }) {
       {label}
     </button>
   )
+
   return (
     <div className="flex flex-wrap gap-1 p-2 rounded-t-lg border-b"
       style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}>
-      {btn(() => editor.chain().focus().toggleBold().run(), 'B', editor.isActive('bold'))}
-      {btn(() => editor.chain().focus().toggleItalic().run(), 'I', editor.isActive('italic'))}
-      {btn(() => editor.chain().focus().toggleStrike().run(), 'S', editor.isActive('strike'))}
+      {btn(() => editor.chain().focus().toggleBold().run(), 'Bold', editor.isActive('bold'))}
+      {btn(() => editor.chain().focus().toggleItalic().run(), 'Italic', editor.isActive('italic'))}
+      {btn(() => editor.chain().focus().toggleStrike().run(), 'Strike', editor.isActive('strike'))}
+      <span style={{ borderLeft: '1px solid #363d52', margin: '0 4px' }} />
       {btn(() => editor.chain().focus().toggleHeading({ level: 2 }).run(), 'H2', editor.isActive('heading', { level: 2 }))}
       {btn(() => editor.chain().focus().toggleHeading({ level: 3 }).run(), 'H3', editor.isActive('heading', { level: 3 }))}
+      <span style={{ borderLeft: '1px solid #363d52', margin: '0 4px' }} />
       {btn(() => editor.chain().focus().toggleBulletList().run(), '• List', editor.isActive('bulletList'))}
       {btn(() => editor.chain().focus().toggleOrderedList().run(), '1. List', editor.isActive('orderedList'))}
+      <span style={{ borderLeft: '1px solid #363d52', margin: '0 4px' }} />
       {btn(() => editor.chain().focus().toggleBlockquote().run(), 'Quote', editor.isActive('blockquote'))}
       {btn(() => editor.chain().focus().toggleCodeBlock().run(), 'Code', editor.isActive('codeBlock'))}
-      {btn(() => editor.chain().focus().setHorizontalRule().run(), '—', false)}
+      <span style={{ borderLeft: '1px solid #363d52', margin: '0 4px' }} />
+      {btn(insertLink, '🔗 Link', editor.isActive('link'))}
+      {btn(insertImage, '🖼 Image', false)}
+      {btn(() => editor.chain().focus().setHorizontalRule().run(), '— Rule', false)}
+      <span style={{ borderLeft: '1px solid #363d52', margin: '0 4px' }} />
+      {btn(() => editor.chain().focus().undo().run(), '↩ Undo', false)}
+      {btn(() => editor.chain().focus().redo().run(), '↪ Redo', false)}
     </div>
   )
 }
@@ -45,9 +70,13 @@ function TagSearch({ label, searchUrl, selected, onAdd, onRemove, displayKey, id
   useEffect(() => {
     if (!query.trim()) { setResults([]); return }
     const t = setTimeout(async () => {
-      const res = await fetch(`${searchUrl}${encodeURIComponent(query)}`)
-      const data = await res.json()
-      setResults(Array.isArray(data) ? data.slice(0, 8) : [])
+      try {
+        const res = await fetch(`${searchUrl}${encodeURIComponent(query)}`)
+        const data = await res.json()
+        setResults(Array.isArray(data) ? data.slice(0, 8) : [])
+      } catch {
+        setResults([])
+      }
     }, 300)
     return () => clearTimeout(t)
   }, [query, searchUrl])
@@ -72,18 +101,18 @@ function TagSearch({ label, searchUrl, selected, onAdd, onRemove, displayKey, id
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder={`Search ${label.toLowerCase()}…`}
-          className="w-full px-3 py-1.5 rounded text-sm"
-          style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }}
+          className="w-full px-3 py-1.5 rounded text-sm outline-none"
+          style={{ backgroundColor: '#1e2330', border: '1px solid #363d52', color: '#EAEAEA' }}
         />
         {results.length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-1 rounded shadow-lg z-10 py-1"
             style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}>
             {results.map(item => (
-              <button key={item[idKey]} type="button"
+              <button key={item[idKey] ?? item.id} type="button"
                 onClick={() => { onAdd(item); setQuery(''); setResults([]) }}
                 className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#363d52] transition-colors"
                 style={{ color: '#EAEAEA' }}>
-                {item[displayKey]}
+                {item.name}
               </button>
             ))}
           </div>
@@ -112,10 +141,12 @@ export default function PostEditorPage() {
     extensions: [
       StarterKit,
       Placeholder.configure({ placeholder: 'Write something amazing…' }),
+      Image.configure({ inline: false, allowBase64: false }),
+      Link.configure({ openOnClick: false, HTMLAttributes: { rel: 'noopener noreferrer' } }),
     ],
     editorProps: {
       attributes: {
-        class: 'outline-none min-h-[400px] px-4 py-4',
+        class: 'editor-content outline-none min-h-[400px] px-5 py-5',
         style: 'color: #EAEAEA; font-size: 1rem; line-height: 1.75;',
       },
     },
@@ -156,12 +187,12 @@ export default function PostEditorPage() {
     setSaving(true)
     setError('')
 
-    const body = {
+    const payload = {
       title: title.trim(),
       slug: postSlug || autoSlug(title),
       excerpt: excerpt.trim() || null,
       body: editor.getJSON(),
-      published_at: publish ? (publishedAt || new Date().toISOString()) : (publishedAt || null),
+      published_at: publish ? (publishedAt ? new Date(publishedAt).toISOString() : new Date().toISOString()) : (publishedAt ? new Date(publishedAt).toISOString() : null),
       game_ids: gameTags.map(t => t.game_id),
       card_ids: cardTags.map(t => t.card_id),
       set_ids: [],
@@ -169,14 +200,18 @@ export default function PostEditorPage() {
 
     const url = isEdit ? `${API_URL}/api/admin/posts/${slug}` : `${API_URL}/api/admin/posts`
     const method = isEdit ? 'PATCH' : 'POST'
-    const res = await authFetch(url, { method, body: JSON.stringify(body) })
 
-    if (res.ok) {
-      const data = await res.json()
-      navigate(`/blog/${isEdit ? (body.slug || slug) : data.slug}`)
-    } else {
-      const data = await res.json()
-      setError(data.error || 'Failed to save post')
+    try {
+      const res = await authFetch(url, { method, body: JSON.stringify(payload) })
+      if (res.ok) {
+        const data = await res.json()
+        navigate(`/blog/${isEdit ? (payload.slug || slug) : data.slug}`)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setError(data.detail || `Failed to save post (${res.status})`)
+      }
+    } catch {
+      setError('Network error — check your connection')
     }
     setSaving(false)
   }
@@ -184,7 +219,7 @@ export default function PostEditorPage() {
   const inputStyle = { backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold" style={{ color: '#EAEAEA' }}>
           {isEdit ? 'Edit Post' : 'New Post'}
@@ -207,7 +242,7 @@ export default function PostEditorPage() {
             setTitle(e.target.value)
             if (!isEdit) setPostSlug(autoSlug(e.target.value))
           }}
-          className="w-full px-4 py-3 rounded-lg text-xl font-bold"
+          className="w-full px-4 py-3 rounded-lg text-xl font-bold outline-none"
           style={inputStyle}
         />
         <input
@@ -215,7 +250,7 @@ export default function PostEditorPage() {
           placeholder="Slug (auto-generated from title)"
           value={postSlug}
           onChange={e => setPostSlug(e.target.value)}
-          className="w-full px-3 py-2 rounded text-sm font-mono"
+          className="w-full px-3 py-2 rounded text-sm font-mono outline-none"
           style={inputStyle}
         />
         <textarea
@@ -223,7 +258,7 @@ export default function PostEditorPage() {
           value={excerpt}
           onChange={e => setExcerpt(e.target.value)}
           rows={2}
-          className="w-full px-3 py-2 rounded text-sm resize-none"
+          className="w-full px-3 py-2 rounded text-sm resize-none outline-none"
           style={inputStyle}
         />
       </div>
@@ -245,12 +280,12 @@ export default function PostEditorPage() {
           selected={gameTags}
           onAdd={g => setGameTags(prev => prev.find(t => t.game_id === g.id) ? prev : [...prev, { game_id: g.id, game_name: g.name, game_slug: g.slug }])}
           onRemove={id => setGameTags(prev => prev.filter(t => t.game_id !== id))}
-          displayKey="name"
+          displayKey="game_name"
           idKey="game_id"
         />
         <TagSearch
           label="Cards"
-          searchUrl={`${API_URL}/api/cards/search?q=`}
+          searchUrl={`${API_URL}/api/cards/search?name=`}
           selected={cardTags}
           onAdd={c => setCardTags(prev => prev.find(t => t.card_id === c.id) ? prev : [...prev, { card_id: c.id, card_name: c.name }])}
           onRemove={id => setCardTags(prev => prev.filter(t => t.card_id !== id))}
@@ -267,7 +302,7 @@ export default function PostEditorPage() {
             type="datetime-local"
             value={publishedAt}
             onChange={e => setPublishedAt(e.target.value)}
-            className="px-3 py-1.5 rounded text-sm"
+            className="px-3 py-1.5 rounded text-sm outline-none"
             style={inputStyle}
           />
         </div>
@@ -278,7 +313,7 @@ export default function PostEditorPage() {
             {saving ? 'Saving…' : 'Save Draft'}
           </button>
           <button type="button" onClick={() => handleSave(true)} disabled={saving}
-            className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
+            className="px-5 py-2 rounded text-sm font-semibold disabled:opacity-50"
             style={{ backgroundColor: '#08D9D6', color: '#252A34' }}>
             {saving ? 'Publishing…' : 'Publish'}
           </button>
