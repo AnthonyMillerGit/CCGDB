@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, useNavigate, Link, useLocation } from 'react-router-dom'
+import { API_URL } from './config'
 import GamesPage from './pages/GamesPage'
 import SetsPage from './pages/SetsPage'
 import CardsPage from './pages/CardsPage'
@@ -31,6 +32,14 @@ function NavLink({ to, children }) {
   )
 }
 
+async function goToRandomCard(navigate) {
+  try {
+    const res = await fetch(`${API_URL}/api/cards/random-one`)
+    const data = await res.json()
+    if (data.id) navigate(`/cards/${data.id}`)
+  } catch {}
+}
+
 function Header() {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -49,6 +58,13 @@ function Header() {
       <nav className="hidden sm:flex items-center gap-6">
         <NavLink to="/games">Games</NavLink>
         <NavLink to="/blog">Blog</NavLink>
+        <button
+          onClick={() => goToRandomCard(navigate)}
+          className="text-sm font-medium transition-colors"
+          style={{ color: '#8892a4', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
+          🎲 Random
+        </button>
       </nav>
       <div className="flex items-center gap-4 ml-auto">
         <SearchBar />

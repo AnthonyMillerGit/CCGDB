@@ -69,8 +69,10 @@ func (a *App) routes() http.Handler {
 	r.Get("/api/sets/{setID}", a.getSet)
 	r.Get("/api/sets/{setID}/cards", a.getSetCards)
 
-	// /api/cards/search must be registered before /api/cards/{cardID}
+	// /api/cards/search, /api/cards/random, /api/cards/random-one must be before /api/cards/{cardID}
 	r.Get("/api/cards/search", a.searchCards)
+	r.Get("/api/cards/random", a.randomCards)
+	r.Get("/api/cards/random-one", a.randomCard)
 	r.Get("/api/cards/{cardID}", a.getCard)
 	r.Get("/api/printings/{printingID}", a.getPrinting)
 	r.Get("/api/search/suggestions", a.searchSuggestions)

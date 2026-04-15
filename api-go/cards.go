@@ -190,6 +190,60 @@ func (a *App) getPrinting(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, p, http.StatusOK)
 }
 
+func (a *App) randomCard(w http.ResponseWriter, r *http.Request) {
+	var id int
+	err := a.db.QueryRow(r.Context(), `
+		SELECT c.id
+		FROM cards c
+		JOIN printings p ON p.card_id = c.id
+		WHERE p.image_url IS NOT NULL
+		ORDER BY RANDOM()
+		LIMIT 1
+	`).Scan(&id)
+	if err != nil {
+		jsonError(w, "No cards found", http.StatusNotFound)
+		return
+	}
+	jsonResponse(w, map[string]int{"id": id}, http.StatusOK)
+}
+
+func (a *App) randomCards(w http.ResponseWriter, r *http.Request) {
+	limit := parseIntQuery(r, "limit", 5)
+	slugs := r.URL.Query()["game"]
+	if len(slugs) == 0 {
+		slugs = []string{"mtg", "pokemon", "yugioh", "fab", "sorcery"}
+	}
+
+	rows, err := a.db.Query(r.Context(), `
+		SELECT DISTINCT ON (g.slug)
+		    c.id, c.name, c.card_type, g.slug AS game, g.name AS game_name,
+		    p.image_url
+		FROM printings p
+		JOIN cards c ON c.id = p.card_id
+		JOIN games g ON g.id = c.game_id
+		WHERE p.image_url IS NOT NULL
+		  AND g.slug = ANY($1)
+		ORDER BY g.slug, RANDOM()
+		LIMIT $2
+	`, slugs, limit)
+	if err != nil {
+		jsonError(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	cards := []CardSummary{}
+	for rows.Next() {
+		var c CardSummary
+		if err := rows.Scan(&c.ID, &c.Name, &c.CardType, &c.Game, &c.GameName, &c.ImageURL); err != nil {
+			jsonError(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		cards = append(cards, c)
+	}
+	jsonResponse(w, cards, http.StatusOK)
+}
+
 func (a *App) searchSuggestions(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
 	if len(q) < 2 {

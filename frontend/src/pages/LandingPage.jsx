@@ -5,12 +5,20 @@ import { useAuth } from '../context/AuthContext'
 
 // Fixed rotations and offsets for the card fan — deterministic so no layout shift
 const FAN_CARDS = [
-  { rotate: -18, x: -10, y: 8,  z: 1 },
-  { rotate: -9,  x: -5,  y: 3,  z: 2 },
+  { rotate: -32, x: -22, y: 18, z: 1 },
+  { rotate: -16, x: -11, y: 6,  z: 2 },
   { rotate: 0,   x: 0,   y: 0,  z: 3 },
-  { rotate: 9,   x: 5,   y: 3,  z: 4 },
-  { rotate: 18,  x: 10,  y: 8,  z: 5 },
+  { rotate: 16,  x: 11,  y: 6,  z: 4 },
+  { rotate: 32,  x: 22,  y: 18, z: 5 },
 ]
+
+async function goToRandomCard(navigate) {
+  try {
+    const res = await fetch(`${API_URL}/api/cards/random-one`)
+    const data = await res.json()
+    if (data.id) navigate(`/cards/${data.id}`)
+  } catch {}
+}
 
 export default function LandingPage() {
   const navigate = useNavigate()
@@ -32,19 +40,12 @@ export default function LandingPage() {
     }
 
     async function loadFanCards() {
-      // Pull from a few different popular games for variety
-      const slugs = ['mtg', 'pokemon', 'yugioh', 'fab', 'sorcery']
-      const results = await Promise.all(
-        slugs.map(slug =>
-          fetch(`${API_URL}/api/cards/search?q=&game=${slug}&limit=20`)
-            .then(r => r.json())
-            .catch(() => [])
-        )
-      )
-      const cards = results.flat().filter(c => c.image_url)
-      // Pick 5 random cards with images
-      const shuffled = cards.sort(() => Math.random() - 0.5).slice(0, 5)
-      setFanCards(shuffled)
+      const params = ['mtg', 'pokemon', 'yugioh', 'fab', 'sorcery']
+        .map(s => `game=${s}`).join('&')
+      const cards = await fetch(`${API_URL}/api/cards/random?limit=5&${params}`)
+        .then(r => r.json())
+        .catch(() => [])
+      setFanCards(Array.isArray(cards) ? cards.filter(c => c.image_url) : [])
     }
 
     load()
@@ -60,13 +61,20 @@ export default function LandingPage() {
         <p className="text-xl mb-2" style={{ color: '#EAEAEA' }}>
           The collectible card game database for everyone.
         </p>
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-4 flex-wrap">
           <button
             onClick={() => navigate('/games')}
             className="px-6 py-3 rounded-lg font-semibold text-base transition-opacity hover:opacity-90"
             style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
           >
             Browse Games
+          </button>
+          <button
+            onClick={() => goToRandomCard(navigate)}
+            className="px-6 py-3 rounded-lg font-semibold text-base transition-opacity hover:opacity-90"
+            style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
+          >
+            🎲 Random Card
           </button>
           {!user && (
             <Link
@@ -83,35 +91,11 @@ export default function LandingPage() {
       {/* Stats bar */}
       {stats && (
         <div
-          className="flex flex-col md:flex-row items-center gap-10 px-12 py-10 rounded-xl mb-16"
+          className="flex flex-col md:flex-row items-center gap-4 px-8 py-8 rounded-xl mb-16"
           style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
         >
-          {/* Card fan */}
-          {fanCards.length > 0 && (
-            <div className="relative flex-shrink-0" style={{ width: 180, height: 220 }}>
-              {fanCards.map((card, i) => {
-                const f = FAN_CARDS[i] || FAN_CARDS[0]
-                return (
-                  <img
-                    key={card.id}
-                    src={card.image_url}
-                    alt={card.name}
-                    className="absolute rounded-lg shadow-xl"
-                    style={{
-                      width: 100,
-                      top: '50%',
-                      left: '50%',
-                      transform: `translate(calc(-50% + ${f.x}px), calc(-50% + ${f.y}px)) rotate(${f.rotate}deg)`,
-                      zIndex: f.z,
-                    }}
-                  />
-                )
-              })}
-            </div>
-          )}
-
-          {/* Stats + description */}
-          <div className="flex flex-col items-center md:items-start gap-4 flex-1">
+          {/* Stats + description — 50% */}
+          <div className="flex flex-col items-center md:items-start gap-4 w-full md:w-1/2">
             <div className="flex items-center gap-12">
               <div className="text-center md:text-left">
                 <p className="text-6xl font-bold" style={{ color: '#08D9D6' }}>{stats.games}+</p>
@@ -122,11 +106,35 @@ export default function LandingPage() {
                 <p className="text-lg mt-1" style={{ color: '#8892a4' }}>Cards</p>
               </div>
             </div>
-            <p className="text-sm text-center md:text-left max-w-sm" style={{ color: '#8892a4' }}>
+            <p className="text-sm text-center md:text-left" style={{ color: '#8892a4' }}>
               From Magic: The Gathering to obscure 90s games you forgot existed —
               browse cards, track your collection, and build decks across hundreds of games.
             </p>
           </div>
+
+          {/* Card fan — 50% */}
+          {fanCards.length > 0 && (
+            <div className="relative w-full md:w-1/2" style={{ height: 340 }}>
+              {fanCards.map((card, i) => {
+                const f = FAN_CARDS[i] || FAN_CARDS[0]
+                return (
+                  <img
+                    key={card.id}
+                    src={card.image_url}
+                    alt={card.name}
+                    className="absolute rounded-lg shadow-xl"
+                    style={{
+                      width: 180,
+                      top: '50%',
+                      left: '50%',
+                      transform: `translate(calc(-50% + ${f.x}px), calc(-50% + ${f.y}px)) rotate(${f.rotate}deg)`,
+                      zIndex: f.z,
+                    }}
+                  />
+                )
+              })}
+            </div>
+          )}
         </div>
       )}
 
