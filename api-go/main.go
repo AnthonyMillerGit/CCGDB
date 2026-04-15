@@ -75,6 +75,12 @@ func (a *App) routes() http.Handler {
 	r.Get("/api/printings/{printingID}", a.getPrinting)
 	r.Get("/api/search/suggestions", a.searchSuggestions)
 
+	// Blog — public
+	r.Get("/api/blog", a.listPosts)
+	r.Get("/api/blog/{slug}", a.getPost)
+	r.Get("/api/games/{slug}/posts", a.getGamePosts)
+	r.Get("/api/cards/{cardID}/posts", a.getCardPosts)
+
 	r.Post("/api/auth/register", a.register)
 	r.Post("/api/auth/login", a.login)
 	r.Get("/api/auth/verify-email", a.verifyEmail)
@@ -87,6 +93,13 @@ func (a *App) routes() http.Handler {
 
 		r.Get("/api/auth/me", a.me)
 		r.Post("/api/auth/resend-verification", a.resendVerification)
+
+		// Blog — admin
+		r.Get("/api/admin/posts", a.listDraftPosts)
+		r.Get("/api/admin/posts/{slug}", a.getPostAdmin)
+		r.Post("/api/admin/posts", a.createPost)
+		r.Patch("/api/admin/posts/{slug}", a.updatePost)
+		r.Delete("/api/admin/posts/{slug}", a.deletePost)
 
 		// Collection — specific paths before parameterized ones
 		r.Get("/api/users/me/collection", a.getCollection)
