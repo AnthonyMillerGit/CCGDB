@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { API_URL } from '../config'
+import { useAuth } from '../context/AuthContext'
 
 const FEATURED_SLUGS = ['mtg', 'pokemon', 'yugioh', 'starwars_decipher', 'fab', 'sorcery']
 
 export default function LandingPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [stats, setStats] = useState(null)
   const [featured, setFeatured] = useState([])
   const [posts, setPosts] = useState([])
@@ -46,13 +48,15 @@ export default function LandingPage() {
           >
             Browse Games
           </button>
-          <Link
-            to="/login"
-            className="px-6 py-3 rounded-lg font-semibold text-base"
-            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }}
-          >
-            Sign Up Free
-          </Link>
+          {!user && (
+            <Link
+              to="/login"
+              className="px-6 py-3 rounded-lg font-semibold text-base"
+              style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }}
+            >
+              Sign Up Free
+            </Link>
+          )}
         </div>
       </div>
 
