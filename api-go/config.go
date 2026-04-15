@@ -56,7 +56,7 @@ func loadConfig() *Config {
 		DBPassword: getEnv("POSTGRES_PASSWORD", ""),
 		DBPort:     getEnv("POSTGRES_PORT", "5432"),
 
-		JWTSecret:             getEnv("JWT_SECRET", "change-me"),
+		JWTSecret:             getEnv("JWT_SECRET", ""),
 		AccessTokenExpireDays: expireDays,
 
 		AppName:        getEnv("APP_NAME", "CCGVault"),
