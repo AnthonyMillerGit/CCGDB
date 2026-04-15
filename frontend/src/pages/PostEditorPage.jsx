@@ -149,7 +149,7 @@ export default function PostEditorPage() {
     ],
     editorProps: {
       attributes: {
-        class: 'editor-content outline-none min-h-[400px] px-5 py-5',
+        class: 'editor-content outline-none min-h-[250px] sm:min-h-[400px] px-4 py-4 sm:px-5 sm:py-5',
         style: 'color: #EAEAEA; font-size: 1rem; line-height: 1.75;',
       },
     },

@@ -55,7 +55,7 @@ export default function GamesPage() {
       </div>
 
       {/* Grid */}
-      <div className="flex flex-wrap gap-5">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
         {filtered.map(game => (
           <GameCard
             key={game.id}
@@ -80,7 +80,7 @@ function GameCard({ game, onClick }) {
   return (
     <div
       onClick={onClick}
-      className="cursor-pointer flex flex-col w-36 transition-all duration-200"
+      className="cursor-pointer flex flex-col w-full transition-all duration-200"
       style={{ transform: hovered ? 'scale(1.05)' : 'scale(1)' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

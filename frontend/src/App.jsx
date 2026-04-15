@@ -45,17 +45,17 @@ function Header() {
   const { user } = useAuth()
   return (
     <header
-      className="border-b px-6 py-4 flex items-center justify-between gap-6"
+      className="border-b px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-6"
       style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}
     >
       <h1
-        className="text-2xl font-bold cursor-pointer flex-shrink-0"
+        className="text-xl sm:text-2xl font-bold cursor-pointer flex-shrink-0"
         style={{ color: '#08D9D6' }}
         onClick={() => navigate('/')}
       >
         CCGVault
       </h1>
-      <nav className="hidden sm:flex items-center gap-6">
+      <nav className="hidden md:flex items-center gap-6">
         <NavLink to="/games">Games</NavLink>
         <NavLink to="/blog">Blog</NavLink>
         <button
@@ -66,7 +66,7 @@ function Header() {
           🎲 Random
         </button>
       </nav>
-      <div className="flex items-center gap-4 ml-auto">
+      <div className="flex items-center gap-2 sm:gap-4 ml-auto">
         <SearchBar />
         {user ? (
           <Link
@@ -129,7 +129,7 @@ function App() {
       <AuthProvider>
         <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#252A34', color: '#EAEAEA' }}>
           <Header />
-          <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
+          <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/games" element={<GamesPage />} />

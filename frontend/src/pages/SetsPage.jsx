@@ -56,7 +56,7 @@ function SetRow({ set, isLast, onClick }) {
   return (
     <div
       onClick={onClick}
-      className="flex items-center justify-between px-5 py-4 cursor-pointer transition-all duration-150"
+      className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 py-3 sm:px-5 sm:py-4 cursor-pointer transition-all duration-150 gap-1 sm:gap-0"
       style={{
         backgroundColor: hovered ? '#363d52' : '#2d3243',
         borderBottom: isLast ? 'none' : '1px solid #363d52',
@@ -70,12 +70,12 @@ function SetRow({ set, isLast, onClick }) {
         )}
         <span className="font-medium" style={{ color: '#EAEAEA' }}>{set.name}</span>
       </div>
-      <div className="flex items-center gap-6 shrink-0">
-        <span className="text-sm" style={{ color: '#8892a4' }}>
+      <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+        <span className="text-xs sm:text-sm" style={{ color: '#8892a4' }}>
           {formatDate(set.release_date)}
         </span>
         <span
-          className="text-sm transition-colors duration-150"
+          className="text-sm transition-colors duration-150 hidden sm:block"
           style={{ color: hovered ? '#08D9D6' : '#363d52' }}
         >
           →
