@@ -3,13 +3,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
 
-const FEATURED_SLUGS = ['mtg', 'pokemon', 'yugioh', 'starwars_decipher', 'fab', 'sorcery']
-
 export default function LandingPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [stats, setStats] = useState(null)
-  const [featured, setFeatured] = useState([])
   const [posts, setPosts] = useState([])
 
   useEffect(() => {
@@ -21,7 +18,6 @@ export default function LandingPage() {
       const games = await gamesRes.json()
       const postData = await postsRes.json()
       setStats({ games: games.length })
-      setFeatured(games.filter(g => FEATURED_SLUGS.includes(g.slug)).slice(0, 6))
       setPosts(Array.isArray(postData) ? postData : [])
     }
     load()
@@ -81,36 +77,6 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* Featured games */}
-      {featured.length > 0 && (
-        <div className="mb-16">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold" style={{ color: '#EAEAEA' }}>Featured Games</h2>
-            <Link to="/games" className="text-sm" style={{ color: '#08D9D6' }}>View all →</Link>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-            {featured.map(game => (
-              <Link
-                key={game.id}
-                to={`/games/${game.slug}`}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl transition-colors hover:border-[#08D9D6]"
-                style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
-              >
-                <img
-                  src={`${API_URL}/assets${game.card_back_image}`}
-                  alt={game.name}
-                  className="w-12 h-12 object-cover rounded"
-                  onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block' }}
-                />
-                <div className="w-12 h-12 rounded hidden" style={{ backgroundColor: '#363d52' }} />
-                <span className="text-xs text-center font-medium leading-tight" style={{ color: '#EAEAEA' }}>
-                  {game.name}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Latest posts */}
       {posts.length > 0 && (
