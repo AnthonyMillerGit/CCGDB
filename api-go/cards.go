@@ -77,7 +77,7 @@ func (a *App) searchCards(w http.ResponseWriter, r *http.Request) {
 		LEFT JOIN printings p ON p.card_id = c.id
 		WHERE c.name ILIKE $1`
 
-	args := []any{"%" + name + "%"}
+	args := []any{"%" + escapeLike(name) + "%"}
 	if game != "" {
 		query += " AND g.slug = $2"
 		args = append(args, game)
@@ -271,7 +271,7 @@ func (a *App) searchSuggestions(w http.ResponseWriter, r *http.Request) {
 		WHERE c.name ILIKE $1
 		ORDER BY c.name, g.slug, p.image_url NULLS LAST, c.id
 		LIMIT $2
-	`, "%"+q+"%", limit)
+	`, "%"+escapeLike(q)+"%", limit)
 	if err != nil {
 		jsonError(w, "Database error", http.StatusInternalServerError)
 		return

@@ -46,6 +46,7 @@ func (a *App) routes() http.Handler {
 
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(securityHeaders)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   strings.Split(a.cfg.AllowedOrigins, ","),
