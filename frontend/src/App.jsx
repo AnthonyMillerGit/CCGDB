@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useNavigate, Link } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate, Link, useLocation } from 'react-router-dom'
 import GamesPage from './pages/GamesPage'
 import SetsPage from './pages/SetsPage'
 import CardsPage from './pages/CardsPage'
@@ -9,26 +9,48 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import ProfilePage from './pages/ProfilePage'
+import LandingPage from './pages/LandingPage'
+import BlogPage from './pages/BlogPage'
+import PostPage from './pages/PostPage'
+import PostEditorPage from './pages/PostEditorPage'
 import SearchBar from './components/SearchBar'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider, useAuth } from './context/AuthContext'
+
+function NavLink({ to, children }) {
+  const location = useLocation()
+  const active = location.pathname === to || location.pathname.startsWith(to + '/')
+  return (
+    <Link
+      to={to}
+      className="text-sm font-medium transition-colors"
+      style={{ color: active ? '#08D9D6' : '#8892a4' }}
+    >
+      {children}
+    </Link>
+  )
+}
 
 function Header() {
   const navigate = useNavigate()
   const { user } = useAuth()
   return (
     <header
-      className="border-b px-6 py-4 flex items-center justify-between"
+      className="border-b px-6 py-4 flex items-center justify-between gap-6"
       style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}
     >
       <h1
-        className="text-2xl font-bold cursor-pointer"
+        className="text-2xl font-bold cursor-pointer flex-shrink-0"
         style={{ color: '#08D9D6' }}
         onClick={() => navigate('/')}
       >
         CCGVault
       </h1>
-      <div className="flex items-center gap-4">
+      <nav className="hidden sm:flex items-center gap-6">
+        <NavLink to="/games">Games</NavLink>
+        <NavLink to="/blog">Blog</NavLink>
+      </nav>
+      <div className="flex items-center gap-4 ml-auto">
         <SearchBar />
         {user ? (
           <Link
@@ -93,11 +115,16 @@ function App() {
           <Header />
           <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
             <Routes>
-              <Route path="/" element={<GamesPage />} />
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/games" element={<GamesPage />} />
               <Route path="/games/:slug" element={<SetsPage />} />
               <Route path="/sets/:setId" element={<CardsPage />} />
               <Route path="/cards/:cardId" element={<CardDetailPage />} />
               <Route path="/decks/:deckId" element={<ProtectedRoute><DeckBuilderPage /></ProtectedRoute>} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/:slug" element={<PostPage />} />
+              <Route path="/admin/posts/new" element={<ProtectedRoute><PostEditorPage /></ProtectedRoute>} />
+              <Route path="/admin/posts/:slug/edit" element={<ProtectedRoute><PostEditorPage /></ProtectedRoute>} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
