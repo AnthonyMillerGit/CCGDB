@@ -113,6 +113,7 @@ type User struct {
 	Username   string    `json:"username"`
 	Email      string    `json:"email"`
 	IsVerified bool      `json:"is_verified"`
+	IsAdmin    bool      `json:"is_admin"`
 	CreatedAt  time.Time `json:"created_at"`
 }
 

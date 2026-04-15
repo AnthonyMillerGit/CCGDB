@@ -14,6 +14,9 @@ node_modules/
 # Mac junk
 .DS_Store
 
+# Local backup script (contains no secrets but is machine-specific)
+backup.sh
+
 # VSCode
 .vscode/
 
@@ -31,6 +34,6 @@ ingestion/startrek_2e_source/
 ingestion/seventhsea/octgn_source/
 ingestion/seventhsea/source/
 
-# Card images (large binary assets, served locally or from S3)
+# Card images and card backs (large binary assets, served locally or from S3)
 frontend/public/cards/
-assets/cards/
+assets/

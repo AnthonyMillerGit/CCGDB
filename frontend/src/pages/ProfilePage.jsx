@@ -3,6 +3,55 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
 
+async function triggerDownload(authFetch, url, filename) {
+  const res = await authFetch(url)
+  if (!res.ok) return
+  const blob = await res.blob()
+  const href = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = href
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(href)
+}
+
+function ExportMenu({ onExport }) {
+  const [open, setOpen] = useState(false)
+  const formats = [
+    { label: 'CSV', value: 'csv' },
+    { label: 'JSON', value: 'json' },
+    { label: 'TXT', value: 'txt' },
+  ]
+  return (
+    <div className="relative">
+      <button
+        onClick={e => { e.stopPropagation(); setOpen(o => !o) }}
+        className="text-xs px-3 py-1.5 rounded flex items-center gap-1"
+        style={{ backgroundColor: '#363d52', color: '#08D9D6', border: '1px solid #4a5268' }}
+      >
+        Export ▾
+      </button>
+      {open && (
+        <div
+          className="absolute right-0 mt-1 rounded shadow-lg z-10 py-1 min-w-[80px]"
+          style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
+        >
+          {formats.map(f => (
+            <button
+              key={f.value}
+              onClick={e => { e.stopPropagation(); setOpen(false); onExport(f.value) }}
+              className="w-full text-left px-3 py-1.5 text-xs hover:bg-[#363d52] transition-colors"
+              style={{ color: '#EAEAEA' }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Unverified email banner ───────────────────────────────────────────────────
 
 function UnverifiedBanner({ authFetch }) {
@@ -263,13 +312,18 @@ function MyDecksTab({ authFetch }) {
                 </span>
               </div>
             </div>
-            <button
-              onClick={e => { e.stopPropagation(); handleDelete(deck.id) }}
-              className="text-xs px-3 py-1.5 rounded"
-              style={{ backgroundColor: '#363d52', color: '#FF2E63' }}
-            >
-              Delete
-            </button>
+            <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+              <ExportMenu onExport={fmt =>
+                triggerDownload(authFetch, `${API_URL}/api/decks/${deck.id}/export?format=${fmt}`, `${deck.name}.${fmt}`)
+              } />
+              <button
+                onClick={e => { e.stopPropagation(); handleDelete(deck.id) }}
+                className="text-xs px-3 py-1.5 rounded"
+                style={{ backgroundColor: '#363d52', color: '#FF2E63' }}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         ))}
       </div>
@@ -427,13 +481,18 @@ export default function ProfilePage() {
       {/* My Collection tab */}
       {activeTab === 'collection' && (
         <>
-          <div className="flex items-baseline justify-between mb-6">
+          <div className="flex items-center justify-between mb-6">
             {!loading && totalUnique > 0 && (
               <div className="flex gap-4 text-sm" style={{ color: '#8892a4' }}>
                 <span><strong style={{ color: '#EAEAEA' }}>{collection.length}</strong> games</span>
                 <span><strong style={{ color: '#EAEAEA' }}>{totalUnique}</strong> unique cards</span>
                 <span><strong style={{ color: '#EAEAEA' }}>{totalCopies}</strong> total copies</span>
               </div>
+            )}
+            {!loading && totalUnique > 0 && (
+              <ExportMenu onExport={fmt =>
+                triggerDownload(authFetch, `${API_URL}/api/users/me/collection/export?format=${fmt}`, `collection.${fmt}`)
+              } />
             )}
           </div>
 

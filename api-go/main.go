@@ -69,11 +69,19 @@ func (a *App) routes() http.Handler {
 	r.Get("/api/sets/{setID}", a.getSet)
 	r.Get("/api/sets/{setID}/cards", a.getSetCards)
 
-	// /api/cards/search must be registered before /api/cards/{cardID}
+	// /api/cards/search, /api/cards/random, /api/cards/random-one must be before /api/cards/{cardID}
 	r.Get("/api/cards/search", a.searchCards)
+	r.Get("/api/cards/random", a.randomCards)
+	r.Get("/api/cards/random-one", a.randomCard)
 	r.Get("/api/cards/{cardID}", a.getCard)
 	r.Get("/api/printings/{printingID}", a.getPrinting)
 	r.Get("/api/search/suggestions", a.searchSuggestions)
+
+	// Blog — public
+	r.Get("/api/blog", a.listPosts)
+	r.Get("/api/blog/{slug}", a.getPost)
+	r.Get("/api/games/{slug}/posts", a.getGamePosts)
+	r.Get("/api/cards/{cardID}/posts", a.getCardPosts)
 
 	r.Post("/api/auth/register", a.register)
 	r.Post("/api/auth/login", a.login)
@@ -88,9 +96,17 @@ func (a *App) routes() http.Handler {
 		r.Get("/api/auth/me", a.me)
 		r.Post("/api/auth/resend-verification", a.resendVerification)
 
+		// Blog — admin
+		r.Get("/api/admin/posts", a.listDraftPosts)
+		r.Get("/api/admin/posts/{slug}", a.getPostAdmin)
+		r.Post("/api/admin/posts", a.createPost)
+		r.Patch("/api/admin/posts/{slug}", a.updatePost)
+		r.Delete("/api/admin/posts/{slug}", a.deletePost)
+
 		// Collection — specific paths before parameterized ones
 		r.Get("/api/users/me/collection", a.getCollection)
 		r.Post("/api/users/me/collection", a.addToCollection)
+		r.Get("/api/users/me/collection/export", a.exportCollection)
 		r.Get("/api/users/me/collection/set/{setID}", a.getCollectionForSet)
 		r.Get("/api/users/me/collection/printing/{printingID}", a.getCollectionItem)
 		r.Patch("/api/users/me/collection/{printingID}", a.updateCollectionQuantity)
@@ -100,6 +116,7 @@ func (a *App) routes() http.Handler {
 		r.Get("/api/users/me/decks", a.listDecks)
 		r.Post("/api/users/me/decks", a.createDeck)
 		r.Get("/api/decks/{deckID}", a.getDeck)
+		r.Get("/api/decks/{deckID}/export", a.exportDeck)
 		r.Patch("/api/decks/{deckID}", a.updateDeck)
 		r.Delete("/api/decks/{deckID}", a.deleteDeck)
 		r.Post("/api/decks/{deckID}/cards", a.addCardToDeck)
