@@ -70,10 +70,6 @@ export default function LandingPage() {
             <p className="text-3xl font-bold" style={{ color: '#08D9D6' }}>500k+</p>
             <p className="text-sm" style={{ color: '#8892a4' }}>Cards</p>
           </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold" style={{ color: '#08D9D6' }}>90GB+</p>
-            <p className="text-sm" style={{ color: '#8892a4' }}>Card Images</p>
-          </div>
         </div>
       )}
 
