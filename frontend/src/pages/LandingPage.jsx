@@ -55,17 +55,17 @@ export default function LandingPage() {
       {/* Stats bar */}
       {stats && (
         <div
-          className="inline-flex flex-col items-center gap-6 py-8 px-16 rounded-xl mb-16 w-full max-w-lg mx-auto"
+          className="flex flex-col items-center gap-6 py-8 rounded-xl mb-16"
           style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
         >
-          <div className="flex items-center justify-center gap-12">
+          <div className="flex items-center justify-center gap-24">
             <div className="text-center">
-              <p className="text-3xl font-bold" style={{ color: '#08D9D6' }}>{stats.games}+</p>
-              <p className="text-sm" style={{ color: '#8892a4' }}>Games</p>
+              <p className="text-6xl font-bold" style={{ color: '#08D9D6' }}>{stats.games}+</p>
+              <p className="text-lg mt-1" style={{ color: '#8892a4' }}>Games</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold" style={{ color: '#08D9D6' }}>500k+</p>
-              <p className="text-sm" style={{ color: '#8892a4' }}>Cards</p>
+              <p className="text-6xl font-bold" style={{ color: '#08D9D6' }}>500k+</p>
+              <p className="text-lg mt-1" style={{ color: '#8892a4' }}>Cards</p>
             </div>
           </div>
           <p className="text-sm text-center max-w-sm px-6" style={{ color: '#8892a4' }}>
