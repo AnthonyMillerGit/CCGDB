@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { generateHTML } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
+import DOMPurify from 'dompurify'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
 
 function renderBody(body) {
   if (!body || Object.keys(body).length === 0) return ''
   try {
-    return generateHTML(body, [StarterKit])
+    const html = generateHTML(body, [StarterKit])
+    return DOMPurify.sanitize(html)
   } catch {
     return ''
   }

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -26,6 +27,10 @@ func main() {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 	defer db.Close()
+
+	if cfg.JWTSecret == "" {
+		log.Fatal("JWT_SECRET environment variable must be set")
+	}
 
 	app := &App{db: db, cfg: cfg}
 
@@ -83,11 +88,15 @@ func (a *App) routes() http.Handler {
 	r.Get("/api/games/{slug}/posts", a.getGamePosts)
 	r.Get("/api/cards/{cardID}/posts", a.getCardPosts)
 
-	r.Post("/api/auth/register", a.register)
-	r.Post("/api/auth/login", a.login)
+	loginLimiter    := newRateLimiter(10, 15*time.Minute)
+	registerLimiter := newRateLimiter(5, time.Hour)
+	resetLimiter    := newRateLimiter(5, time.Hour)
+
+	r.Post("/api/auth/register", registerLimiter.middleware(a.register))
+	r.Post("/api/auth/login", loginLimiter.middleware(a.login))
 	r.Get("/api/auth/verify-email", a.verifyEmail)
-	r.Post("/api/auth/forgot-password", a.forgotPassword)
-	r.Post("/api/auth/reset-password", a.resetPassword)
+	r.Post("/api/auth/forgot-password", resetLimiter.middleware(a.forgotPassword))
+	r.Post("/api/auth/reset-password", resetLimiter.middleware(a.resetPassword))
 
 	// ── Authenticated routes ──────────────────────────────────────────────────
 	r.Group(func(r chi.Router) {

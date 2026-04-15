@@ -23,13 +23,20 @@ func parseIntParam(r *http.Request, name string) (int, error) {
 }
 
 func parseIntQuery(r *http.Request, name string, fallback int) int {
+	return parseIntQueryMax(r, name, fallback, 100)
+}
+
+func parseIntQueryMax(r *http.Request, name string, fallback, max int) int {
 	s := r.URL.Query().Get(name)
 	if s == "" {
 		return fallback
 	}
 	v, err := strconv.Atoi(s)
-	if err != nil {
+	if err != nil || v < 1 {
 		return fallback
+	}
+	if v > max {
+		return max
 	}
 	return v
 }

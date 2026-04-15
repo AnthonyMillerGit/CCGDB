@@ -26,6 +26,19 @@ func (a *App) register(w http.ResponseWriter, r *http.Request) {
 	username := strings.ToLower(strings.TrimSpace(body.Username))
 	email := strings.ToLower(strings.TrimSpace(body.Email))
 
+	if len(username) < 3 || len(username) > 30 {
+		jsonError(w, "Username must be 3–30 characters", http.StatusBadRequest)
+		return
+	}
+	if len(email) == 0 || len(email) > 255 {
+		jsonError(w, "Invalid email address", http.StatusBadRequest)
+		return
+	}
+	if len(body.Password) < 8 || len(body.Password) > 128 {
+		jsonError(w, "Password must be 8–128 characters", http.StatusBadRequest)
+		return
+	}
+
 	var exists bool
 	a.db.QueryRow(r.Context(),
 		"SELECT EXISTS(SELECT 1 FROM users WHERE email = $1 OR username = $2)",
@@ -228,6 +241,11 @@ func (a *App) resetPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	if time.Now().UTC().After(expiresAt) {
 		jsonError(w, "This link has expired", http.StatusBadRequest)
+		return
+	}
+
+	if len(body.Password) < 8 || len(body.Password) > 128 {
+		jsonError(w, "Password must be 8–128 characters", http.StatusBadRequest)
 		return
 	}
 
