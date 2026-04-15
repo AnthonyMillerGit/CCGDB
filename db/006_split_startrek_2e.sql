@@ -1,6 +1,6 @@
 -- Migration 006: Split Star Trek CCG Second Edition into its own game.
 -- Moves all 2E-coded sets and their cards out of startrek_1e into a new startrek_2e game.
--- Safe to run once. Run in DBeaver against your CardVault database.
+-- Safe to run once. Run in DBeaver against your CCGVault database.
 
 -- ============================================================
 -- 1. CREATE THE startrek_2e GAME

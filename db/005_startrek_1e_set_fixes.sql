@@ -1,5 +1,5 @@
 -- Migration 005: Fix Star Trek CCG 1E set display names and backfill set_type.
--- Safe to run multiple times. Run in DBeaver against your CardVault database.
+-- Safe to run multiple times. Run in DBeaver against your CCGVault database.
 
 -- ============================================================
 -- 1. BACKFILL set_type
