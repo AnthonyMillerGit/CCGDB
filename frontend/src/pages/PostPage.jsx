@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { generateHTML } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
@@ -66,8 +66,22 @@ export default function PostPage() {
         <span>{new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
       </div>
 
-      {/* Body */}
+      {/* Body — intercept internal links for React Router */}
       <div
+        ref={el => {
+          if (!el) return
+          const handleClick = e => {
+            const a = e.target.closest('a')
+            if (!a) return
+            const href = a.getAttribute('href')
+            if (href && href.startsWith('/')) {
+              e.preventDefault()
+              navigate(href)
+            }
+          }
+          el.addEventListener('click', handleClick)
+          return () => el.removeEventListener('click', handleClick)
+        }}
         className="editor-content max-w-none mb-12"
         dangerouslySetInnerHTML={{ __html: html }}
         style={{ color: '#EAEAEA' }}

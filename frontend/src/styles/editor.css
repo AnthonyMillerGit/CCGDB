@@ -16,6 +16,19 @@
 .editor-content img { max-width: 100%; border-radius: 8px; margin: 0.75em 0; }
 .editor-content a  { color: #08D9D6; text-decoration: underline; }
 
+/* Tippy popup theme for mention dropdown */
+.tippy-box[data-theme~='ccgvault'] {
+  background-color: #2d3243;
+  border: 1px solid #363d52;
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.tippy-box[data-theme~='ccgvault'] .tippy-content {
+  padding: 0;
+}
+
 .editor-content p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
