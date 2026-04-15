@@ -53,6 +53,15 @@ PRIORITY_GAMES = [
     'startrek_2e',
     'onepiece',
     'metazoo',
+    'sorcery',
+    'fftcg',
+    'grand-archive',
+    'dragon-ball-fusion',
+    'altered',
+    'riftbound',
+    'gundam',
+    'union-arena',
+    'seventhsea',
 ]
 
 
