@@ -61,7 +61,7 @@ function Header() {
 function Footer() {
   return (
     <footer
-      className="border-t mt-12 px-6 py-6 flex flex-col items-center gap-2"
+      className="border-t mt-12 px-6 py-8 flex flex-col items-center gap-3"
       style={{ borderColor: '#363d52', color: '#8892a4' }}
     >
       <p className="text-sm">© {new Date().getFullYear()} CCGVault — built by a collector, for collectors</p>
@@ -74,6 +74,13 @@ function Footer() {
       >
         ☕ Buy me a coffee
       </a>
+      <p className="text-xs text-center max-w-2xl leading-relaxed" style={{ color: '#4a5268' }}>
+        CCGVault is an independent fan site and is not affiliated with, endorsed by, or sponsored by
+        any card game publisher. All card names, images, and game content are the property of their
+        respective owners. CCGVault is a non-commercial reference tool for collectors and players.
+        For DMCA inquiries or takedown requests, contact{' '}
+        <a href="mailto:admin@ccgvault.io" style={{ color: '#8892a4' }}>admin@ccgvault.io</a>.
+      </p>
     </footer>
   )
 }
