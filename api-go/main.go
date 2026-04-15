@@ -82,6 +82,7 @@ func (a *App) routes() http.Handler {
 	r.Get("/api/cards/{cardID}", a.getCard)
 	r.Get("/api/printings/{printingID}", a.getPrinting)
 	r.Get("/api/search/suggestions", a.searchSuggestions)
+	r.Get("/api/search/mentions", a.searchMentions)
 
 	// Blog — public
 	r.Get("/api/blog", a.listPosts)

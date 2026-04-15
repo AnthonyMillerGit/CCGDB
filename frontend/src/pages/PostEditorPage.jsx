@@ -5,8 +5,10 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
+import Mention from '@tiptap/extension-mention'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
+import { mentionSuggestion } from '../components/mentionSuggestion'
 import '../styles/editor.css'
 
 function MenuBar({ editor }) {
@@ -143,6 +145,7 @@ export default function PostEditorPage() {
       Placeholder.configure({ placeholder: 'Write something amazing…' }),
       Image.configure({ inline: false, allowBase64: false }),
       Link.configure({ openOnClick: false, HTMLAttributes: { rel: 'noopener noreferrer' } }),
+      Mention.configure({ suggestion: mentionSuggestion }),
     ],
     editorProps: {
       attributes: {
