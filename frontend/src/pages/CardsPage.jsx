@@ -60,8 +60,10 @@ export default function CardsPage() {
     }
   }
 
+  const isTouchDevice = window.matchMedia('(hover: none)').matches
+
   const handleMouseEnter = (e, card) => {
-    if (!card.image_url) return
+    if (!card.image_url || isTouchDevice) return
     e.currentTarget.style.borderColor = '#08D9D6'
     e.currentTarget.style.transform = 'scale(1.05)'
 

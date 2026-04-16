@@ -169,8 +169,10 @@ export default function DeckBuilderPage() {
     }
   }
 
+  const isTouchDevice = window.matchMedia('(hover: none)').matches
+
   function handleMouseEnter(e, card) {
-    if (!card.image_url) return
+    if (!card.image_url || isTouchDevice) return
     const rect = e.currentTarget.getBoundingClientRect()
     setTooltipPos({
       x: rect.left + rect.width / 2 - 180,

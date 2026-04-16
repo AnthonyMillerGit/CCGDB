@@ -1,19 +1,45 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"net/smtp"
+	"net/http"
 )
 
 func (a *App) sendEmail(to, subject, body string) error {
-	if a.cfg.SMTPHost == "" {
+	if a.cfg.ResendAPIKey == "" {
 		fmt.Printf("\n── DEV EMAIL ──────────────────────────\nTo: %s\nSubject: %s\n\n%s\n───────────────────────────────────────\n",
 			to, subject, body)
 		return nil
 	}
-	addr := fmt.Sprintf("%s:%d", a.cfg.SMTPHost, a.cfg.SMTPPort)
-	auth := smtp.PlainAuth("", a.cfg.SMTPUser, a.cfg.SMTPPassword, a.cfg.SMTPHost)
-	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n%s",
-		a.cfg.SMTPFrom, to, subject, body)
-	return smtp.SendMail(addr, auth, a.cfg.SMTPFrom, []string{to}, []byte(msg))
+
+	payload := map[string]any{
+		"from":    "CCGVault <noreply@ccgvault.io>",
+		"to":      []string{to},
+		"subject": subject,
+		"text":    body,
+	}
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", "https://api.resend.com/emails", bytes.NewReader(data))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+a.cfg.ResendAPIKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("resend API error: %s", resp.Status)
+	}
+	return nil
 }
