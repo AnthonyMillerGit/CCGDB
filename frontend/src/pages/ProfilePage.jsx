@@ -176,6 +176,74 @@ function GameSection({ game, onIncrease, onDecrease }) {
   )
 }
 
+// ── My Wishlist tab ───────────────────────────────────────────────────────────
+
+function MyWishlistTab({ authFetch }) {
+  const navigate = useNavigate()
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    authFetch(`${API_URL}/api/users/me/wishlist`)
+      .then(r => r.json())
+      .then(data => { setItems(Array.isArray(data) ? data : []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [authFetch])
+
+  async function handleRemove(printingId) {
+    await authFetch(`${API_URL}/api/users/me/wishlist/${printingId}`, { method: 'DELETE' })
+    setItems(prev => prev.filter(i => i.printing_id !== printingId))
+  }
+
+  if (loading) return <p style={{ color: '#8892a4' }}>Loading wishlist…</p>
+
+  if (items.length === 0) return (
+    <div className="text-center py-16">
+      <p className="text-lg mb-2" style={{ color: '#8892a4' }}>Your wishlist is empty.</p>
+      <p className="text-sm" style={{ color: '#4a5268' }}>Add cards to your wishlist from any card detail page.</p>
+    </div>
+  )
+
+  return (
+    <div>
+      <p className="text-sm mb-4" style={{ color: '#8892a4' }}>
+        <strong style={{ color: '#EAEAEA' }}>{items.length}</strong> {items.length === 1 ? 'card' : 'cards'}
+      </p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+        {items.map(item => (
+          <div key={item.id} className="relative rounded-xl overflow-hidden border"
+            style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}>
+            <button
+              onClick={() => navigate(`/cards/${item.card_id}`)}
+              className="w-full text-left"
+            >
+              {item.image_url
+                ? <img src={item.image_url} alt={item.card_name} className="w-full" />
+                : <div className="aspect-[2.5/3.5] flex items-center justify-center p-2"
+                    style={{ backgroundColor: '#363d52' }}>
+                    <span className="text-xs text-center" style={{ color: '#8892a4' }}>{item.card_name}</span>
+                  </div>
+              }
+              <div className="px-2 py-1.5">
+                <p className="text-xs font-medium truncate" style={{ color: '#EAEAEA' }}>{item.card_name}</p>
+                <p className="text-xs truncate" style={{ color: '#8892a4' }}>{item.set_name}</p>
+              </div>
+            </button>
+            <button
+              onClick={() => handleRemove(item.printing_id)}
+              className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center"
+              style={{ backgroundColor: '#FF2E63', color: '#fff' }}
+              title="Remove from wishlist"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ── My Decks tab ──────────────────────────────────────────────────────────────
 
 function MyDecksTab({ authFetch }) {
@@ -463,7 +531,7 @@ export default function ProfilePage() {
 
       {/* Tabs */}
       <div className="flex mb-6 gap-1 border-b" style={{ borderColor: '#363d52' }}>
-        {[['collection', 'My Collection'], ['decks', 'My Decks']].map(([key, label]) => (
+        {[['collection', 'My Collection'], ['decks', 'My Decks'], ['wishlist', 'Wishlist']].map(([key, label]) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
@@ -521,6 +589,9 @@ export default function ProfilePage() {
 
       {/* My Decks tab */}
       {activeTab === 'decks' && <MyDecksTab authFetch={authFetch} />}
+
+      {/* Wishlist tab */}
+      {activeTab === 'wishlist' && <MyWishlistTab authFetch={authFetch} />}
     </div>
   )
 }

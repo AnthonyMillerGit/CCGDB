@@ -123,6 +123,11 @@ func (a *App) routes() http.Handler {
 		r.Patch("/api/users/me/collection/{printingID}", a.updateCollectionQuantity)
 		r.Delete("/api/users/me/collection/{printingID}", a.removeFromCollection)
 
+		// Wishlist
+		r.Get("/api/users/me/wishlist", a.getWishlist)
+		r.Post("/api/users/me/wishlist", a.addToWishlist)
+		r.Delete("/api/users/me/wishlist/{printingID}", a.removeFromWishlist)
+
 		// Decks
 		r.Get("/api/users/me/decks", a.listDecks)
 		r.Post("/api/users/me/decks", a.createDeck)

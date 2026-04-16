@@ -194,6 +194,8 @@ export default function CardDetailPage() {
   const [selectedPrinting, setSelectedPrinting] = useState(null)
   const [collectionItem, setCollectionItem] = useState(null)
   const [collectionLoading, setCollectionLoading] = useState(false)
+  const [wishlisted, setWishlisted] = useState(false)
+  const [wishlistLoading, setWishlistLoading] = useState(false)
   const navigate = useNavigate()
   const { user, authFetch } = useAuth()
 
@@ -221,9 +223,18 @@ export default function CardDetailPage() {
       .catch(() => setCollectionItem(null))
   }, [user, authFetch])
 
+  const fetchWishlistStatus = useCallback((printingId) => {
+    if (!user || !printingId) { setWishlisted(false); return }
+    authFetch(`${API_URL}/api/users/me/wishlist`)
+      .then(r => r.json())
+      .then(data => setWishlisted(Array.isArray(data) && data.some(w => w.printing_id === printingId)))
+      .catch(() => setWishlisted(false))
+  }, [user, authFetch])
+
   useEffect(() => {
     fetchCollectionItem(selectedPrinting?.id)
-  }, [selectedPrinting?.id, fetchCollectionItem])
+    fetchWishlistStatus(selectedPrinting?.id)
+  }, [selectedPrinting?.id, fetchCollectionItem, fetchWishlistStatus])
 
   const handleAddToCollection = async () => {
     if (!selectedPrinting) return
@@ -247,6 +258,25 @@ export default function CardDetailPage() {
       setCollectionItem(null)
     } finally {
       setCollectionLoading(false)
+    }
+  }
+
+  const handleToggleWishlist = async () => {
+    if (!selectedPrinting) return
+    setWishlistLoading(true)
+    try {
+      if (wishlisted) {
+        await authFetch(`${API_URL}/api/users/me/wishlist/${selectedPrinting.id}`, { method: 'DELETE' })
+        setWishlisted(false)
+      } else {
+        await authFetch(`${API_URL}/api/users/me/wishlist`, {
+          method: 'POST',
+          body: JSON.stringify({ printing_id: selectedPrinting.id }),
+        })
+        setWishlisted(true)
+      }
+    } finally {
+      setWishlistLoading(false)
     }
   }
 
@@ -486,6 +516,22 @@ export default function CardDetailPage() {
 
           {/* Add to Deck button */}
           {user && card && <AddToDeckButton card={card} authFetch={authFetch} />}
+
+          {/* Wishlist button */}
+          {user && selectedPrinting && (
+            <button
+              onClick={handleToggleWishlist}
+              disabled={wishlistLoading}
+              className="mt-3 px-4 py-2 rounded text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
+              style={{
+                backgroundColor: wishlisted ? '#3a1a2a' : '#2d3243',
+                border: `1px solid ${wishlisted ? '#FF2E63' : '#363d52'}`,
+                color: wishlisted ? '#FF2E63' : '#8892a4',
+              }}
+            >
+              {wishlisted ? '♥ On Wishlist' : '♡ Add to Wishlist'}
+            </button>
+          )}
 
         </div>{/* end card info */}
       </div>{/* end top section */}
