@@ -29,12 +29,8 @@ type Config struct {
 	Port           string
 	AssetsDir      string
 
-	// SMTP
-	SMTPHost     string
-	SMTPPort     int
-	SMTPUser     string
-	SMTPPassword string
-	SMTPFrom     string
+	// Email
+	ResendAPIKey string
 }
 
 func loadConfig() *Config {
@@ -45,7 +41,6 @@ func loadConfig() *Config {
 		log.Printf("No .env at %s, using environment variables", envPath)
 	}
 
-	smtpPort, _ := strconv.Atoi(getEnv("SMTP_PORT", "587"))
 	expireDays, _ := strconv.Atoi(getEnv("ACCESS_TOKEN_EXPIRE_DAYS", "7"))
 	assetsDir := filepath.Join(filepath.Dir(file), "..", "assets")
 
@@ -65,11 +60,7 @@ func loadConfig() *Config {
 		Port:           getEnv("PORT", "8000"),
 		AssetsDir:      assetsDir,
 
-		SMTPHost:     getEnv("SMTP_HOST", ""),
-		SMTPPort:     smtpPort,
-		SMTPUser:     getEnv("SMTP_USER", ""),
-		SMTPPassword: getEnv("SMTP_PASSWORD", ""),
-		SMTPFrom:     getEnv("SMTP_FROM", ""),
+		ResendAPIKey: getEnv("RESEND_API_KEY", ""),
 	}
 }
 
