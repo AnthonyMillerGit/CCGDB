@@ -9,7 +9,7 @@ import (
 
 func connectDB(cfg *Config) (*pgxpool.Pool, error) {
 	connStr := fmt.Sprintf(
-		"postgresql://%s:%s@%s:%s/%s",
+		"postgresql://%s:%s@%s:%s/%s?sslmode=disable",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName,
 	)
 	pool, err := pgxpool.New(context.Background(), connStr)
