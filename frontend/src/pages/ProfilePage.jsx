@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
@@ -48,6 +48,60 @@ function ExportMenu({ onExport }) {
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+function ImportButton({ onImport, label = 'Import' }) {
+  const inputRef = useRef(null)
+
+  function handleClick(e) {
+    e.stopPropagation()
+    inputRef.current?.click()
+  }
+
+  function handleChange(e) {
+    const file = e.target.files?.[0]
+    if (file) onImport(file)
+    e.target.value = ''
+  }
+
+  return (
+    <div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".csv,.json,.dec,.txt"
+        className="hidden"
+        onChange={handleChange}
+      />
+      <button
+        onClick={handleClick}
+        className="text-xs px-3 py-1.5 rounded flex items-center gap-1"
+        style={{ backgroundColor: '#363d52', color: '#08D9D6', border: '1px solid #4a5268' }}
+      >
+        {label}
+      </button>
+    </div>
+  )
+}
+
+function ImportResultBanner({ result, onDismiss }) {
+  if (!result) return null
+  return (
+    <div
+      className="mb-4 px-4 py-3 rounded flex items-center justify-between gap-4 text-sm"
+      style={{
+        backgroundColor: result.error ? '#3a1a1a' : '#1a3a2a',
+        border: `1px solid ${result.error ? '#6a2d2d' : '#2d6a4a'}`,
+        color: result.error ? '#FF2E63' : '#1eff00',
+      }}
+    >
+      {result.error
+        ? <span>{result.error}</span>
+        : <span>Imported {result.imported} card{result.imported !== 1 ? 's' : ''}{result.skipped > 0 ? ` · ${result.skipped} skipped (not found)` : ''}.</span>
+      }
+      <button onClick={onDismiss} style={{ color: '#8892a4', fontSize: '1rem', lineHeight: 1 }}>×</button>
     </div>
   )
 }
@@ -255,6 +309,12 @@ function MyDecksTab({ authFetch }) {
   const [newDeckName, setNewDeckName] = useState('')
   const [newDeckGame, setNewDeckGame] = useState('')
   const [creating, setCreating] = useState(false)
+  const [showImportForm, setShowImportForm] = useState(false)
+  const [importDeckName, setImportDeckName] = useState('')
+  const [importDeckGame, setImportDeckGame] = useState('')
+  const [importFile, setImportFile] = useState(null)
+  const [importing, setImporting] = useState(false)
+  const [importResult, setImportResult] = useState(null)
 
   useEffect(() => {
     async function load() {
@@ -298,24 +358,76 @@ function MyDecksTab({ authFetch }) {
     setDecks(prev => prev.filter(d => d.id !== deckId))
   }
 
+  async function openImportForm() {
+    setShowImportForm(true)
+    setShowForm(false)
+    if (games.length === 0) {
+      const res = await fetch(`${API_URL}/api/games`)
+      const data = await res.json()
+      setGames(Array.isArray(data) ? data : [])
+    }
+  }
+
+  async function handleImportDeck(e) {
+    e.preventDefault()
+    if (!importDeckName.trim() || !importDeckGame || !importFile) return
+    setImporting(true)
+    const form = new FormData()
+    form.append('file', importFile)
+    form.append('name', importDeckName.trim())
+    form.append('game_id', importDeckGame)
+    try {
+      const res = await authFetch(`${API_URL}/api/decks/import`, { method: 'POST', body: form })
+      const data = await res.json()
+      if (!res.ok) {
+        setImportResult({ error: data.error || 'Import failed' })
+      } else {
+        setImportResult(data)
+        // Refresh decks list
+        const decksRes = await authFetch(`${API_URL}/api/users/me/decks`)
+        const decksData = await decksRes.json()
+        setDecks(Array.isArray(decksData) ? decksData : [])
+        setShowImportForm(false)
+        setImportDeckName('')
+        setImportDeckGame('')
+        setImportFile(null)
+        if (data.id) navigate(`/decks/${data.id}`)
+      }
+    } catch {
+      setImportResult({ error: 'Network error during import' })
+    } finally {
+      setImporting(false)
+    }
+  }
+
   const inputStyle = { backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }
 
   if (loading) return <p style={{ color: '#8892a4' }}>Loading decks…</p>
 
   return (
     <div>
+      <ImportResultBanner result={importResult} onDismiss={() => setImportResult(null)} />
       <div className="flex items-center justify-between mb-6">
         <span className="text-sm" style={{ color: '#8892a4' }}>
           {decks.length} {decks.length === 1 ? 'deck' : 'decks'}
         </span>
-        {!showForm && (
-          <button
-            onClick={openForm}
-            className="px-4 py-2 rounded text-sm font-semibold"
-            style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
-          >
-            + New Deck
-          </button>
+        {!showForm && !showImportForm && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={openImportForm}
+              className="text-xs px-3 py-1.5 rounded"
+              style={{ backgroundColor: '#363d52', color: '#08D9D6', border: '1px solid #4a5268' }}
+            >
+              Import Deck
+            </button>
+            <button
+              onClick={openForm}
+              className="px-4 py-2 rounded text-sm font-semibold"
+              style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
+            >
+              + New Deck
+            </button>
+          </div>
         )}
       </div>
 
@@ -349,6 +461,56 @@ function MyDecksTab({ authFetch }) {
               {creating ? 'Creating…' : 'Create'}
             </button>
             <button type="button" onClick={() => setShowForm(false)}
+              className="px-4 py-2 rounded text-sm"
+              style={{ backgroundColor: '#363d52', color: '#EAEAEA' }}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Import deck form */}
+      {showImportForm && (
+        <form onSubmit={handleImportDeck} className="mb-6 p-4 rounded-xl flex flex-col gap-3"
+          style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}>
+          <p className="text-sm font-semibold" style={{ color: '#EAEAEA' }}>Import Deck from File</p>
+          <p className="text-xs" style={{ color: '#8892a4' }}>Supports CSV or JSON files exported from CCGVault, or .dec/.txt decklist files.</p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              placeholder="Deck name"
+              value={importDeckName}
+              onChange={e => setImportDeckName(e.target.value)}
+              required
+              className="flex-1 px-3 py-2 rounded text-sm"
+              style={inputStyle}
+            />
+            <select
+              value={importDeckGame}
+              onChange={e => setImportDeckGame(e.target.value)}
+              required
+              className="flex-1 px-3 py-2 rounded text-sm"
+              style={inputStyle}
+            >
+              <option value="">Select a game…</option>
+              {games.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+            </select>
+          </div>
+          <input
+            type="file"
+            accept=".csv,.json,.dec,.txt"
+            required
+            onChange={e => setImportFile(e.target.files?.[0] || null)}
+            className="text-sm"
+            style={{ color: '#EAEAEA' }}
+          />
+          <div className="flex gap-2">
+            <button type="submit" disabled={importing || !importFile}
+              className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
+              style={{ backgroundColor: '#08D9D6', color: '#252A34' }}>
+              {importing ? 'Importing…' : 'Import'}
+            </button>
+            <button type="button" onClick={() => setShowImportForm(false)}
               className="px-4 py-2 rounded text-sm"
               style={{ backgroundColor: '#363d52', color: '#EAEAEA' }}>
               Cancel
@@ -475,8 +637,33 @@ export default function ProfilePage() {
     navigate('/')
   }
 
+  const [importResult, setImportResult] = useState(null)
+
   const totalUnique = collection.reduce((s, g) => s + g.cards.length, 0)
   const totalCopies = collection.reduce((s, g) => s + g.cards.reduce((cs, c) => cs + c.quantity, 0), 0)
+
+  async function handleCollectionImport(file) {
+    const form = new FormData()
+    form.append('file', file)
+    try {
+      const res = await authFetch(`${API_URL}/api/users/me/collection/import`, {
+        method: 'POST',
+        body: form,
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setImportResult({ error: data.error || 'Import failed' })
+      } else {
+        setImportResult(data)
+        // Refresh collection
+        const collRes = await authFetch(`${API_URL}/api/users/me/collection`)
+        const collectionData = await collRes.json()
+        setCollection(Array.isArray(collectionData) ? collectionData : [])
+      }
+    } catch {
+      setImportResult({ error: 'Network error during import' })
+    }
+  }
 
   const memberSince = fullUser?.created_at
     ? new Date(fullUser.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
@@ -549,18 +736,28 @@ export default function ProfilePage() {
       {/* My Collection tab */}
       {activeTab === 'collection' && (
         <>
+          <ImportResultBanner result={importResult} onDismiss={() => setImportResult(null)} />
           <div className="flex items-center justify-between mb-6">
-            {!loading && totalUnique > 0 && (
+            {!loading && (
               <div className="flex gap-4 text-sm" style={{ color: '#8892a4' }}>
-                <span><strong style={{ color: '#EAEAEA' }}>{collection.length}</strong> games</span>
-                <span><strong style={{ color: '#EAEAEA' }}>{totalUnique}</strong> unique cards</span>
-                <span><strong style={{ color: '#EAEAEA' }}>{totalCopies}</strong> total copies</span>
+                {totalUnique > 0 && (
+                  <>
+                    <span><strong style={{ color: '#EAEAEA' }}>{collection.length}</strong> games</span>
+                    <span><strong style={{ color: '#EAEAEA' }}>{totalUnique}</strong> unique cards</span>
+                    <span><strong style={{ color: '#EAEAEA' }}>{totalCopies}</strong> total copies</span>
+                  </>
+                )}
               </div>
             )}
-            {!loading && totalUnique > 0 && (
-              <ExportMenu onExport={fmt =>
-                triggerDownload(authFetch, `${API_URL}/api/users/me/collection/export?format=${fmt}`, `collection.${fmt}`)
-              } />
+            {!loading && (
+              <div className="flex items-center gap-2">
+                {totalUnique > 0 && (
+                  <ExportMenu onExport={fmt =>
+                    triggerDownload(authFetch, `${API_URL}/api/users/me/collection/export?format=${fmt}`, `collection.${fmt}`)
+                  } />
+                )}
+                <ImportButton onImport={handleCollectionImport} label="Import Collection" />
+              </div>
             )}
           </div>
 

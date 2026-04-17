@@ -56,10 +56,11 @@ export function AuthProvider({ children }) {
   }, [])
 
   const authFetch = useCallback((url, options = {}) => {
+    const isFormData = options.body instanceof FormData
     return fetch(url, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         ...(options.headers || {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
