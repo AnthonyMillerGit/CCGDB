@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
+import { RARITY_COLORS, normalizeRarity } from '../theme'
 
 export default function CardsPage() {
   const { setId } = useParams()
@@ -157,7 +158,7 @@ export default function CardsPage() {
               <div className="p-2">
                 <p className="text-xs font-medium truncate" style={{ color: '#EAEAEA' }}>{card.name}</p>
                 <div className="flex items-center justify-between mt-0.5">
-                  <p className="text-xs" style={{ color: '#8892a4' }}>{card.rarity}</p>
+                  <p className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(card.rarity)] || '#8892a4' }}>{card.rarity}</p>
                   {user && (
                     <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
                       {isOwned && (
@@ -207,7 +208,7 @@ export default function CardsPage() {
               {hoveredCard.name}
             </p>
             {hoveredCard.rarity && (
-              <p className="text-xs" style={{ color: '#08D9D6' }}>{hoveredCard.rarity}</p>
+              <p className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(hoveredCard.rarity)] || '#8892a4' }}>{hoveredCard.rarity}</p>
             )}
           </div>
         </div>

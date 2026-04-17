@@ -19,13 +19,53 @@ export const GAME_COLORS = {
   seventhsea:   '#C84820',
 }
 
-// MTG/trading-card rarity colors
+// Loot-tier rarity colors (grey → white → green → blue → purple → orange → red)
 export const RARITY_COLORS = {
-  common:    '#8892a4',
-  uncommon:  '#a8c4bc',
-  rare:      '#d4af37',
-  mythic:    '#e8632a',
-  special:   '#9b59b6',
+  fixed:    '#666e7a',
+  common:   '#C8C8C8',
+  uncommon: '#1eff00',
+  rare:     '#0070dd',
+  super:    '#a335ee',
+  ultra:    '#ff8000',
+  promo:    '#ff4444',
+}
+
+// Normalizes any rarity string from the DB to one of the 6 tiers above
+export function normalizeRarity(raw) {
+  if (!raw) return null
+  const r = raw.toLowerCase().trim()
+
+  // Common
+  if (['fixed', 'f'].includes(r)) return 'fixed'
+
+  if (['c', 'cc', 'common', 'normal', 'ordinary', 'very common',
+       'td', 'n', 'virtual card', 't'].includes(r)) return 'common'
+
+  // Uncommon
+  if (['u', 'uc', 'uncommon', 'bronze', 'silver', 'higher normal'].includes(r)) return 'uncommon'
+
+  // Rare
+  if (['r', 're', 'rr', 'rare', 'double rare', 'rare holo', 'holofoil rare',
+       'rare holo ex', 'rare holo v', 'fr', 'short print',
+       'duel terminal normal parallel rare', 'duel terminal rare parallel rare'].includes(r)) return 'rare'
+
+  // Super Rare
+  if (['sr', 'super rare', 'super_rare', 'very rare', 'ssp', 'special rare', 'sp',
+       'rrr', 'trr', 'legend', 'legendary', 'rare ultra', 'rare rainbow',
+       "collector's rare", 'cr', 'illustration rare', 'gold', 'gold rare',
+       'elite', 'v', 'vp', 'l', 'mythic'].includes(r)) return 'super'
+
+  // Ultra Rare
+  if (['ur', 'ultra rare', 'secret rare', 'sec', 'prismatic secret rare',
+       'platinum secret rare', 'ultimate rare', 'quarter century secret rare',
+       'starlight rare', 'special illustration rare', 'ffr', 'premium gold rare',
+       'ofr', 'rare secret', 'r+'].includes(r)) return 'ultra'
+
+  // Promo / Special
+  if (['p', 'pr', 'promo', 'm', 'premium', 'hero', 'unique', 'exceptional',
+       'special', 'h'].includes(r)) return 'promo'
+
+  return null
 }
 
 // Pokémon type colors
