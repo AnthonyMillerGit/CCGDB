@@ -40,8 +40,10 @@ export default function LandingPage() {
     }
 
     async function loadFanCards() {
-      const params = ['mtg', 'pokemon', 'yugioh', 'fab', 'sorcery']
-        .map(s => `game=${s}`).join('&')
+      const games = await fetch(`${API_URL}/api/games`).then(r => r.json()).catch(() => [])
+      if (!Array.isArray(games) || games.length === 0) return
+      const shuffled = games.sort(() => Math.random() - 0.5).slice(0, 5)
+      const params = shuffled.map(g => `game=${g.slug}`).join('&')
       const cards = await fetch(`${API_URL}/api/cards/random?limit=5&${params}`)
         .then(r => r.json())
         .catch(() => [])

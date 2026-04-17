@@ -92,16 +92,19 @@ export default function SetsPage() {
   const [game, setGame] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('all')
+  const [featuredCard, setFeaturedCard] = useState(null)
   const navigate = useNavigate()
 
   useEffect(() => {
     Promise.all([
       fetch(`${API_URL}/api/games/${slug}`).then(r => r.json()),
-      fetch(`${API_URL}/api/games/${slug}/sets`).then(r => r.json())
-    ]).then(([gameData, setsData]) => {
+      fetch(`${API_URL}/api/games/${slug}/sets`).then(r => r.json()),
+      fetch(`${API_URL}/api/cards/random?limit=1&game=${slug}`).then(r => r.json()).catch(() => []),
+    ]).then(([gameData, setsData, cardData]) => {
       setGame(gameData)
       setSets(setsData)
       setLoading(false)
+      if (Array.isArray(cardData) && cardData[0]?.image_url) setFeaturedCard(cardData[0])
     })
   }, [slug])
 
@@ -134,30 +137,43 @@ export default function SetsPage() {
         ← Back to Games
       </button>
 
-      <h1 className="text-4xl font-bold mb-3" style={{ color: '#EAEAEA' }}>{game?.name}</h1>
+      <div className="flex gap-6 items-start mb-2">
+        <div className="flex-1">
+          <h1 className="text-4xl font-bold mb-3" style={{ color: '#EAEAEA' }}>{game?.name}</h1>
 
-      {gameInfo?.description && (
-        <p className="text-base mb-4 max-w-2xl leading-relaxed" style={{ color: '#8892a4' }}>
-          {gameInfo.description}
-        </p>
-      )}
+          {gameInfo?.description && (
+            <p className="text-base mb-4 leading-relaxed" style={{ color: '#8892a4' }}>
+              {gameInfo.description}
+            </p>
+          )}
 
-      {gameInfo?.links?.length > 0 && (
-        <div className="flex flex-wrap gap-3 mb-6">
-          {gameInfo.links.map(link => (
-            <a
-              key={link.url}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm px-3 py-1.5 rounded-lg border transition-all duration-150 hover:opacity-80"
-              style={{ color: '#08D9D6', borderColor: '#08D9D6', textDecoration: 'none' }}
-            >
-              {link.label} ↗
-            </a>
-          ))}
+          {gameInfo?.links?.length > 0 && (
+            <div className="flex flex-wrap gap-3 mb-6">
+              {gameInfo.links.map(link => (
+                <a
+                  key={link.url}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm px-3 py-1.5 rounded-lg border transition-all duration-150 hover:opacity-80"
+                  style={{ color: '#08D9D6', borderColor: '#08D9D6', textDecoration: 'none' }}
+                >
+                  {link.label} ↗
+                </a>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+
+        {featuredCard && (
+          <img
+            src={featuredCard.image_url}
+            alt={featuredCard.name}
+            className="rounded-xl shadow-xl hidden sm:block"
+            style={{ width: 180, flexShrink: 0 }}
+          />
+        )}
+      </div>
 
       <h2 className="text-xs font-semibold uppercase tracking-widest mb-2 mt-2" style={{ color: '#8892a4' }}>
         Sets — {filteredSets.length} total
