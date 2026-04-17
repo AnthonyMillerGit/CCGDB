@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { API_URL } from '../config'
+import { GAME_INFO } from '../data/gameInfo'
 
 const MTG_TABS = [
   { key: 'all', label: 'All' },
@@ -121,6 +122,8 @@ export default function SetsPage() {
 
   const showGrouped = activeTab === 'all' && availableTabs.length > 1
 
+  const gameInfo = GAME_INFO[slug]
+
   return (
     <div>
       <button
@@ -131,10 +134,34 @@ export default function SetsPage() {
         ← Back to Games
       </button>
 
-      <h2 className="text-3xl font-bold mb-1" style={{ color: '#EAEAEA' }}>{game?.name}</h2>
-      <p className="mb-6" style={{ color: '#8892a4' }}>
-        {filteredSets.length} set{filteredSets.length !== 1 ? 's' : ''}
-      </p>
+      <h1 className="text-4xl font-bold mb-3" style={{ color: '#EAEAEA' }}>{game?.name}</h1>
+
+      {gameInfo?.description && (
+        <p className="text-base mb-4 max-w-2xl leading-relaxed" style={{ color: '#8892a4' }}>
+          {gameInfo.description}
+        </p>
+      )}
+
+      {gameInfo?.links?.length > 0 && (
+        <div className="flex flex-wrap gap-3 mb-6">
+          {gameInfo.links.map(link => (
+            <a
+              key={link.url}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm px-3 py-1.5 rounded-lg border transition-all duration-150 hover:opacity-80"
+              style={{ color: '#08D9D6', borderColor: '#08D9D6', textDecoration: 'none' }}
+            >
+              {link.label} ↗
+            </a>
+          ))}
+        </div>
+      )}
+
+      <h2 className="text-xs font-semibold uppercase tracking-widest mb-2 mt-2" style={{ color: '#8892a4' }}>
+        Sets — {filteredSets.length} total
+      </h2>
 
       {/* Filter row — only show if more than one tab available */}
       {availableTabs.length > 1 && (
