@@ -17,7 +17,7 @@ A multi-TCG collection and deck management platform supporting 20+ trading card 
 | Auth | JWT |
 | Data Ingestion | Python 3 |
 | Email | Resend |
-| Deployment | EC2 (API), Cloudflare Pages (frontend), Cloudflare R2 (images) |
+| Deployment | Cloud VPS (API), Cloudflare Pages (frontend), Cloudflare R2 (images) |
 
 ---
 
@@ -76,7 +76,7 @@ docker-compose up -d
 2. **Run migrations**
 
 ```bash
-psql -U admin -d ccgdb -f db/001_initial.sql
+psql -U your_db_user -d ccgdb -f db/001_initial.sql
 # run remaining migration files in order
 ```
 
@@ -105,8 +105,8 @@ Create a `.env` file in the project root:
 ```
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
-POSTGRES_USER=admin
-POSTGRES_PASSWORD=your_password
+POSTGRES_USER=your_db_user
+POSTGRES_PASSWORD=your_db_password
 POSTGRES_DB=ccgdb
 JWT_SECRET=your_jwt_secret
 PORT=8000
@@ -139,10 +139,10 @@ python download_images.py status # check progress
 
 ## Deployment
 
-- **API** — Go binary running on AWS EC2 (t3.micro) managed by systemd
+- **API** — Go binary running on a cloud VPS behind a reverse proxy
 - **Frontend** — Deployed to Cloudflare Pages via `wrangler pages deploy`
-- **Images** — Stored in Cloudflare R2 at `assets.ccgvault.io`
-- **Database** — PostgreSQL in Docker on EC2, nightly backups via `backup.sh`
+- **Images** — Stored in Cloudflare R2
+- **Database** — PostgreSQL in Docker with nightly backups via `backup.sh`
 
 ---
 
