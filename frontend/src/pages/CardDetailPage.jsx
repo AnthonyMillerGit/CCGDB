@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import PokemonCardInfo from '../components/card-templates/PokemonCardInfo'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
-import { RARITY_COLORS } from '../theme'
+import { RARITY_COLORS, normalizeRarity } from '../theme'
 
 function AddToDeckButton({ card, authFetch }) {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -314,7 +314,7 @@ export default function CardDetailPage() {
   const manaCost = isDoubleFaced ? activeFace.mana_cost : attrs.mana_cost
   const rulesText = isDoubleFaced ? activeFace.oracle_text : card.rules_text
   const typeLine = isDoubleFaced ? activeFace.type_line : card.card_type
-  const rarityColor = RARITY_COLORS[selectedPrinting?.rarity?.toLowerCase()] || '#8892a4'
+  const rarityColor = RARITY_COLORS[normalizeRarity(selectedPrinting?.rarity)] || '#8892a4'
 
   return (
     <div>
@@ -585,7 +585,7 @@ export default function CardDetailPage() {
                 <div className="p-2">
                   <p className="text-xs font-medium truncate" style={{ color: '#EAEAEA' }}>{printing.set_name}</p>
                   <p className="text-xs capitalize"
-                    style={{ color: RARITY_COLORS[printing.rarity?.toLowerCase()] || '#8892a4' }}>
+                    style={{ color: RARITY_COLORS[normalizeRarity(printing.rarity)] || '#8892a4' }}>
                     {printing.rarity}
                   </p>
                 </div>

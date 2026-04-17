@@ -101,16 +101,19 @@ export default function LandingPage() {
             <div className="flex items-center gap-12">
               <div className="text-center md:text-left">
                 <p className="text-6xl font-bold" style={{ color: '#08D9D6' }}>{stats.games}+</p>
-                <p className="text-lg mt-1" style={{ color: '#8892a4' }}>Games</p>
+                <p className="text-lg mt-1" style={{ color: '#EAEAEA' }}>Games</p>
               </div>
               <div className="text-center md:text-left">
                 <p className="text-6xl font-bold" style={{ color: '#08D9D6' }}>500k+</p>
-                <p className="text-lg mt-1" style={{ color: '#8892a4' }}>Cards</p>
+                <p className="text-lg mt-1" style={{ color: '#EAEAEA' }}>Cards</p>
               </div>
             </div>
             <p className="text-sm text-center md:text-left" style={{ color: '#8892a4' }}>
-              From Magic: The Gathering to obscure 90s games you forgot existed —
-              browse cards, track your collection, and build decks across hundreds of games.
+              CCGVault is a collector's companion — track your collection, build decks,
+              and learn about hundreds of games in one place. Whether you're rediscovering
+              a game from the 90s or diving into something new, we've got the cards.
+              CCGVault is focused on the cards themselves — we don't track pricing
+              or market values, just the games and the collections.
             </p>
           </div>
 
