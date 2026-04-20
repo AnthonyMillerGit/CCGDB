@@ -62,6 +62,11 @@ func (a *App) routes() http.Handler {
 			http.StripPrefix("/assets", http.FileServer(http.Dir(a.cfg.AssetsDir))))
 	}
 
+	// Catch-all OPTIONS handler so chi doesn't return 405 on CORS preflights
+	r.Options("/*", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
 	// ── Public routes ─────────────────────────────────────────────────────────
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		jsonResponse(w, map[string]string{"message": "CCG Platform API", "version": "0.1.0"}, http.StatusOK)

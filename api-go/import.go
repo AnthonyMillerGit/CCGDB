@@ -117,7 +117,7 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		// Find the best-matching printing
+		// Find the best-matching printing — prefer set/collector# but don't require them
 		var printingID int
 		err := a.db.QueryRow(r.Context(), `
 			SELECT p.id
@@ -127,9 +127,10 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 			JOIN games g ON g.id = c.game_id
 			WHERE LOWER(c.name) = LOWER($1)
 			  AND ($2 = '' OR LOWER(g.name) = LOWER($2))
-			  AND ($3 = '' OR LOWER(s.name) = LOWER($3))
-			  AND ($4 = '' OR LOWER(COALESCE(p.collector_number,'')) = LOWER($4))
-			ORDER BY p.id
+			ORDER BY
+			  CASE WHEN $3 != '' AND LOWER(s.name) = LOWER($3) THEN 0 ELSE 1 END,
+			  CASE WHEN $4 != '' AND LOWER(COALESCE(p.collector_number,'')) = LOWER($4) THEN 0 ELSE 1 END,
+			  p.id
 			LIMIT 1
 		`, row.CardName, row.GameName, row.SetName, row.CollectorNumber).Scan(&printingID)
 		if err != nil {
