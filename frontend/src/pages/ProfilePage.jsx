@@ -378,10 +378,15 @@ function MyDecksTab({ authFetch }) {
     form.append('game_id', importDeckGame)
     try {
       const res = await authFetch(`${API_URL}/api/decks/import`, { method: 'POST', body: form })
-      const data = await res.json()
       if (!res.ok) {
-        setImportResult({ error: data.error || 'Import failed' })
-      } else {
+        const text = await res.text()
+        let msg = 'Import failed'
+        try { msg = JSON.parse(text).error || msg } catch {}
+        setImportResult({ error: `${msg} (${res.status})` })
+        return
+      }
+      const data = await res.json()
+      if (true) {
         setImportResult(data)
         // Refresh decks list
         const decksRes = await authFetch(`${API_URL}/api/users/me/decks`)
@@ -650,18 +655,20 @@ export default function ProfilePage() {
         method: 'POST',
         body: form,
       })
-      const data = await res.json()
       if (!res.ok) {
-        setImportResult({ error: data.error || 'Import failed' })
-      } else {
-        setImportResult(data)
-        // Refresh collection
-        const collRes = await authFetch(`${API_URL}/api/users/me/collection`)
-        const collectionData = await collRes.json()
-        setCollection(Array.isArray(collectionData) ? collectionData : [])
+        const text = await res.text()
+        let msg = 'Import failed'
+        try { msg = JSON.parse(text).error || msg } catch {}
+        setImportResult({ error: `${msg} (${res.status})` })
+        return
       }
-    } catch {
-      setImportResult({ error: 'Could not reach the server. Make sure you are connected and try again.' })
+      const data = await res.json()
+      setImportResult(data)
+      const collRes = await authFetch(`${API_URL}/api/users/me/collection`)
+      const collectionData = await collRes.json()
+      setCollection(Array.isArray(collectionData) ? collectionData : [])
+    } catch (err) {
+      setImportResult({ error: 'Could not reach the server — check that the API is running.' })
     }
   }
 
