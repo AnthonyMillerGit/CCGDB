@@ -377,7 +377,7 @@ function MyDecksTab({ authFetch }) {
     form.append('name', importDeckName.trim())
     form.append('game_id', importDeckGame)
     try {
-      const res = await authFetch(`${API_URL}/api/decks/import`, { method: 'POST', body: form })
+      const res = await authFetch(`${API_URL}/api/decks/upload`, { method: 'POST', body: form })
       if (!res.ok) {
         const text = await res.text()
         let msg = 'Import failed'
@@ -651,7 +651,7 @@ export default function ProfilePage() {
     const form = new FormData()
     form.append('file', file)
     try {
-      const res = await authFetch(`${API_URL}/api/users/me/collection/import`, {
+      const res = await authFetch(`${API_URL}/api/users/me/collection/upload`, {
         method: 'POST',
         body: form,
       })
