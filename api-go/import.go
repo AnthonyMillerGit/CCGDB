@@ -117,7 +117,8 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		// Find the best-matching printing — prefer set/collector# but don't require them
+		// Find the best-matching printing — prefer set/collector# but don't require them.
+		// Set value may be a full name ("Magic 2010") or a code ("m10") — try both.
 		var printingID int
 		err := a.db.QueryRow(r.Context(), `
 			SELECT p.id
@@ -128,7 +129,9 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 			WHERE LOWER(c.name) = LOWER($1)
 			  AND ($2 = '' OR LOWER(g.name) = LOWER($2))
 			ORDER BY
-			  CASE WHEN $3 != '' AND LOWER(s.name) = LOWER($3) THEN 0 ELSE 1 END,
+			  CASE WHEN $3 != '' AND (
+			    LOWER(s.name) = LOWER($3) OR LOWER(COALESCE(s.code,'')) = LOWER($3)
+			  ) THEN 0 ELSE 1 END,
 			  CASE WHEN $4 != '' AND LOWER(COALESCE(p.collector_number,'')) = LOWER($4) THEN 0 ELSE 1 END,
 			  p.id
 			LIMIT 1
