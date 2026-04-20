@@ -62,13 +62,13 @@ function AddToDeckButton({ card, authFetch }) {
   }
 
   return (
-    <div className="relative mt-3" ref={menuRef}>
+    <div className="relative" ref={menuRef}>
       <button
         onClick={openMenu}
-        className="px-4 py-2 rounded text-sm font-semibold"
+        className="text-xs px-3 py-1.5 rounded font-medium"
         style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }}
       >
-        Add to Deck
+        ⊞ Deck ▾
       </button>
 
       {menuOpen && (
@@ -476,61 +476,57 @@ export default function CardDetailPage() {
             </div>
           )}
 
-          {/* Collection buttons */}
+          {/* Action buttons — collection, deck, wishlist */}
           {user && selectedPrinting && (
-            <div className="flex items-center gap-3 mt-2">
+            <div className="flex flex-wrap items-center gap-2 mt-4">
+              {/* Collection */}
               {collectionItem ? (
-                <>
-                  <span className="text-base text-gray-400">
-                    In collection: <strong style={{ color: '#08D9D6' }}>×{collectionItem.quantity}</strong>
-                  </span>
-                  <button
-                    onClick={handleAddToCollection}
-                    disabled={collectionLoading}
-                    className="px-4 py-2 rounded text-sm font-medium disabled:opacity-50"
-                    style={{ backgroundColor: '#2d3243', border: '1px solid #08D9D6', color: '#08D9D6' }}
-                  >
-                    + Add Another
-                  </button>
+                <div className="flex items-center gap-1 px-2 py-1 rounded"
+                  style={{ backgroundColor: '#2d3243', border: '1px solid #08D9D6' }}>
+                  <span className="text-xs font-medium" style={{ color: '#08D9D6' }}>×{collectionItem.quantity}</span>
                   <button
                     onClick={handleRemoveFromCollection}
                     disabled={collectionLoading}
-                    className="px-4 py-2 rounded text-sm font-medium disabled:opacity-50"
-                    style={{ backgroundColor: '#2d3243', border: '1px solid #FF2E63', color: '#FF2E63' }}
-                  >
-                    Remove
-                  </button>
-                </>
+                    className="text-xs px-1.5 rounded disabled:opacity-50 leading-none"
+                    style={{ color: '#FF2E63' }}
+                    title="Remove one"
+                  >−</button>
+                  <button
+                    onClick={handleAddToCollection}
+                    disabled={collectionLoading}
+                    className="text-xs px-1.5 rounded disabled:opacity-50 leading-none"
+                    style={{ color: '#08D9D6' }}
+                    title="Add another"
+                  >+</button>
+                </div>
               ) : (
                 <button
                   onClick={handleAddToCollection}
                   disabled={collectionLoading}
-                  className="px-5 py-2.5 rounded text-base font-semibold disabled:opacity-50"
-                  style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
+                  className="text-xs px-3 py-1.5 rounded font-medium disabled:opacity-50"
+                  style={{ backgroundColor: '#2d3243', border: '1px solid #08D9D6', color: '#08D9D6' }}
                 >
-                  {collectionLoading ? 'Adding…' : '+ Add to Collection'}
+                  {collectionLoading ? '…' : '+ Collection'}
                 </button>
               )}
+
+              {/* Deck */}
+              <AddToDeckButton card={card} authFetch={authFetch} />
+
+              {/* Wishlist */}
+              <button
+                onClick={handleToggleWishlist}
+                disabled={wishlistLoading}
+                className="text-xs px-3 py-1.5 rounded font-medium disabled:opacity-50"
+                style={{
+                  backgroundColor: wishlisted ? '#3a1a2a' : '#2d3243',
+                  border: `1px solid ${wishlisted ? '#FF2E63' : '#363d52'}`,
+                  color: wishlisted ? '#FF2E63' : '#8892a4',
+                }}
+              >
+                {wishlisted ? '♥ Wishlist' : '♡ Wishlist'}
+              </button>
             </div>
-          )}
-
-          {/* Add to Deck button */}
-          {user && card && <AddToDeckButton card={card} authFetch={authFetch} />}
-
-          {/* Wishlist button */}
-          {user && selectedPrinting && (
-            <button
-              onClick={handleToggleWishlist}
-              disabled={wishlistLoading}
-              className="mt-3 px-4 py-2 rounded text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
-              style={{
-                backgroundColor: wishlisted ? '#3a1a2a' : '#2d3243',
-                border: `1px solid ${wishlisted ? '#FF2E63' : '#363d52'}`,
-                color: wishlisted ? '#FF2E63' : '#8892a4',
-              }}
-            >
-              {wishlisted ? '♥ On Wishlist' : '♡ Add to Wishlist'}
-            </button>
           )}
 
         </div>{/* end card info */}
