@@ -16,7 +16,7 @@ import (
 func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 	user := getUser(r)
 
-	if err := r.ParseMultipartForm(10 << 20); err != nil {
+	if err := r.ParseMultipartForm(50 << 20); err != nil {
 		jsonError(w, "File too large or invalid form", http.StatusBadRequest)
 		return
 	}
@@ -53,6 +53,7 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 		// Default: treat as CSV
 		cr := csv.NewReader(file)
 		cr.TrimLeadingSpace = true
+		cr.LazyQuotes = true
 		headers, err := cr.Read()
 		if err != nil {
 			jsonError(w, "Empty or invalid CSV", http.StatusBadRequest)
@@ -63,12 +64,16 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 		for i, h := range headers {
 			colIdx[strings.ToLower(strings.TrimSpace(h))] = i
 		}
-		col := func(record []string, name string) string {
-			i, ok := colIdx[name]
-			if !ok || i >= len(record) {
-				return ""
+		// colFirst returns the value from the first matching header alias
+		colFirst := func(record []string, names ...string) string {
+			for _, name := range names {
+				if i, ok := colIdx[name]; ok && i < len(record) {
+					if v := strings.TrimSpace(record[i]); v != "" {
+						return v
+					}
+				}
 			}
-			return strings.TrimSpace(record[i])
+			return ""
 		}
 		for {
 			record, err := cr.Read()
@@ -78,16 +83,22 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				continue
 			}
+			// Quantity: our format uses "quantity", Moxfield uses "count"
+			qtyStr := colFirst(record, "quantity", "count", "qty")
 			qty := 1
-			if q, err := strconv.Atoi(col(record, "quantity")); err == nil && q > 0 {
+			if q, err := strconv.Atoi(qtyStr); err == nil && q > 0 {
 				qty = q
 			}
 			rows = append(rows, importRow{
-				CardName:        col(record, "card name"),
-				GameName:        col(record, "game"),
-				SetName:         col(record, "set"),
-				CollectorNumber: col(record, "collector #"),
-				Quantity:        qty,
+				// Card name: ours = "card name", Moxfield = "name"
+				CardName: colFirst(record, "card name", "name", "card"),
+				// Game: ours = "game", Moxfield doesn't have one (defaults to empty → match any game)
+				GameName: colFirst(record, "game", "game name"),
+				// Set: ours = "set", Moxfield = "edition"
+				SetName: colFirst(record, "set", "edition", "set name", "expansion"),
+				// Collector number: ours = "collector #", Moxfield = "collector number"
+				CollectorNumber: colFirst(record, "collector #", "collector number", "number", "#"),
+				Quantity: qty,
 			})
 		}
 	}
@@ -153,7 +164,7 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 func (a *App) importDeck(w http.ResponseWriter, r *http.Request) {
 	user := getUser(r)
 
-	if err := r.ParseMultipartForm(10 << 20); err != nil {
+	if err := r.ParseMultipartForm(50 << 20); err != nil {
 		jsonError(w, "File too large or invalid form", http.StatusBadRequest)
 		return
 	}

@@ -394,7 +394,7 @@ function MyDecksTab({ authFetch }) {
         if (data.id) navigate(`/decks/${data.id}`)
       }
     } catch {
-      setImportResult({ error: 'Network error during import' })
+      setImportResult({ error: 'Could not reach the server. Make sure you are connected and try again.' })
     } finally {
       setImporting(false)
     }
@@ -661,7 +661,7 @@ export default function ProfilePage() {
         setCollection(Array.isArray(collectionData) ? collectionData : [])
       }
     } catch {
-      setImportResult({ error: 'Network error during import' })
+      setImportResult({ error: 'Could not reach the server. Make sure you are connected and try again.' })
     }
   }
 
