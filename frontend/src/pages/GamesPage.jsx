@@ -1,21 +1,43 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { API_URL } from '../config'
+import { useAuth } from '../context/AuthContext'
 
 export default function GamesPage() {
   const [games, setGames] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [favorites, setFavorites] = useState(new Set())
   const navigate = useNavigate()
+  const { user, authFetch } = useAuth()
 
   useEffect(() => {
     fetch(`${API_URL}/api/games`)
       .then(res => res.json())
-      .then(data => {
-        setGames(data)
-        setLoading(false)
-      })
+      .then(data => { setGames(data); setLoading(false) })
   }, [])
+
+  useEffect(() => {
+    if (!user) { setFavorites(new Set()); return }
+    authFetch(`${API_URL}/api/users/me/favorites/games`)
+      .then(r => r.json())
+      .then(data => setFavorites(new Set(Array.isArray(data) ? data.map(g => g.id) : [])))
+      .catch(() => setFavorites(new Set()))
+  }, [user, authFetch])
+
+  async function toggleFavorite(e, game) {
+    e.stopPropagation()
+    if (!user) return
+    const isFav = favorites.has(game.id)
+    setFavorites(prev => {
+      const next = new Set(prev)
+      isFav ? next.delete(game.id) : next.add(game.id)
+      return next
+    })
+    await authFetch(`${API_URL}/api/users/me/favorites/games/${game.id}`, {
+      method: isFav ? 'DELETE' : 'POST',
+    })
+  }
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
@@ -26,6 +48,8 @@ export default function GamesPage() {
   const filtered = games.filter(g =>
     g.name.toLowerCase().includes(search.toLowerCase())
   )
+
+  const favoriteGames = games.filter(g => favorites.has(g.id))
 
   return (
     <div>
@@ -54,13 +78,43 @@ export default function GamesPage() {
         />
       </div>
 
-      {/* Grid */}
+      {/* Favorites row */}
+      {user && favoriteGames.length > 0 && !search && (
+        <div className="mb-10">
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#8892a4' }}>
+            ★ Favorites
+          </p>
+          <div
+            className="p-4 rounded-xl border"
+            style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}
+          >
+            <div className="flex gap-4 overflow-x-auto pb-1">
+              {favoriteGames.map(game => (
+                <div key={game.id} className="flex-shrink-0 w-24">
+                  <GameCard
+                    game={game}
+                    isFavorite={true}
+                    showStar={!!user}
+                    onClick={() => navigate(`/games/${game.slug}`)}
+                    onToggleFavorite={e => toggleFavorite(e, game)}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* All games grid */}
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
         {filtered.map(game => (
           <GameCard
             key={game.id}
             game={game}
+            isFavorite={favorites.has(game.id)}
+            showStar={!!user}
             onClick={() => navigate(`/games/${game.slug}`)}
+            onToggleFavorite={e => toggleFavorite(e, game)}
           />
         ))}
       </div>
@@ -74,22 +128,39 @@ export default function GamesPage() {
   )
 }
 
-function GameCard({ game, onClick }) {
+function GameCard({ game, isFavorite, showStar, onClick, onToggleFavorite }) {
   const [hovered, setHovered] = useState(false)
 
   return (
     <div
       onClick={onClick}
-      className="cursor-pointer flex flex-col w-full transition-all duration-200"
+      className="cursor-pointer flex flex-col w-full transition-all duration-200 relative"
       style={{ transform: hovered ? 'scale(1.05)' : 'scale(1)' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
+      {/* Star button */}
+      {showStar && (
+        <button
+          onClick={onToggleFavorite}
+          className="absolute top-1.5 right-1.5 z-10 w-6 h-6 flex items-center justify-center rounded-full transition-all duration-150"
+          style={{
+            backgroundColor: isFavorite ? 'rgba(8,217,214,0.15)' : 'rgba(0,0,0,0.45)',
+            opacity: isFavorite ? 1 : (hovered ? 1 : 0),
+            color: isFavorite ? '#08D9D6' : '#8892a4',
+            fontSize: '0.7rem',
+          }}
+          title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        >
+          {isFavorite ? '★' : '☆'}
+        </button>
+      )}
+
       {/* Card image */}
       <div
         className="w-full rounded-xl overflow-hidden border transition-all duration-200"
         style={{
-          borderColor: hovered ? '#08D9D6' : '#363d52',
+          borderColor: hovered ? '#08D9D6' : (isFavorite ? '#2a5a58' : '#363d52'),
           boxShadow: hovered ? '0 0 16px rgba(8, 217, 214, 0.25)' : 'none',
           backgroundColor: '#2d3243',
         }}

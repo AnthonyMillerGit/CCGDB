@@ -129,6 +129,11 @@ func (a *App) routes() http.Handler {
 		r.Post("/api/users/me/wishlist", a.addToWishlist)
 		r.Delete("/api/users/me/wishlist/{printingID}", a.removeFromWishlist)
 
+		// Favorite games
+		r.Get("/api/users/me/favorites/games", a.getFavoriteGames)
+		r.Post("/api/users/me/favorites/games/{gameID}", a.addFavoriteGame)
+		r.Delete("/api/users/me/favorites/games/{gameID}", a.removeFavoriteGame)
+
 		// Decks
 		r.Get("/api/users/me/decks", a.listDecks)
 		r.Post("/api/users/me/decks", a.createDeck)
