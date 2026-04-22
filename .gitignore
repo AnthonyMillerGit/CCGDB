@@ -37,3 +37,9 @@ ingestion/seventhsea/source/
 # Card images and card backs (large binary assets, served locally or from S3)
 frontend/public/cards/
 assets/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
