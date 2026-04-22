@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
@@ -13,6 +13,10 @@ export default function CardsPage() {
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 })
   // printing_id -> quantity for cards the user owns in this set
   const [owned, setOwned] = useState({})
+  const [addingSet, setAddingSet] = useState(false)
+  const [sort, setSort] = useState('name_asc')
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 25
   const navigate = useNavigate()
   const { user, authFetch } = useAuth()
 
@@ -34,6 +38,37 @@ export default function CardsPage() {
       .then(data => setOwned(data || {}))
       .catch(() => setOwned({}))
   }, [user, setId, authFetch])
+
+  const sortedCards = useMemo(() => {
+    return [...cards].sort((a, b) => {
+      switch (sort) {
+        case 'name_asc':    return a.name.localeCompare(b.name)
+        case 'name_desc':   return b.name.localeCompare(a.name)
+        case 'rarity_asc':  return (a.rarity || '').localeCompare(b.rarity || '') || a.name.localeCompare(b.name)
+        case 'rarity_desc': return (b.rarity || '').localeCompare(a.rarity || '') || a.name.localeCompare(b.name)
+        default: { // number_asc — collector number order (original API order)
+          const na = parseInt(a.collector_number) || 0
+          const nb = parseInt(b.collector_number) || 0
+          return na !== nb ? na - nb : a.name.localeCompare(b.name)
+        }
+      }
+    })
+  }, [cards, sort])
+
+  const totalPages = Math.max(1, Math.ceil(sortedCards.length / PAGE_SIZE))
+  const safePage = Math.min(page, totalPages)
+  const pagedCards = sortedCards.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+
+  async function handleAddSet() {
+    setAddingSet(true)
+    const res = await authFetch(`${API_URL}/api/users/me/collection/set/${setId}`, { method: 'POST' })
+    if (res.ok) {
+      // Refresh owned state to reflect the new quantities
+      const data = await authFetch(`${API_URL}/api/users/me/collection/set/${setId}`).then(r => r.json())
+      setOwned(data || {})
+    }
+    setAddingSet(false)
+  }
 
   async function handleAdd(e, card) {
     e.stopPropagation()
@@ -114,17 +149,55 @@ export default function CardsPage() {
           <h2 className="text-3xl font-bold mb-1" style={{ color: '#EAEAEA' }}>
             {setInfo.name}
           </h2>
-          <p style={{ color: '#8892a4' }}>
-            {cards.length} cards
-            {setInfo.release_date && (
-              <span> · {new Date(setInfo.release_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+          <div className="flex items-center gap-3 mt-2 flex-wrap">
+            <p style={{ color: '#8892a4' }}>
+              {cards.length} cards
+              {setInfo.release_date && (
+                <span> · {new Date(setInfo.release_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              )}
+            </p>
+            {user && (
+              <button
+                onClick={handleAddSet}
+                disabled={addingSet}
+                className="text-sm px-3 py-1 rounded transition-opacity hover:opacity-80"
+                style={{
+                  backgroundColor: '#2d3243',
+                  border: '1px solid #08D9D6',
+                  color: '#08D9D6',
+                  opacity: addingSet ? 0.6 : 1,
+                  cursor: addingSet ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {addingSet ? 'Adding…' : '+ Add Set to Collection'}
+              </button>
             )}
-          </p>
+          </div>
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {cards.map(card => {
+      {/* Sort bar */}
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <select
+          value={sort}
+          onChange={e => { setSort(e.target.value); setPage(1) }}
+          className="text-sm px-3 py-1.5 rounded"
+          style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }}
+        >
+          <option value="number_asc">Collector # ↑</option>
+          <option value="name_asc">Name A→Z</option>
+          <option value="name_desc">Name Z→A</option>
+          <option value="rarity_asc">Rarity A→Z</option>
+          <option value="rarity_desc">Rarity Z→A</option>
+        </select>
+        <span className="text-xs ml-auto" style={{ color: '#8892a4' }}>
+          {sortedCards.length} cards
+          {totalPages > 1 && ` · page ${safePage} of ${totalPages}`}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {pagedCards.map(card => {
           const quantity = owned[card.printing_id]
           const isOwned = quantity > 0
           return (
@@ -187,6 +260,54 @@ export default function CardsPage() {
           )
         })}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-8">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={safePage === 1}
+            className="text-sm px-3 py-1.5 rounded"
+            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: safePage === 1 ? '#4a5268' : '#EAEAEA', cursor: safePage === 1 ? 'not-allowed' : 'pointer' }}
+          >
+            ‹ Prev
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .filter(p => p === 1 || p === totalPages || Math.abs(p - safePage) <= 2)
+            .reduce((acc, p, i, arr) => {
+              if (i > 0 && p - arr[i - 1] > 1) acc.push('…')
+              acc.push(p)
+              return acc
+            }, [])
+            .map((p, i) =>
+              p === '…' ? (
+                <span key={`e-${i}`} className="text-sm px-1" style={{ color: '#4a5268' }}>…</span>
+              ) : (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className="text-sm w-8 h-8 rounded"
+                  style={{
+                    backgroundColor: p === safePage ? '#08D9D6' : '#2d3243',
+                    border: '1px solid #363d52',
+                    color: p === safePage ? '#13172b' : '#EAEAEA',
+                    fontWeight: p === safePage ? '600' : '400',
+                  }}
+                >{p}</button>
+              )
+            )}
+
+          <button
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={safePage === totalPages}
+            className="text-sm px-3 py-1.5 rounded"
+            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: safePage === totalPages ? '#4a5268' : '#EAEAEA', cursor: safePage === totalPages ? 'not-allowed' : 'pointer' }}
+          >
+            Next ›
+          </button>
+        </div>
+      )}
 
       {/* Hover magnification tooltip */}
       {hoveredCard && hoveredCard.image_url && (

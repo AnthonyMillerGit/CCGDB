@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import PokemonCardInfo from '../components/card-templates/PokemonCardInfo'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
@@ -188,6 +188,7 @@ function LegalityBadge({ format, status }) {
 
 export default function CardDetailPage() {
   const { cardId } = useParams()
+  const [searchParams] = useSearchParams()
   const [card, setCard] = useState(null)
   const [loading, setLoading] = useState(true)
   const [flipped, setFlipped] = useState(false)
@@ -205,7 +206,11 @@ export default function CardDetailPage() {
         const res = await fetch(`${API_URL}/api/cards/${cardId}`)
         const data = await res.json()
         setCard(data)
-        setSelectedPrinting(data.printings?.[0] || null)
+        const printingParam = parseInt(searchParams.get('printing'))
+        const initial = printingParam
+          ? (data.printings?.find(p => p.id === printingParam) ?? data.printings?.[0])
+          : data.printings?.[0]
+        setSelectedPrinting(initial || null)
       } catch {
         // card stays null → "Card not found" shown below
       } finally {
@@ -363,9 +368,9 @@ export default function CardDetailPage() {
         {/* Card info */}
         <div className="flex-1 min-w-0">
 
-          <span className="text-base font-semibold uppercase tracking-widest" style={{ color: '#08D9D6' }}>
+          <Link to={`/games/${card.game_slug}`} className="text-base font-semibold uppercase tracking-widest hover:underline" style={{ color: '#08D9D6' }}>
             {card.game}
-          </span>
+          </Link>
 
           <div className="flex items-start gap-4 mt-2 mb-2 flex-wrap">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight" style={{ color: '#EAEAEA' }}>{card.name}</h2>

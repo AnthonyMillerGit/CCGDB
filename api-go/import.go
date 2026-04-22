@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -54,6 +55,7 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 		cr := csv.NewReader(file)
 		cr.TrimLeadingSpace = true
 		cr.LazyQuotes = true
+		cr.FieldsPerRecord = -1
 		headers, err := cr.Read()
 		if err != nil {
 			jsonError(w, "Empty or invalid CSV", http.StatusBadRequest)
@@ -108,6 +110,8 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Printf("importCollection: parsed %d rows from CSV", len(rows))
+
 	imported := 0
 	skipped := 0
 
@@ -137,6 +141,9 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 			LIMIT 1
 		`, row.CardName, row.GameName, row.SetName, row.CollectorNumber).Scan(&printingID)
 		if err != nil {
+			if skipped < 5 {
+				log.Printf("skip row %q game=%q set=%q col=%q err=%v", row.CardName, row.GameName, row.SetName, row.CollectorNumber, err)
+			}
 			skipped++
 			continue
 		}
@@ -155,6 +162,7 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 		imported++
 	}
 
+	log.Printf("importCollection: imported=%d skipped=%d", imported, skipped)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{
 		"imported": imported,

@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate, Link, useLocation } from 'react-router-dom'
 import { API_URL } from './config'
 import GamesPage from './pages/GamesPage'
@@ -10,6 +11,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import ProfilePage from './pages/ProfilePage'
+import CollectionGamePage from './pages/CollectionGamePage'
 import LandingPage from './pages/LandingPage'
 import BlogPage from './pages/BlogPage'
 import PostPage from './pages/PostPage'
@@ -38,6 +40,66 @@ async function goToRandomCard(navigate) {
     const data = await res.json()
     if (data.id) navigate(`/cards/${data.id}`)
   } catch {}
+}
+
+function UserMenu({ user }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const items = [
+    ['My Collection', '/profile'],
+    ['Decks', '/profile?tab=decks'],
+    ['Wishlist', '/profile?tab=wishlist'],
+    ['Stats', '/profile?tab=stats'],
+  ]
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="text-sm font-medium px-3 py-1.5 rounded flex items-center gap-2"
+        style={{ backgroundColor: '#363d52', border: '1px solid #4a5268', color: '#08D9D6' }}
+      >
+        <span
+          className="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0"
+          style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
+        >
+          {user.username.slice(0, 1).toUpperCase()}
+        </span>
+        {user.username}
+        <span className="text-xs" style={{ color: '#8892a4' }}>{open ? '▲' : '▼'}</span>
+      </button>
+
+      {open && (
+        <div
+          className="absolute right-0 mt-1 w-44 rounded-lg overflow-hidden z-50"
+          style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
+        >
+          {items.map(([label, to]) => (
+            <Link
+              key={label}
+              to={to}
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2.5 text-sm transition-colors hover:bg-opacity-50"
+              style={{ color: '#EAEAEA', textDecoration: 'none', backgroundColor: 'transparent' }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#363d52'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function Header() {
@@ -69,19 +131,7 @@ function Header() {
       <div className="flex items-center gap-2 sm:gap-4 ml-auto">
         <SearchBar />
         {user ? (
-          <Link
-            to="/profile"
-            className="text-sm font-medium px-3 py-1.5 rounded flex items-center gap-2"
-            style={{ backgroundColor: '#363d52', border: '1px solid #4a5268', color: '#08D9D6' }}
-          >
-            <span
-              className="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
-            >
-              {user.username.slice(0, 1).toUpperCase()}
-            </span>
-            {user.username}
-          </Link>
+          <UserMenu user={user} />
         ) : (
           <Link
             to="/login"
@@ -146,6 +196,7 @@ function App() {
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/verify-email" element={<VerifyEmailPage />} />
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/collection/:gameSlug" element={<ProtectedRoute><CollectionGamePage /></ProtectedRoute>} />
             </Routes>
           </main>
           <Footer />

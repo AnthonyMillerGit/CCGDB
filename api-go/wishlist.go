@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
@@ -101,4 +102,39 @@ func (a *App) removeFromWishlist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	jsonResponse(w, map[string]string{"status": "removed"}, http.StatusOK)
+}
+
+func (a *App) addMissingSetToWishlist(w http.ResponseWriter, r *http.Request) {
+	user := getUser(r)
+	setID, err := parseIntParam(r, "setID")
+	if err != nil {
+		jsonError(w, "Invalid set ID", http.StatusBadRequest)
+		return
+	}
+
+	tag, err := a.db.Exec(r.Context(), `
+		INSERT INTO wishlists (user_id, printing_id)
+		SELECT $1::bigint, p.id
+		FROM printings p
+		WHERE p.set_id = $2::bigint
+		  AND p.card_id NOT IN (
+		    SELECT DISTINCT p2.card_id
+		    FROM user_collections uc
+		    JOIN printings p2 ON p2.id = uc.printing_id
+		    WHERE uc.user_id = $1::bigint AND p2.set_id = $2::bigint
+		  )
+		ON CONFLICT (user_id, printing_id) DO NOTHING
+	`, user.ID, setID)
+	if err != nil {
+		log.Printf("addMissingSetToWishlist error (user=%d set=%d): %v", user.ID, setID, err)
+		jsonError(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	jsonResponse(w, map[string]int{"added": int(tag.RowsAffected())}, http.StatusOK)
+}
+
+func (a *App) clearWishlist(w http.ResponseWriter, r *http.Request) {
+	user := getUser(r)
+	a.db.Exec(r.Context(), "DELETE FROM wishlists WHERE user_id = $1", user.ID)
+	w.WriteHeader(http.StatusNoContent)
 }

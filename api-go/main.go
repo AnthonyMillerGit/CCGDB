@@ -122,9 +122,13 @@ func (a *App) routes() http.Handler {
 		// Collection — specific paths before parameterized ones
 		r.Get("/api/users/me/collection", a.getCollection)
 		r.Post("/api/users/me/collection", a.addToCollection)
+		r.Get("/api/users/me/collection/stats", a.getCollectionStats)
 		r.Get("/api/users/me/collection/export", a.exportCollection)
 		r.Post("/api/users/me/collection/upload", a.importCollection)
+		r.Delete("/api/users/me/collection/game/{gameID}", a.clearCollectionForGame)
 		r.Get("/api/users/me/collection/set/{setID}", a.getCollectionForSet)
+		r.Post("/api/users/me/collection/set/{setID}", a.addSetToCollection)
+		r.Get("/api/users/me/collection/set/{setID}/missing", a.getMissingCardsForSet)
 		r.Get("/api/users/me/collection/printing/{printingID}", a.getCollectionItem)
 		r.Patch("/api/users/me/collection/{printingID}", a.updateCollectionQuantity)
 		r.Delete("/api/users/me/collection/{printingID}", a.removeFromCollection)
@@ -132,6 +136,8 @@ func (a *App) routes() http.Handler {
 		// Wishlist
 		r.Get("/api/users/me/wishlist", a.getWishlist)
 		r.Post("/api/users/me/wishlist", a.addToWishlist)
+		r.Post("/api/users/me/wishlist/set/{setID}", a.addMissingSetToWishlist)
+		r.Delete("/api/users/me/wishlist", a.clearWishlist)
 		r.Delete("/api/users/me/wishlist/{printingID}", a.removeFromWishlist)
 
 		// Favorite games
