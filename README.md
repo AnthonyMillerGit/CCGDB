@@ -15,7 +15,6 @@ A multi-TCG collection and deck management platform supporting 20+ trading card 
 | Mobile | React Native, Expo |
 | Database | PostgreSQL 16 |
 | Auth | JWT |
-| Data Ingestion | Python 3 |
 | Email | Resend |
 | Deployment | Cloud VPS (API), Cloudflare Pages (frontend), Cloudflare R2 (images) |
 
@@ -28,10 +27,7 @@ CCGDB/
 ├── api-go/          # Go REST API
 ├── frontend/        # React web app
 ├── mobile/          # React Native app (Expo)
-├── ingestion/       # Python scripts for importing card data
 ├── db/              # PostgreSQL migration files
-├── assets/          # Card images (local dev)
-├── backup.sh        # Nightly database backup script
 └── docker-compose.yml
 ```
 
@@ -48,11 +44,12 @@ Magic: The Gathering, Pokémon, Yu-Gi-Oh, One Piece, Digimon, Lorcana, Flesh and
 - Browse and search cards across all supported games
 - Track your collection with per-printing quantities
 - Build and export deck lists
-- Wishlist cards you want to acquire
+- Wishlist cards you want to acquire and move them to your collection when acquired
+- Collection completion stats with missing card tracking per set
 - Random card discovery
 - Blog with rich text editing and game/card tagging
 - User authentication with email verification and password reset
-- Export collections and decks (CSV, text)
+- Export collections and decks (CSV, JSON, text)
 
 ---
 
@@ -63,7 +60,6 @@ Magic: The Gathering, Pokémon, Yu-Gi-Oh, One Piece, Digimon, Lorcana, Flesh and
 - Go 1.22+
 - Node.js 20+
 - Docker (for PostgreSQL)
-- Python 3.10+ (for ingestion scripts)
 
 ### Setup
 
@@ -118,31 +114,12 @@ ALLOWED_ORIGINS=http://localhost:5173
 
 ---
 
-## Data Ingestion
-
-Each game has its own ingestion script in `ingestion/`. Scripts pull card data from public APIs or structured sources and populate the database.
-
-```bash
-cd ingestion
-pip install -r requirements.txt
-
-# Example: ingest MTG data
-python mtg/ingest_mtg.py
-
-# Download card images
-python download_images.py mtg
-python download_images.py all    # all games
-python download_images.py status # check progress
-```
-
----
-
 ## Deployment
 
 - **API** — Go binary running on a cloud VPS behind a reverse proxy
 - **Frontend** — Deployed to Cloudflare Pages via `wrangler pages deploy`
 - **Images** — Stored in Cloudflare R2
-- **Database** — PostgreSQL in Docker with nightly backups via `backup.sh`
+- **Database** — PostgreSQL in Docker with nightly backups
 
 ---
 
