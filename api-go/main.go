@@ -155,6 +155,7 @@ func (a *App) routes() http.Handler {
 		r.Post("/api/decks/upload", a.importDeck)
 		r.Patch("/api/decks/{deckID}", a.updateDeck)
 		r.Delete("/api/decks/{deckID}", a.deleteDeck)
+		r.Post("/api/decks/{deckID}/copy", a.copyDeck)
 		r.Post("/api/decks/{deckID}/cards", a.addCardToDeck)
 		r.Patch("/api/decks/{deckID}/cards/{cardID}", a.updateDeckCard)
 		r.Delete("/api/decks/{deckID}/cards/{cardID}", a.removeCardFromDeck)

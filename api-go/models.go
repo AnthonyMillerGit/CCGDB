@@ -192,16 +192,18 @@ type CollectionUpdateRequest struct {
 // ── Decks ─────────────────────────────────────────────────────────────────────
 
 type DeckSummary struct {
-	ID          int       `json:"id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	GameID      int       `json:"game_id"`
-	GameName    string    `json:"game_name"`
-	GameSlug    string    `json:"game_slug"`
-	CardCount   int       `json:"card_count"`
-	TotalCards  int       `json:"total_cards"`
+	ID           int       `json:"id"`
+	Name         string    `json:"name"`
+	Description  string    `json:"description"`
+	Format       string    `json:"format"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+	GameID       int       `json:"game_id"`
+	GameName     string    `json:"game_name"`
+	GameSlug     string    `json:"game_slug"`
+	CardCount    int       `json:"card_count"`
+	TotalCards   int       `json:"total_cards"`
+	ThumbnailURL *string   `json:"thumbnail_url"`
 }
 
 type DeckCard struct {
@@ -220,6 +222,7 @@ type DeckDetail struct {
 	ID          int        `json:"id"`
 	Name        string     `json:"name"`
 	Description string     `json:"description"`
+	Format      string     `json:"format"`
 	UserID      int        `json:"user_id"`
 	GameID      int        `json:"game_id"`
 	GameName    string     `json:"game_name"`
@@ -231,11 +234,13 @@ type CreateDeckRequest struct {
 	GameID      int    `json:"game_id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
+	Format      string `json:"format"`
 }
 
 type UpdateDeckRequest struct {
 	Name        *string `json:"name"`
 	Description *string `json:"description"`
+	Format      *string `json:"format"`
 }
 
 type DeckCardRequest struct {

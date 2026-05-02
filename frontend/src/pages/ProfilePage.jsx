@@ -528,6 +528,13 @@ function MyDecksTab({ authFetch }) {
     setCreating(false)
   }
 
+  async function handleCopy(deck) {
+    const res = await authFetch(`${API_URL}/api/decks/${deck.id}/copy`, { method: 'POST' })
+    if (!res.ok) return
+    const data = await res.json()
+    navigate(`/decks/${data.id}`)
+  }
+
   async function handleDelete(deck) {
     setConfirm({
       message: `Are you sure you want to delete "${deck.name}"? This cannot be undone.`,
@@ -719,23 +726,45 @@ function MyDecksTab({ authFetch }) {
       <div className="flex flex-col gap-3">
         {decks.map(deck => (
           <div key={deck.id}
-            className="flex items-center justify-between px-5 py-4 rounded-xl cursor-pointer transition-colors"
+            className="flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-colors"
             style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
             onClick={() => navigate(`/decks/${deck.id}`)}
           >
-            <div>
-              <p className="font-semibold" style={{ color: '#EAEAEA' }}>{deck.name}</p>
-              <div className="flex items-center gap-3 mt-0.5">
+            {/* Thumbnail */}
+            <div className="shrink-0 rounded overflow-hidden" style={{ width: '44px', height: '62px', backgroundColor: '#1e2330' }}>
+              {deck.thumbnail_url
+                ? <img src={deck.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                : <div className="w-full h-full flex items-center justify-center" style={{ color: '#4a5268', fontSize: '1.4rem' }}>🃏</div>
+              }
+            </div>
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold truncate" style={{ color: '#EAEAEA' }}>{deck.name}</p>
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                 <span className="text-xs" style={{ color: '#08D9D6' }}>{deck.game_name}</span>
                 <span className="text-xs" style={{ color: '#8892a4' }}>
                   {deck.total_cards} {deck.total_cards === 1 ? 'card' : 'cards'}
                 </span>
+                {deck.format && (
+                  <span className="text-xs px-1.5 py-0.5 rounded font-medium"
+                    style={{ backgroundColor: '#363d52', color: '#EAEAEA', border: '1px solid #4a5268' }}>
+                    {deck.format}
+                  </span>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+            {/* Actions */}
+            <div className="flex items-center gap-2 shrink-0" onClick={e => e.stopPropagation()}>
               <ExportMenu onExport={fmt =>
                 triggerDownload(authFetch, `${API_URL}/api/decks/${deck.id}/export?format=${fmt}`, `${deck.name}.${fmt}`)
               } />
+              <button
+                onClick={e => { e.stopPropagation(); handleCopy(deck) }}
+                className="text-xs px-3 py-1.5 rounded"
+                style={{ backgroundColor: '#363d52', color: '#08D9D6', border: '1px solid #4a5268' }}
+              >
+                Copy
+              </button>
               <button
                 onClick={e => { e.stopPropagation(); handleDelete(deck) }}
                 className="text-xs px-3 py-1.5 rounded"

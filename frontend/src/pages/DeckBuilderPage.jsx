@@ -84,6 +84,8 @@ export default function DeckBuilderPage() {
   const [loading, setLoading] = useState(true)
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState('')
+  const [editingFormat, setEditingFormat] = useState(false)
+  const [formatInput, setFormatInput] = useState('')
 
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
@@ -135,6 +137,16 @@ export default function DeckBuilderPage() {
     })
     setDeck(prev => ({ ...prev, name: nameInput.trim() }))
     setEditingName(false)
+  }
+
+  async function saveFormat() {
+    const trimmed = formatInput.trim()
+    if (trimmed === (deck.format || '')) { setEditingFormat(false); return }
+    await authFetch(`${API_URL}/api/decks/${deckId}`, {
+      method: 'PATCH', body: JSON.stringify({ format: trimmed }),
+    })
+    setDeck(prev => ({ ...prev, format: trimmed }))
+    setEditingFormat(false)
   }
 
   async function handleAdd(card) {
@@ -231,12 +243,36 @@ export default function DeckBuilderPage() {
                 </span>
               </h2>
             )}
-            <div className="flex items-center gap-3 mt-1">
+            <div className="flex items-center gap-3 mt-1 flex-wrap">
               <span className="text-sm font-medium" style={{ color: '#08D9D6' }}>{deck.game_name}</span>
               <span style={{ color: '#363d52' }}>·</span>
               <span className="text-sm" style={{ color: '#8892a4' }}>
                 {uniqueCards} unique · {totalCards} total
               </span>
+              <span style={{ color: '#363d52' }}>·</span>
+              {editingFormat ? (
+                <input
+                  autoFocus
+                  value={formatInput}
+                  onChange={e => setFormatInput(e.target.value)}
+                  onBlur={saveFormat}
+                  onKeyDown={e => { if (e.key === 'Enter') saveFormat(); if (e.key === 'Escape') setEditingFormat(false) }}
+                  placeholder="e.g. Standard, Casual, Commander"
+                  className="text-sm bg-transparent border-b outline-none"
+                  style={{ color: '#EAEAEA', borderColor: '#08D9D6', minWidth: '180px' }}
+                />
+              ) : (
+                <button
+                  onClick={() => { setFormatInput(deck.format || ''); setEditingFormat(true) }}
+                  className="text-xs hover:opacity-80 transition-opacity"
+                  style={deck.format
+                    ? { backgroundColor: '#363d52', color: '#EAEAEA', padding: '2px 8px', borderRadius: '4px', border: '1px solid #4a5268' }
+                    : { color: '#4a5268' }
+                  }
+                >
+                  {deck.format || '+ format'}
+                </button>
+              )}
             </div>
           </div>
         </div>

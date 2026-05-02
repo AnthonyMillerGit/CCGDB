@@ -9,9 +9,9 @@ import (
 func (a *App) getDeckOrForbid(w http.ResponseWriter, r *http.Request, deckID, userID int) (*DeckDetail, bool) {
 	var d DeckDetail
 	err := a.db.QueryRow(r.Context(),
-		"SELECT id, user_id, game_id, name, description FROM decks WHERE id = $1",
+		"SELECT id, user_id, game_id, name, description, format FROM decks WHERE id = $1",
 		deckID,
-	).Scan(&d.ID, &d.UserID, &d.GameID, &d.Name, &d.Description)
+	).Scan(&d.ID, &d.UserID, &d.GameID, &d.Name, &d.Description, &d.Format)
 	if err != nil {
 		jsonError(w, "Deck not found", http.StatusNotFound)
 		return nil, false
@@ -26,10 +26,15 @@ func (a *App) getDeckOrForbid(w http.ResponseWriter, r *http.Request, deckID, us
 func (a *App) listDecks(w http.ResponseWriter, r *http.Request) {
 	user := getUser(r)
 	rows, err := a.db.Query(r.Context(), `
-		SELECT d.id, d.name, d.description, d.created_at, d.updated_at,
+		SELECT d.id, d.name, d.description, d.format, d.created_at, d.updated_at,
 		       g.id AS game_id, g.name AS game_name, g.slug AS game_slug,
 		       COUNT(dc.id) AS card_count,
-		       COALESCE(SUM(dc.quantity), 0) AS total_cards
+		       COALESCE(SUM(dc.quantity), 0) AS total_cards,
+		       (
+		         SELECT p.image_url FROM deck_cards dc2
+		         JOIN printings p ON p.card_id = dc2.card_id AND p.image_url IS NOT NULL
+		         WHERE dc2.deck_id = d.id ORDER BY dc2.id LIMIT 1
+		       ) AS thumbnail_url
 		FROM decks d
 		JOIN games g ON g.id = d.game_id
 		LEFT JOIN deck_cards dc ON dc.deck_id = d.id
@@ -46,8 +51,8 @@ func (a *App) listDecks(w http.ResponseWriter, r *http.Request) {
 	decks := []DeckSummary{}
 	for rows.Next() {
 		var d DeckSummary
-		if err := rows.Scan(&d.ID, &d.Name, &d.Description, &d.CreatedAt, &d.UpdatedAt,
-			&d.GameID, &d.GameName, &d.GameSlug, &d.CardCount, &d.TotalCards); err != nil {
+		if err := rows.Scan(&d.ID, &d.Name, &d.Description, &d.Format, &d.CreatedAt, &d.UpdatedAt,
+			&d.GameID, &d.GameName, &d.GameSlug, &d.CardCount, &d.TotalCards, &d.ThumbnailURL); err != nil {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}
@@ -79,10 +84,10 @@ func (a *App) createDeck(w http.ResponseWriter, r *http.Request) {
 	}
 	var result Result
 	err := a.db.QueryRow(r.Context(), `
-		INSERT INTO decks (user_id, game_id, name, description)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO decks (user_id, game_id, name, description, format)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, name, description, game_id
-	`, user.ID, body.GameID, strings.TrimSpace(body.Name), body.Description,
+	`, user.ID, body.GameID, strings.TrimSpace(body.Name), body.Description, body.Format,
 	).Scan(&result.ID, &result.Name, &result.Description, &result.GameID)
 	if err != nil {
 		jsonError(w, "Database error", http.StatusInternalServerError)
@@ -170,6 +175,10 @@ func (a *App) updateDeck(w http.ResponseWriter, r *http.Request) {
 	if body.Description != nil {
 		a.db.Exec(r.Context(), "UPDATE decks SET description = $1, updated_at = NOW() WHERE id = $2",
 			*body.Description, deckID)
+	}
+	if body.Format != nil {
+		a.db.Exec(r.Context(), "UPDATE decks SET format = $1, updated_at = NOW() WHERE id = $2",
+			*body.Format, deckID)
 	}
 	jsonResponse(w, map[string]string{"message": "Deck updated"}, http.StatusOK)
 }
@@ -280,6 +289,41 @@ func (a *App) updateDeckCard(w http.ResponseWriter, r *http.Request) {
 	}
 	a.db.Exec(r.Context(), "UPDATE decks SET updated_at = NOW() WHERE id = $1", deckID)
 	jsonResponse(w, result, http.StatusOK)
+}
+
+func (a *App) copyDeck(w http.ResponseWriter, r *http.Request) {
+	user := getUser(r)
+	deckID, err := parseIntParam(r, "deckID")
+	if err != nil {
+		jsonError(w, "Invalid deck ID", http.StatusBadRequest)
+		return
+	}
+	source, ok := a.getDeckOrForbid(w, r, deckID, user.ID)
+	if !ok {
+		return
+	}
+
+	var newID int
+	err = a.db.QueryRow(r.Context(), `
+		INSERT INTO decks (user_id, game_id, name, description, format)
+		VALUES ($1, $2, $3, $4, $5) RETURNING id
+	`, user.ID, source.GameID, source.Name+" (Copy)", source.Description, source.Format,
+	).Scan(&newID)
+	if err != nil {
+		jsonError(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = a.db.Exec(r.Context(), `
+		INSERT INTO deck_cards (deck_id, card_id, quantity)
+		SELECT $1, card_id, quantity FROM deck_cards WHERE deck_id = $2
+	`, newID, deckID)
+	if err != nil {
+		jsonError(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	jsonResponse(w, map[string]any{"id": newID}, http.StatusCreated)
 }
 
 func (a *App) removeCardFromDeck(w http.ResponseWriter, r *http.Request) {
