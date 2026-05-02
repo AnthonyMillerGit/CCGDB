@@ -379,6 +379,22 @@ func (a *App) deletePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func (a *App) unpublishPost(w http.ResponseWriter, r *http.Request) {
+	user := getUser(r)
+	if !user.IsAdmin {
+		jsonError(w, "Forbidden", http.StatusForbidden)
+		return
+	}
+	slug := chi.URLParam(r, "slug")
+	result, err := a.db.Exec(r.Context(),
+		"UPDATE posts SET published_at = NULL, updated_at = NOW() WHERE slug = $1", slug)
+	if err != nil || result.RowsAffected() == 0 {
+		jsonError(w, "Post not found", http.StatusNotFound)
+		return
+	}
+	jsonResponse(w, map[string]string{"message": "Post unpublished"}, http.StatusOK)
+}
+
 func (a *App) listDraftPosts(w http.ResponseWriter, r *http.Request) {
 	user := getUser(r)
 	if !user.IsAdmin {

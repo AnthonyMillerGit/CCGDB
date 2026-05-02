@@ -16,6 +16,7 @@ import LandingPage from './pages/LandingPage'
 import BlogPage from './pages/BlogPage'
 import PostPage from './pages/PostPage'
 import PostEditorPage from './pages/PostEditorPage'
+import AdminPostsPage from './pages/AdminPostsPage'
 import SearchBar from './components/SearchBar'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider, useAuth } from './context/AuthContext'
@@ -46,12 +47,15 @@ function UserMenu({ user }) {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  const items = [
+  const baseItems = [
     ['My Collection', '/profile'],
     ['Decks', '/profile?tab=decks'],
     ['Wishlist', '/profile?tab=wishlist'],
     ['Stats', '/profile?tab=stats'],
   ]
+  const items = user?.is_admin
+    ? [...baseItems, ['— Admin —', null], ['Manage Posts', '/admin/posts']]
+    : baseItems
 
   return (
     <div ref={ref} className="relative">
@@ -75,19 +79,26 @@ function UserMenu({ user }) {
           className="absolute right-0 mt-1 w-44 rounded-lg overflow-hidden z-50"
           style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
         >
-          {items.map(([label, to]) => (
-            <Link
-              key={label}
-              to={to}
-              onClick={() => setOpen(false)}
-              className="block px-4 py-2.5 text-sm transition-colors hover:bg-opacity-50"
-              style={{ color: '#EAEAEA', textDecoration: 'none', backgroundColor: 'transparent' }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#363d52'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-            >
-              {label}
-            </Link>
-          ))}
+          {items.map(([label, to]) =>
+            to === null ? (
+              <div key={label} className="px-4 py-1.5 text-xs font-semibold uppercase"
+                style={{ color: '#4a5268', borderTop: '1px solid #363d52', marginTop: '4px', paddingTop: '8px' }}>
+                Admin
+              </div>
+            ) : (
+              <Link
+                key={label}
+                to={to}
+                onClick={() => setOpen(false)}
+                className="block px-4 py-2.5 text-sm transition-colors hover:bg-opacity-50"
+                style={{ color: '#EAEAEA', textDecoration: 'none', backgroundColor: 'transparent' }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#363d52'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                {label}
+              </Link>
+            )
+          )}
         </div>
       )}
     </div>
@@ -181,6 +192,7 @@ function App() {
               <Route path="/decks/:deckId" element={<ProtectedRoute><DeckBuilderPage /></ProtectedRoute>} />
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/:slug" element={<PostPage />} />
+              <Route path="/admin/posts" element={<ProtectedRoute><AdminPostsPage /></ProtectedRoute>} />
               <Route path="/admin/posts/new" element={<ProtectedRoute><PostEditorPage /></ProtectedRoute>} />
               <Route path="/admin/posts/:slug/edit" element={<ProtectedRoute><PostEditorPage /></ProtectedRoute>} />
               <Route path="/login" element={<LoginPage />} />

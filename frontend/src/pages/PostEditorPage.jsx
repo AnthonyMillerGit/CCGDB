@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -190,12 +190,16 @@ export default function PostEditorPage() {
     setSaving(true)
     setError('')
 
+    const resolvedPublishedAt = publish
+      ? (publishedAt ? new Date(publishedAt).toISOString() : new Date().toISOString())
+      : (publishedAt ? new Date(publishedAt).toISOString() : null)
+
     const payload = {
       title: title.trim(),
       slug: postSlug || autoSlug(title),
       excerpt: excerpt.trim() || null,
       body: editor.getJSON(),
-      published_at: publish ? (publishedAt ? new Date(publishedAt).toISOString() : new Date().toISOString()) : (publishedAt ? new Date(publishedAt).toISOString() : null),
+      published_at: resolvedPublishedAt,
       game_ids: gameTags.map(t => t.game_id),
       card_ids: cardTags.map(t => t.card_id),
       set_ids: [],
@@ -208,10 +212,29 @@ export default function PostEditorPage() {
       const res = await authFetch(url, { method, body: JSON.stringify(payload) })
       if (res.ok) {
         const data = await res.json()
-        navigate(`/blog/${isEdit ? (payload.slug || slug) : data.slug}`)
+        const finalSlug = isEdit ? (payload.slug || slug) : data.slug
+        const willBePublic = resolvedPublishedAt && new Date(resolvedPublishedAt) <= new Date()
+        navigate(willBePublic ? `/blog/${finalSlug}` : '/admin/posts')
       } else {
         const data = await res.json().catch(() => ({}))
         setError(data.detail || `Failed to save post (${res.status})`)
+      }
+    } catch {
+      setError('Network error — check your connection')
+    }
+    setSaving(false)
+  }
+
+  async function handleUnpublish() {
+    setSaving(true)
+    setError('')
+    try {
+      const res = await authFetch(`${API_URL}/api/admin/posts/${slug}/unpublish`, { method: 'POST' })
+      if (res.ok) {
+        setPublishedAt('')
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setError(data.detail || 'Failed to unpublish')
       }
     } catch {
       setError('Network error — check your connection')
@@ -224,9 +247,12 @@ export default function PostEditorPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold" style={{ color: '#EAEAEA' }}>
-          {isEdit ? 'Edit Post' : 'New Post'}
-        </h1>
+        <div className="flex items-center gap-4">
+          <RouterLink to="/admin/posts" className="text-sm" style={{ color: '#8892a4' }}>← Posts</RouterLink>
+          <h1 className="text-2xl font-bold" style={{ color: '#EAEAEA' }}>
+            {isEdit ? 'Edit Post' : 'New Post'}
+          </h1>
+        </div>
       </div>
 
       {error && (
@@ -309,7 +335,14 @@ export default function PostEditorPage() {
             style={inputStyle}
           />
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
+          {isEdit && publishedAt && new Date(publishedAt) <= new Date() && (
+            <button type="button" onClick={handleUnpublish} disabled={saving}
+              className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
+              style={{ backgroundColor: '#363d52', color: '#FF2E63', border: '1px solid #4a5268' }}>
+              Unpublish
+            </button>
+          )}
           <button type="button" onClick={() => handleSave(false)} disabled={saving}
             className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
             style={{ backgroundColor: '#363d52', color: '#EAEAEA' }}>

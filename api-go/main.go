@@ -111,6 +111,7 @@ func (a *App) routes() http.Handler {
 		r.Use(a.requireAuth)
 
 		r.Get("/api/auth/me", a.me)
+		r.Patch("/api/auth/me", a.updateProfile)
 		r.Post("/api/auth/resend-verification", a.resendVerification)
 
 		// Blog — admin
@@ -118,6 +119,7 @@ func (a *App) routes() http.Handler {
 		r.Get("/api/admin/posts/{slug}", a.getPostAdmin)
 		r.Post("/api/admin/posts", a.createPost)
 		r.Patch("/api/admin/posts/{slug}", a.updatePost)
+		r.Post("/api/admin/posts/{slug}/unpublish", a.unpublishPost)
 		r.Delete("/api/admin/posts/{slug}", a.deletePost)
 
 		// Collection — specific paths before parameterized ones
