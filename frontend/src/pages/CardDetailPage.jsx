@@ -195,6 +195,7 @@ export default function CardDetailPage() {
   const [selectedPrinting, setSelectedPrinting] = useState(null)
   const [collectionItem, setCollectionItem] = useState(null)
   const [collectionLoading, setCollectionLoading] = useState(false)
+  const [isFoil, setIsFoil] = useState(false)
   const [wishlisted, setWishlisted] = useState(false)
   const [wishlistLoading, setWishlistLoading] = useState(false)
   const navigate = useNavigate()
@@ -220,9 +221,9 @@ export default function CardDetailPage() {
     load()
   }, [cardId])
 
-  const fetchCollectionItem = useCallback((printingId) => {
+  const fetchCollectionItem = useCallback((printingId, foil = false) => {
     if (!user || !printingId) { setCollectionItem(null); return }
-    authFetch(`${API_URL}/api/users/me/collection/printing/${printingId}`)
+    authFetch(`${API_URL}/api/users/me/collection/printing/${printingId}?foil=${foil}`)
       .then(r => r.json())
       .then(data => setCollectionItem(data || null))
       .catch(() => setCollectionItem(null))
@@ -230,16 +231,16 @@ export default function CardDetailPage() {
 
   const fetchWishlistStatus = useCallback((printingId) => {
     if (!user || !printingId) { setWishlisted(false); return }
-    authFetch(`${API_URL}/api/users/me/wishlist`)
+    authFetch(`${API_URL}/api/users/me/wishlist/check/${printingId}`)
       .then(r => r.json())
-      .then(data => setWishlisted(Array.isArray(data) && data.some(w => w.printing_id === printingId)))
+      .then(data => setWishlisted(data?.wishlisted === true))
       .catch(() => setWishlisted(false))
   }, [user, authFetch])
 
   useEffect(() => {
-    fetchCollectionItem(selectedPrinting?.id)
+    fetchCollectionItem(selectedPrinting?.id, isFoil)
     fetchWishlistStatus(selectedPrinting?.id)
-  }, [selectedPrinting?.id, fetchCollectionItem, fetchWishlistStatus])
+  }, [selectedPrinting?.id, isFoil, fetchCollectionItem, fetchWishlistStatus])
 
   const handleAddToCollection = async () => {
     if (!selectedPrinting) return
@@ -247,9 +248,9 @@ export default function CardDetailPage() {
     try {
       await authFetch(`${API_URL}/api/users/me/collection`, {
         method: 'POST',
-        body: JSON.stringify({ printing_id: selectedPrinting.id, quantity: 1 }),
+        body: JSON.stringify({ printing_id: selectedPrinting.id, quantity: 1, is_foil: isFoil }),
       })
-      fetchCollectionItem(selectedPrinting.id)
+      fetchCollectionItem(selectedPrinting.id, isFoil)
     } finally {
       setCollectionLoading(false)
     }
@@ -259,7 +260,7 @@ export default function CardDetailPage() {
     if (!selectedPrinting) return
     setCollectionLoading(true)
     try {
-      await authFetch(`${API_URL}/api/users/me/collection/${selectedPrinting.id}`, { method: 'DELETE' })
+      await authFetch(`${API_URL}/api/users/me/collection/${selectedPrinting.id}?foil=${isFoil}`, { method: 'DELETE' })
       setCollectionItem(null)
     } finally {
       setCollectionLoading(false)
@@ -484,11 +485,24 @@ export default function CardDetailPage() {
           {/* Action buttons — collection, deck, wishlist */}
           {user && selectedPrinting && (
             <div className="flex flex-wrap items-center gap-2 mt-4">
+              {/* Foil toggle */}
+              <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={isFoil}
+                  onChange={e => setIsFoil(e.target.checked)}
+                  className="accent-yellow-400 w-3.5 h-3.5"
+                />
+                <span className="text-xs font-medium" style={{ color: isFoil ? '#facc15' : '#8892a4' }}>
+                  ✦ Foil
+                </span>
+              </label>
+
               {/* Collection */}
               {collectionItem ? (
                 <div className="flex items-center gap-1 px-2 py-1 rounded"
-                  style={{ backgroundColor: '#2d3243', border: '1px solid #08D9D6' }}>
-                  <span className="text-xs font-medium" style={{ color: '#08D9D6' }}>×{collectionItem.quantity}</span>
+                  style={{ backgroundColor: '#2d3243', border: `1px solid ${isFoil ? '#facc15' : '#08D9D6'}` }}>
+                  <span className="text-xs font-medium" style={{ color: isFoil ? '#facc15' : '#08D9D6' }}>×{collectionItem.quantity}</span>
                   <button
                     onClick={handleRemoveFromCollection}
                     disabled={collectionLoading}
@@ -500,7 +514,7 @@ export default function CardDetailPage() {
                     onClick={handleAddToCollection}
                     disabled={collectionLoading}
                     className="text-xs px-1.5 rounded disabled:opacity-50 leading-none"
-                    style={{ color: '#08D9D6' }}
+                    style={{ color: isFoil ? '#facc15' : '#08D9D6' }}
                     title="Add another"
                   >+</button>
                 </div>
@@ -509,9 +523,9 @@ export default function CardDetailPage() {
                   onClick={handleAddToCollection}
                   disabled={collectionLoading}
                   className="text-xs px-3 py-1.5 rounded font-medium disabled:opacity-50"
-                  style={{ backgroundColor: '#2d3243', border: '1px solid #08D9D6', color: '#08D9D6' }}
+                  style={{ backgroundColor: '#2d3243', border: `1px solid ${isFoil ? '#facc15' : '#08D9D6'}`, color: isFoil ? '#facc15' : '#08D9D6' }}
                 >
-                  {collectionLoading ? '…' : '+ Collection'}
+                  {collectionLoading ? '…' : `+ Collection${isFoil ? ' (Foil)' : ''}`}
                 </button>
               )}
 

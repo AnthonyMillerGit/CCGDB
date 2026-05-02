@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -178,12 +178,12 @@ export default function PostEditorPage() {
     loadPost()
   }, [isEdit, slug, editor, authFetch, navigate])
 
-  const autoSlug = useCallback((t) => {
+  function autoSlug(t) {
     return t.toLowerCase().trim()
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
-  }, [])
+  }
 
   async function handleSave(publish) {
     if (!title.trim()) { setError('Title is required'); return }

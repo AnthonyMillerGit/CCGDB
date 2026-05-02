@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { API_URL } from '../config'
+import { API_URL, goToRandomCard } from '../config'
 import { useAuth } from '../context/AuthContext'
 
 // Fixed rotations and offsets for the card fan — deterministic so no layout shift
@@ -12,14 +12,6 @@ const FAN_CARDS = [
   { rotate: 32,  x: 22,  y: 18, z: 5 },
 ]
 
-async function goToRandomCard(navigate) {
-  try {
-    const res = await fetch(`${API_URL}/api/cards/random-one`)
-    const data = await res.json()
-    if (data.id) navigate(`/cards/${data.id}`)
-  } catch {}
-}
-
 export default function LandingPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -29,29 +21,27 @@ export default function LandingPage() {
 
   useEffect(() => {
     async function load() {
-      const [gamesRes, postsRes] = await Promise.all([
-        fetch(`${API_URL}/api/games`),
+      const [statsRes, postsRes, gamesRes] = await Promise.all([
+        fetch(`${API_URL}/api/stats`),
         fetch(`${API_URL}/api/blog?limit=3`),
+        fetch(`${API_URL}/api/games`),
       ])
-      const games = await gamesRes.json()
+      const statsData = await statsRes.json()
       const postData = await postsRes.json()
-      setStats({ games: games.length })
+      const games = await gamesRes.json()
+      setStats(statsData)
       setPosts(Array.isArray(postData) ? postData : [])
-    }
 
-    async function loadFanCards() {
-      const games = await fetch(`${API_URL}/api/games`).then(r => r.json()).catch(() => [])
-      if (!Array.isArray(games) || games.length === 0) return
-      const shuffled = games.sort(() => Math.random() - 0.5).slice(0, 5)
-      const params = shuffled.map(g => `game=${g.slug}`).join('&')
-      const cards = await fetch(`${API_URL}/api/cards/random?limit=5&${params}`)
-        .then(r => r.json())
-        .catch(() => [])
-      setFanCards(Array.isArray(cards) ? cards.filter(c => c.image_url) : [])
+      if (Array.isArray(games) && games.length > 0) {
+        const shuffled = games.sort(() => Math.random() - 0.5).slice(0, 5)
+        const params = shuffled.map(g => `game=${g.slug}`).join('&')
+        const cards = await fetch(`${API_URL}/api/cards/random?limit=5&${params}`)
+          .then(r => r.json())
+          .catch(() => [])
+        setFanCards(Array.isArray(cards) ? cards.filter(c => c.image_url) : [])
+      }
     }
-
     load()
-    loadFanCards()
   }, [])
 
   return (
@@ -100,20 +90,23 @@ export default function LandingPage() {
           <div className="flex flex-col items-center md:items-start gap-4 w-full md:w-1/2">
             <div className="flex items-center gap-12">
               <div className="text-center md:text-left">
-                <p className="text-6xl font-bold" style={{ color: '#08D9D6' }}>{stats.games}+</p>
+                <p className="text-6xl font-bold" style={{ color: '#08D9D6' }}>{stats.games}</p>
                 <p className="text-lg mt-1" style={{ color: '#EAEAEA' }}>Games</p>
               </div>
               <div className="text-center md:text-left">
-                <p className="text-6xl font-bold" style={{ color: '#08D9D6' }}>500k+</p>
+                <p className="text-6xl font-bold" style={{ color: '#08D9D6' }}>{stats.sets?.toLocaleString()}</p>
+                <p className="text-lg mt-1" style={{ color: '#EAEAEA' }}>Sets</p>
+              </div>
+              <div className="text-center md:text-left">
+                <p className="text-6xl font-bold" style={{ color: '#08D9D6' }}>{stats.cards?.toLocaleString()}</p>
                 <p className="text-lg mt-1" style={{ color: '#EAEAEA' }}>Cards</p>
               </div>
             </div>
-            <p className="text-sm text-center md:text-left" style={{ color: '#8892a4' }}>
+            <p className="text-base text-center md:text-left" style={{ color: '#8892a4' }}>
               CCGVault is a collector's companion — track your collection, build decks,
-              and learn about hundreds of games in one place. Whether you're rediscovering
-              a game from the 90s or diving into something new, we've got the cards.
-              CCGVault is focused on the cards themselves — we don't track pricing
-              or market values, just the games and the collections.
+              and explore card games in one place. Whether you're rediscovering a game
+              from the 90s or diving into something new, we've got the cards.
+              No pricing, no market data — just the games and the collections.
             </p>
           </div>
 
@@ -131,7 +124,7 @@ export default function LandingPage() {
                     style={{
                       width: 180,
                       top: '50%',
-                      left: '50%',
+                      left: '62%',
                       transform: `translate(calc(-50% + ${f.x}px), calc(-50% + ${f.y}px)) rotate(${f.rotate}deg)`,
                       zIndex: f.z,
                     }}

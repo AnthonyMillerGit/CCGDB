@@ -71,6 +71,8 @@ function SearchCard({ card, deckQty, onAdd, onMouseEnter, onMouseLeave }) {
   )
 }
 
+const isTouchDevice = window.matchMedia('(hover: none)').matches
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function DeckBuilderPage() {
@@ -87,6 +89,7 @@ export default function DeckBuilderPage() {
   const [searchResults, setSearchResults] = useState([])
   const [searching, setSearching] = useState(false)
   const searchTimer = useRef(null)
+  const searchInputRef = useRef(null)
 
   // Hover tooltip
   const [hoveredCard, setHoveredCard] = useState(null)
@@ -146,6 +149,7 @@ export default function DeckBuilderPage() {
       }
       return { ...prev, cards: [...prev.cards, { card_id: card.id, card_name: card.name, card_type: card.card_type, image_url: card.image_url, quantity: 1 }] }
     })
+    searchInputRef.current?.focus()
   }
 
   async function handleIncrease(card) {
@@ -158,7 +162,8 @@ export default function DeckBuilderPage() {
 
   async function handleDecrease(card) {
     if (card.quantity === 1) {
-      await authFetch(`${API_URL}/api/decks/${deckId}/cards/${card.card_id}`, { method: 'DELETE' })
+      const res = await authFetch(`${API_URL}/api/decks/${deckId}/cards/${card.card_id}`, { method: 'DELETE' })
+      if (!res.ok) return
       setDeck(prev => ({ ...prev, cards: prev.cards.filter(c => c.card_id !== card.card_id) }))
     } else {
       const res = await authFetch(`${API_URL}/api/decks/${deckId}/cards/${card.card_id}`, {
@@ -168,8 +173,6 @@ export default function DeckBuilderPage() {
       setDeck(prev => ({ ...prev, cards: prev.cards.map(c => c.card_id === card.card_id ? { ...c, quantity: c.quantity - 1 } : c) }))
     }
   }
-
-  const isTouchDevice = window.matchMedia('(hover: none)').matches
 
   function handleMouseEnter(e, card) {
     if (!card.image_url || isTouchDevice) return
@@ -290,6 +293,7 @@ export default function DeckBuilderPage() {
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
+              ref={searchInputRef}
               type="text"
               placeholder={`Search ${deck.game_name} cards…`}
               value={searchQuery}

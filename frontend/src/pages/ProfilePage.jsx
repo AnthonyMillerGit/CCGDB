@@ -17,13 +17,24 @@ async function triggerDownload(authFetch, url, filename) {
 
 function ExportMenu({ onExport }) {
   const [open, setOpen] = useState(false)
+  const ref = useRef(null)
   const formats = [
     { label: 'CSV', value: 'csv' },
     { label: 'JSON', value: 'json' },
     { label: 'TXT', value: 'txt' },
   ]
+
+  useEffect(() => {
+    if (!open) return
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [open])
+
   return (
-    <div className="relative">
+    <div ref={ref} className="relative">
       <button
         onClick={e => { e.stopPropagation(); setOpen(o => !o) }}
         className="text-xs px-3 py-1.5 rounded flex items-center gap-1"
@@ -551,23 +562,20 @@ function MyDecksTab({ authFetch }) {
       if (!res.ok) {
         const text = await res.text()
         let msg = 'Import failed'
-        try { msg = JSON.parse(text).error || msg } catch {}
+        try { msg = JSON.parse(text).detail || msg } catch {}
         setImportResult({ error: `${msg} (${res.status})` })
         return
       }
       const data = await res.json()
-      if (true) {
-        setImportResult(data)
-        // Refresh decks list
-        const decksRes = await authFetch(`${API_URL}/api/users/me/decks`)
-        const decksData = await decksRes.json()
-        setDecks(Array.isArray(decksData) ? decksData : [])
-        setShowImportForm(false)
-        setImportDeckName('')
-        setImportDeckGame('')
-        setImportFile(null)
-        if (data.id) navigate(`/decks/${data.id}`)
-      }
+      setImportResult(data)
+      const decksRes = await authFetch(`${API_URL}/api/users/me/decks`)
+      const decksData = await decksRes.json()
+      setDecks(Array.isArray(decksData) ? decksData : [])
+      setShowImportForm(false)
+      setImportDeckName('')
+      setImportDeckGame('')
+      setImportFile(null)
+      if (data.id) navigate(`/decks/${data.id}`)
     } catch {
       setImportResult({ error: 'Could not reach the server. Make sure you are connected and try again.' })
     } finally {
@@ -812,7 +820,7 @@ export default function ProfilePage() {
       if (!res.ok) {
         const text = await res.text()
         let msg = 'Import failed'
-        try { msg = JSON.parse(text).error || msg } catch {}
+        try { msg = JSON.parse(text).detail || msg } catch {}
         setImportResult({ error: `${msg} (${res.status})` })
         return
       }
@@ -959,8 +967,8 @@ export default function ProfilePage() {
                       <div className="relative h-32 overflow-hidden" style={{ backgroundColor: '#2d3243' }}>
                         {sampleImages.length > 0 ? (
                           <div className="flex h-full">
-                            {sampleImages.map((url, i) => (
-                              <img key={i} src={url} alt="" className="h-full object-cover flex-1" style={{ minWidth: 0 }} />
+                            {sampleImages.map((url) => (
+                              <img key={url} src={url} alt="" className="h-full object-cover flex-1" style={{ minWidth: 0 }} />
                             ))}
                           </div>
                         ) : (

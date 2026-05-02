@@ -3,23 +3,42 @@ import { Link } from 'react-router-dom'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
 
+const PAGE_SIZE = 20
+
 export default function BlogPage() {
   const { user } = useAuth()
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`${API_URL}/api/blog`)
+        const res = await fetch(`${API_URL}/api/blog?limit=${PAGE_SIZE}`)
         const data = await res.json()
-        setPosts(Array.isArray(data) ? data : [])
+        const list = Array.isArray(data) ? data : []
+        setPosts(list)
+        setHasMore(list.length === PAGE_SIZE)
       } finally {
         setLoading(false)
       }
     }
     load()
   }, [])
+
+  async function loadMore() {
+    setLoadingMore(true)
+    try {
+      const res = await fetch(`${API_URL}/api/blog?limit=${PAGE_SIZE}&offset=${posts.length}`)
+      const data = await res.json()
+      const list = Array.isArray(data) ? data : []
+      setPosts(prev => [...prev, ...list])
+      setHasMore(list.length === PAGE_SIZE)
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -67,6 +86,19 @@ export default function BlogPage() {
           </Link>
         ))}
       </div>
+
+      {hasMore && !loading && (
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="px-6 py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition-opacity hover:opacity-80"
+            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#08D9D6' }}
+          >
+            {loadingMore ? 'Loading…' : 'Load more posts'}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

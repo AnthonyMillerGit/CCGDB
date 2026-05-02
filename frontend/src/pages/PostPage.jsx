@@ -23,6 +23,7 @@ export default function PostPage() {
   const { user } = useAuth()
   const [post, setPost] = useState(null)
   const [loading, setLoading] = useState(true)
+  const bodyRef = useRef(null)
 
   useEffect(() => {
     async function load() {
@@ -36,6 +37,22 @@ export default function PostPage() {
     }
     load()
   }, [slug, navigate])
+
+  useEffect(() => {
+    const el = bodyRef.current
+    if (!el) return
+    const handleClick = e => {
+      const a = e.target.closest('a')
+      if (!a) return
+      const href = a.getAttribute('href')
+      if (href && href.startsWith('/')) {
+        e.preventDefault()
+        navigate(href)
+      }
+    }
+    el.addEventListener('click', handleClick)
+    return () => el.removeEventListener('click', handleClick)
+  }, [post, navigate])
 
   if (loading) return <p className="text-center py-20" style={{ color: '#8892a4' }}>Loading…</p>
   if (!post) return null
@@ -68,20 +85,7 @@ export default function PostPage() {
 
       {/* Body — intercept internal links for React Router */}
       <div
-        ref={el => {
-          if (!el) return
-          const handleClick = e => {
-            const a = e.target.closest('a')
-            if (!a) return
-            const href = a.getAttribute('href')
-            if (href && href.startsWith('/')) {
-              e.preventDefault()
-              navigate(href)
-            }
-          }
-          el.addEventListener('click', handleClick)
-          return () => el.removeEventListener('click', handleClick)
-        }}
+        ref={bodyRef}
         className="editor-content max-w-none mb-12"
         dangerouslySetInnerHTML={{ __html: html }}
         style={{ color: '#EAEAEA' }}

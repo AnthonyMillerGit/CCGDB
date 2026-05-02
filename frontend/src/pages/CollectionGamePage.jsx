@@ -21,6 +21,8 @@ function QuantityControl({ quantity, onIncrease, onDecrease }) {
   )
 }
 
+const sameCard = (a, b) => a.printing_id === b.printing_id && a.is_foil === b.is_foil
+
 export default function CollectionGamePage() {
   const { gameSlug } = useParams()
   const navigate = useNavigate()
@@ -50,31 +52,31 @@ export default function CollectionGamePage() {
   const handleIncrease = useCallback(async (card) => {
     const res = await authFetch(`${API_URL}/api/users/me/collection`, {
       method: 'POST',
-      body: JSON.stringify({ printing_id: card.printing_id, quantity: 1 }),
+      body: JSON.stringify({ printing_id: card.printing_id, quantity: 1, is_foil: card.is_foil }),
     })
     if (!res.ok) return
     const result = await res.json()
     setGameData(prev => prev && {
       ...prev,
-      cards: prev.cards.map(c => c.printing_id === card.printing_id ? { ...c, quantity: result.quantity } : c)
+      cards: prev.cards.map(c => sameCard(c, card) ? { ...c, quantity: result.quantity } : c)
     })
   }, [authFetch])
 
   const handleDecrease = useCallback(async (card) => {
     if (card.quantity === 1) {
-      const res = await authFetch(`${API_URL}/api/users/me/collection/${card.printing_id}`, { method: 'DELETE' })
+      const res = await authFetch(`${API_URL}/api/users/me/collection/${card.printing_id}?foil=${card.is_foil}`, { method: 'DELETE' })
       if (!res.ok) return
-      setGameData(prev => prev && { ...prev, cards: prev.cards.filter(c => c.printing_id !== card.printing_id) })
+      setGameData(prev => prev && { ...prev, cards: prev.cards.filter(c => !sameCard(c, card)) })
     } else {
       const res = await authFetch(`${API_URL}/api/users/me/collection/${card.printing_id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ quantity: card.quantity - 1 }),
+        body: JSON.stringify({ quantity: card.quantity - 1, is_foil: card.is_foil }),
       })
       if (!res.ok) return
       const result = await res.json()
       setGameData(prev => prev && {
         ...prev,
-        cards: prev.cards.map(c => c.printing_id === card.printing_id ? { ...c, quantity: result.quantity } : c)
+        cards: prev.cards.map(c => sameCard(c, card) ? { ...c, quantity: result.quantity } : c)
       })
     }
   }, [authFetch])
@@ -116,7 +118,7 @@ export default function CollectionGamePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#13172b' }}>
+      <div className="flex items-center justify-center py-20">
         <p style={{ color: '#8892a4' }}>Loading collection…</p>
       </div>
     )
@@ -124,7 +126,7 @@ export default function CollectionGamePage() {
 
   if (!gameData) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ backgroundColor: '#13172b' }}>
+      <div className="flex flex-col items-center justify-center gap-4 py-20">
         <p style={{ color: '#8892a4' }}>No cards found for this game.</p>
         <Link to="/profile" style={{ color: '#08D9D6' }}>← Back to collection</Link>
       </div>
@@ -132,7 +134,7 @@ export default function CollectionGamePage() {
   }
 
   return (
-    <div className="min-h-screen px-4 py-8 mx-auto" style={{ backgroundColor: '#13172b', maxWidth: '1400px' }}>
+    <div className="px-4 py-8 mx-auto" style={{ maxWidth: '1400px' }}>
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm mb-6" style={{ color: '#8892a4' }}>
         <Link to="/profile" style={{ color: '#08D9D6' }}>My Collection</Link>
@@ -233,9 +235,14 @@ export default function CollectionGamePage() {
                   )}
                 </div>
               </Link>
-              <p className="text-xs font-medium mt-1 truncate" style={{ color: '#EAEAEA' }} title={card.card_name}>
-                {card.card_name}
-              </p>
+              <div className="flex items-center gap-1 mt-1">
+                <p className="text-xs font-medium truncate" style={{ color: '#EAEAEA' }} title={card.card_name}>
+                  {card.card_name}
+                </p>
+                {card.is_foil && (
+                  <span className="text-xs shrink-0" style={{ color: '#facc15' }} title="Foil">✦</span>
+                )}
+              </div>
               <p className="text-xs truncate mb-1" style={{ color: '#8892a4' }} title={card.set_name}>
                 {card.set_name}
               </p>

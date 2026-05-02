@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate, Link, useLocation } from 'react-router-dom'
-import { API_URL } from './config'
+import { API_URL, goToRandomCard } from './config'
 import GamesPage from './pages/GamesPage'
 import SetsPage from './pages/SetsPage'
 import CardsPage from './pages/CardsPage'
@@ -32,14 +32,6 @@ function NavLink({ to, children }) {
       {children}
     </Link>
   )
-}
-
-async function goToRandomCard(navigate) {
-  try {
-    const res = await fetch(`${API_URL}/api/cards/random-one`)
-    const data = await res.json()
-    if (data.id) navigate(`/cards/${data.id}`)
-  } catch {}
 }
 
 function UserMenu({ user }) {

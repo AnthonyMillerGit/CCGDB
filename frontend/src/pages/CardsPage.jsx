@@ -1,8 +1,10 @@
-import { useEffect, useState, useRef, useMemo } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
 import { RARITY_COLORS, normalizeRarity } from '../theme'
+
+const isTouchDevice = window.matchMedia('(hover: none)').matches
 
 export default function CardsPage() {
   const { setId } = useParams()
@@ -25,10 +27,10 @@ export default function CardsPage() {
       fetch(`${API_URL}/api/sets/${setId}`).then(r => r.json()),
       fetch(`${API_URL}/api/sets/${setId}/cards`).then(r => r.json()),
     ]).then(([setData, cardsData]) => {
-      setSetInfo(setData)
-      setCards(cardsData)
+      setSetInfo(setData?.id ? setData : null)
+      setCards(Array.isArray(cardsData) ? cardsData : [])
       setLoading(false)
-    })
+    }).catch(() => setLoading(false))
   }, [setId])
 
   useEffect(() => {
@@ -74,7 +76,7 @@ export default function CardsPage() {
     e.stopPropagation()
     const res = await authFetch(`${API_URL}/api/users/me/collection`, {
       method: 'POST',
-      body: JSON.stringify({ printing_id: card.printing_id, quantity: 1 }),
+      body: JSON.stringify({ printing_id: card.printing_id, quantity: 1, is_foil: false }),
     })
     if (res.ok) {
       const result = await res.json()
@@ -84,7 +86,7 @@ export default function CardsPage() {
 
   async function handleRemove(e, card) {
     e.stopPropagation()
-    const res = await authFetch(`${API_URL}/api/users/me/collection/${card.printing_id}`, {
+    const res = await authFetch(`${API_URL}/api/users/me/collection/${card.printing_id}?foil=false`, {
       method: 'DELETE',
     })
     if (res.ok) {
@@ -95,8 +97,6 @@ export default function CardsPage() {
       })
     }
   }
-
-  const isTouchDevice = window.matchMedia('(hover: none)').matches
 
   const handleMouseEnter = (e, card) => {
     if (!card.image_url || isTouchDevice) return
