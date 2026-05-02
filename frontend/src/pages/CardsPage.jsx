@@ -18,7 +18,7 @@ export default function CardsPage() {
   const [addingSet, setAddingSet] = useState(false)
   const [sort, setSort] = useState('name_asc')
   const [page, setPage] = useState(1)
-  const PAGE_SIZE = 25
+  const [pageSize, setPageSize] = useState(25)
   const navigate = useNavigate()
   const { user, authFetch } = useAuth()
 
@@ -57,9 +57,10 @@ export default function CardsPage() {
     })
   }, [cards, sort])
 
-  const totalPages = Math.max(1, Math.ceil(sortedCards.length / PAGE_SIZE))
+  const showAll = pageSize === 0
+  const totalPages = showAll ? 1 : Math.max(1, Math.ceil(sortedCards.length / pageSize))
   const safePage = Math.min(page, totalPages)
-  const pagedCards = sortedCards.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const pagedCards = showAll ? sortedCards : sortedCards.slice((safePage - 1) * pageSize, safePage * pageSize)
 
   async function handleAddSet() {
     setAddingSet(true)
@@ -189,6 +190,17 @@ export default function CardsPage() {
           <option value="name_desc">Name Z→A</option>
           <option value="rarity_asc">Rarity A→Z</option>
           <option value="rarity_desc">Rarity Z→A</option>
+        </select>
+        <select
+          value={pageSize}
+          onChange={e => { setPageSize(Number(e.target.value)); setPage(1) }}
+          className="text-sm px-3 py-1.5 rounded"
+          style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }}
+        >
+          <option value={25}>25 / page</option>
+          <option value={50}>50 / page</option>
+          <option value={100}>100 / page</option>
+          <option value={0}>Show all</option>
         </select>
         <span className="text-xs ml-auto" style={{ color: '#8892a4' }}>
           {sortedCards.length} cards
