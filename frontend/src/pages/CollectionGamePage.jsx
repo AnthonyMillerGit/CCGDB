@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
-import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
 
@@ -28,7 +28,6 @@ const sameCard = (a, b) => a.printing_id === b.printing_id && a.is_foil === b.is
 
 export default function CollectionGamePage() {
   const { gameSlug } = useParams()
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { authFetch } = useAuth()
 
@@ -43,6 +42,8 @@ export default function CollectionGamePage() {
   const [sort, setSort] = useState('name_asc')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(25)
+  const [viewMode, setViewMode] = useState('grid')
+  const [groupBySet, setGroupBySet] = useState(false)
 
   useEffect(() => {
     authFetch(`${API_URL}/api/users/me/collection`)
@@ -154,7 +155,24 @@ export default function CollectionGamePage() {
   const totalPages = Math.max(1, Math.ceil(filteredCards.length / pageSize))
   const safePage = Math.min(page, totalPages)
   const pageStart = (safePage - 1) * pageSize
-  const pagedCards = filteredCards.slice(pageStart, pageStart + pageSize)
+
+  const pagedCards = useMemo(() => {
+    if (groupBySet) return filteredCards
+    return filteredCards.slice(pageStart, pageStart + pageSize)
+  }, [groupBySet, filteredCards, pageStart, pageSize])
+
+  const groupedCards = useMemo(() => {
+    if (!groupBySet) return null
+    const sorted = [...pagedCards].sort((a, b) =>
+      a.set_name.localeCompare(b.set_name) || a.card_name.localeCompare(b.card_name)
+    )
+    const groups = new Map()
+    for (const card of sorted) {
+      if (!groups.has(card.set_name)) groups.set(card.set_name, [])
+      groups.get(card.set_name).push(card)
+    }
+    return [...groups.entries()].map(([setName, cards]) => ({ setName, cards }))
+  }, [groupBySet, pagedCards])
 
   function resetPage() { setPage(1) }
 
@@ -185,7 +203,7 @@ export default function CollectionGamePage() {
       </nav>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between mb-4 gap-4">
         <div>
           <h1 className="text-2xl font-bold mb-1" style={{ color: '#EAEAEA' }}>{gameData.game_name}</h1>
           <p className="text-sm" style={{ color: '#8892a4' }}>
@@ -195,6 +213,35 @@ export default function CollectionGamePage() {
             <strong style={{ color: '#EAEAEA' }}>{isFiltered ? filteredCopies : totalCopies}</strong>
             {isFiltered && <span> / {totalCopies}</span>} copies
           </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {!setFilter && (
+            <button
+              onClick={() => setGroupBySet(g => !g)}
+              className="text-xs px-3 py-1.5 rounded"
+              style={{
+                backgroundColor: groupBySet ? '#08D9D6' : '#2d3243',
+                color: groupBySet ? '#13172b' : '#8892a4',
+                border: '1px solid #363d52',
+              }}
+            >
+              Group by set
+            </button>
+          )}
+          <div className="flex rounded overflow-hidden" style={{ border: '1px solid #363d52' }}>
+            <button
+              onClick={() => setViewMode('grid')}
+              className="px-2.5 py-1.5 text-sm"
+              style={{ backgroundColor: viewMode === 'grid' ? '#08D9D6' : '#2d3243', color: viewMode === 'grid' ? '#13172b' : '#8892a4' }}
+              title="Grid view"
+            >⊞</button>
+            <button
+              onClick={() => setViewMode('list')}
+              className="px-2.5 py-1.5 text-sm"
+              style={{ backgroundColor: viewMode === 'list' ? '#08D9D6' : '#2d3243', color: viewMode === 'list' ? '#13172b' : '#8892a4' }}
+              title="List view"
+            >≡</button>
+          </div>
         </div>
       </div>
 
@@ -255,64 +302,108 @@ export default function CollectionGamePage() {
         <p className="text-center py-12" style={{ color: '#8892a4' }}>No cards match your filters.</p>
       )}
 
-      {/* Card grid */}
-      {filteredCards.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {pagedCards.map(card => (
-            <div key={card.id} className="flex flex-col">
-              <Link to={`/cards/${card.card_id}`} className="block relative group">
-                <div
-                  className="rounded-lg overflow-hidden transition-all duration-150 group-hover:ring-1"
-                  style={{ backgroundColor: '#2d3243', ringColor: '#08D9D6' }}
-                >
-                  {card.image_url ? (
-                    <img src={card.image_url} alt={card.card_name} className="w-full" />
-                  ) : (
-                    <div className="aspect-[2.5/3.5] flex items-center justify-center p-2"
-                      style={{ backgroundColor: '#363d52' }}>
-                      <span className="text-xs text-center leading-tight" style={{ color: '#8892a4' }}>
-                        {card.card_name}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </Link>
-              <div className="flex items-center gap-1 mt-1">
-                <p className="text-xs font-medium truncate" style={{ color: '#EAEAEA' }} title={card.card_name}>
-                  {card.card_name}
-                </p>
-                {card.is_foil && (
-                  <span className="text-xs shrink-0" style={{ color: '#facc15' }} title="Foil">✦</span>
+      {/* Cards */}
+      {filteredCards.length > 0 && (() => {
+        const conditionSelect = (card, extraStyle = {}) => (
+          <select
+            value={card.condition || 'NM'}
+            onChange={e => handleConditionChange(card, e.target.value)}
+            title={CONDITION_LABELS[card.condition || 'NM']}
+            className="text-xs px-1.5 py-0.5 rounded font-medium"
+            style={{
+              backgroundColor: '#1e2330',
+              border: `1px solid ${CONDITION_COLORS[card.condition || 'NM']}55`,
+              color: CONDITION_COLORS[card.condition || 'NM'],
+              outline: 'none',
+              ...extraStyle,
+            }}
+          >
+            {Object.entries(CONDITION_LABELS).map(([val, label]) => (
+              <option key={val} value={val}>{val} — {label}</option>
+            ))}
+          </select>
+        )
+
+        const gridCard = card => (
+          <div key={card.id} className="flex flex-col">
+            <Link to={`/cards/${card.card_id}`} className="block relative group">
+              <div
+                className="rounded-lg overflow-hidden transition-all duration-150 group-hover:ring-1"
+                style={{ backgroundColor: '#2d3243', ringColor: '#08D9D6' }}
+              >
+                {card.image_url ? (
+                  <img src={card.image_url} alt={card.card_name} className="w-full" />
+                ) : (
+                  <div className="aspect-[2.5/3.5] flex items-center justify-center p-2" style={{ backgroundColor: '#363d52' }}>
+                    <span className="text-xs text-center leading-tight" style={{ color: '#8892a4' }}>{card.card_name}</span>
+                  </div>
                 )}
               </div>
-              <p className="text-xs truncate mb-1" style={{ color: '#8892a4' }} title={card.set_name}>
-                {card.set_name}
-              </p>
-              <QuantityControl
-                quantity={card.quantity}
-                onIncrease={() => handleIncrease(card)}
-                onDecrease={() => handleDecrease(card)}
-              />
-              <select
-                value={card.condition || 'NM'}
-                onChange={e => handleConditionChange(card, e.target.value)}
-                title={CONDITION_LABELS[card.condition || 'NM']}
-                className="w-full text-xs px-1.5 py-0.5 rounded mt-1 font-medium"
-                style={{
-                  backgroundColor: '#1e2330',
-                  border: `1px solid ${CONDITION_COLORS[card.condition || 'NM']}55`,
-                  color: CONDITION_COLORS[card.condition || 'NM'],
-                  outline: 'none',
-                }}
-              >
-                {Object.entries(CONDITION_LABELS).map(([val, label]) => (
-                  <option key={val} value={val}>{val} — {label}</option>
-                ))}
-              </select>
+            </Link>
+            <div className="flex items-center gap-1 mt-1">
+              <p className="text-xs font-medium truncate" style={{ color: '#EAEAEA' }} title={card.card_name}>{card.card_name}</p>
+              {card.is_foil && <span className="text-xs shrink-0" style={{ color: '#facc15' }} title="Foil">✦</span>}
             </div>
-          ))}
-        </div>
-      )}
+            <p className="text-xs truncate mb-1" style={{ color: '#8892a4' }} title={card.set_name}>{card.set_name}</p>
+            <QuantityControl quantity={card.quantity} onIncrease={() => handleIncrease(card)} onDecrease={() => handleDecrease(card)} />
+            {conditionSelect(card, { width: '100%', marginTop: '4px' })}
+          </div>
+        )
+
+        const listCard = card => (
+          <div key={card.id} className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ backgroundColor: '#2d3243' }}>
+            <Link to={`/cards/${card.card_id}`} className="shrink-0">
+              {card.image_url ? (
+                <img src={card.image_url} alt={card.card_name} className="rounded object-cover" style={{ width: '40px', height: '56px' }} />
+              ) : (
+                <div className="rounded flex items-center justify-center" style={{ width: '40px', height: '56px', backgroundColor: '#363d52' }}>
+                  <span className="text-xs" style={{ color: '#8892a4' }}>?</span>
+                </div>
+              )}
+            </Link>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1">
+                <p className="text-sm font-medium truncate" style={{ color: '#EAEAEA' }}>{card.card_name}</p>
+                {card.is_foil && <span className="text-xs shrink-0" style={{ color: '#facc15' }}>✦</span>}
+              </div>
+              <p className="text-xs truncate" style={{ color: '#8892a4' }}>{card.set_name}</p>
+            </div>
+            {conditionSelect(card, { width: '130px', flexShrink: 0 })}
+            <QuantityControl quantity={card.quantity} onIncrease={() => handleIncrease(card)} onDecrease={() => handleDecrease(card)} />
+          </div>
+        )
+
+        const gridGroup = cards => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {cards.map(gridCard)}
+          </div>
+        )
+
+        const listGroup = cards => (
+          <div className="flex flex-col gap-1">
+            {cards.map(listCard)}
+          </div>
+        )
+
+        const setHeader = (setName, count) => (
+          <div className="flex items-center gap-3 mt-2 mb-3">
+            <h3 className="text-sm font-semibold shrink-0" style={{ color: '#EAEAEA' }}>{setName}</h3>
+            <div className="flex-1 h-px" style={{ backgroundColor: '#363d52' }} />
+            <span className="text-xs shrink-0" style={{ color: '#8892a4' }}>{count} {count === 1 ? 'card' : 'cards'}</span>
+          </div>
+        )
+
+        if (groupBySet) {
+          return groupedCards.map(group => (
+            <div key={group.setName} className="mb-6">
+              {setHeader(group.setName, group.cards.length)}
+              {viewMode === 'grid' ? gridGroup(group.cards) : listGroup(group.cards)}
+            </div>
+          ))
+        }
+
+        return viewMode === 'grid' ? gridGroup(pagedCards) : listGroup(pagedCards)
+      })()}
 
       {/* Undo toast */}
       {undoCard && (
@@ -332,7 +423,7 @@ export default function CollectionGamePage() {
       )}
 
       {/* Pagination controls */}
-      {totalPages > 1 && (
+      {!groupBySet && totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-8">
           <button
             onClick={() => setPage(p => Math.max(1, p - 1))}
