@@ -8,7 +8,7 @@ const CONDITION_LABELS = { NM: 'Near Mint', LP: 'Light Play', MP: 'Moderate Play
 
 function QuantityControl({ quantity, onIncrease, onDecrease }) {
   return (
-    <div className="flex items-center gap-1 mt-1">
+    <div className="flex items-center gap-1">
       <button
         onClick={e => { e.preventDefault(); onDecrease() }}
         className="w-5 h-5 rounded text-xs font-bold flex items-center justify-center"
@@ -304,25 +304,7 @@ export default function CollectionGamePage() {
 
       {/* Cards */}
       {filteredCards.length > 0 && (() => {
-        const conditionSelect = (card, extraStyle = {}) => (
-          <select
-            value={card.condition || 'NM'}
-            onChange={e => handleConditionChange(card, e.target.value)}
-            title={CONDITION_LABELS[card.condition || 'NM']}
-            className="text-xs px-1.5 py-0.5 rounded font-medium"
-            style={{
-              backgroundColor: '#1e2330',
-              border: `1px solid ${CONDITION_COLORS[card.condition || 'NM']}55`,
-              color: CONDITION_COLORS[card.condition || 'NM'],
-              outline: 'none',
-              ...extraStyle,
-            }}
-          >
-            {Object.entries(CONDITION_LABELS).map(([val, label]) => (
-              <option key={val} value={val}>{val} — {label}</option>
-            ))}
-          </select>
-        )
+        const conditionColor = card => CONDITION_COLORS[card.condition || 'NM']
 
         const gridCard = card => (
           <div key={card.id} className="flex flex-col">
@@ -345,8 +327,18 @@ export default function CollectionGamePage() {
               {card.is_foil && <span className="text-xs shrink-0" style={{ color: '#facc15' }} title="Foil">✦</span>}
             </div>
             <p className="text-xs truncate mb-1" style={{ color: '#8892a4' }} title={card.set_name}>{card.set_name}</p>
-            <QuantityControl quantity={card.quantity} onIncrease={() => handleIncrease(card)} onDecrease={() => handleDecrease(card)} />
-            {conditionSelect(card, { width: '100%', marginTop: '4px' })}
+            <div className="flex items-center gap-2 mt-1">
+              <QuantityControl quantity={card.quantity} onIncrease={() => handleIncrease(card)} onDecrease={() => handleDecrease(card)} />
+              <select
+                value={card.condition || 'NM'}
+                onChange={e => handleConditionChange(card, e.target.value)}
+                title={CONDITION_LABELS[card.condition || 'NM']}
+                className="text-xs px-1 py-0.5 rounded font-medium"
+                style={{ backgroundColor: '#1e2330', border: `1px solid ${conditionColor(card)}55`, color: conditionColor(card), outline: 'none' }}
+              >
+                {Object.keys(CONDITION_LABELS).map(val => <option key={val} value={val}>{val}</option>)}
+              </select>
+            </div>
           </div>
         )
 
@@ -368,8 +360,26 @@ export default function CollectionGamePage() {
               </div>
               <p className="text-xs truncate" style={{ color: '#8892a4' }}>{card.set_name}</p>
             </div>
-            {conditionSelect(card, { width: '130px', flexShrink: 0 })}
+            <select
+              value={card.condition || 'NM'}
+              onChange={e => handleConditionChange(card, e.target.value)}
+              title={CONDITION_LABELS[card.condition || 'NM']}
+              className="text-xs px-1.5 py-1 rounded font-medium shrink-0"
+              style={{ width: '130px', backgroundColor: '#1e2330', border: `1px solid ${conditionColor(card)}55`, color: conditionColor(card), outline: 'none' }}
+            >
+              {Object.entries(CONDITION_LABELS).map(([val, label]) => (
+                <option key={val} value={val}>{val} — {label}</option>
+              ))}
+            </select>
             <QuantityControl quantity={card.quantity} onIncrease={() => handleIncrease(card)} onDecrease={() => handleDecrease(card)} />
+          </div>
+        )
+
+        const setHeader = (setName, count) => (
+          <div className="flex items-center gap-3 px-4 py-2 rounded-lg mb-3 mt-1"
+            style={{ backgroundColor: '#252a3b', border: '1px solid #363d52' }}>
+            <span className="text-sm font-semibold" style={{ color: '#08D9D6' }}>{setName}</span>
+            <span className="text-xs" style={{ color: '#8892a4' }}>{count} {count === 1 ? 'card' : 'cards'}</span>
           </div>
         )
 
@@ -382,14 +392,6 @@ export default function CollectionGamePage() {
         const listGroup = cards => (
           <div className="flex flex-col gap-1">
             {cards.map(listCard)}
-          </div>
-        )
-
-        const setHeader = (setName, count) => (
-          <div className="flex items-center gap-3 mt-2 mb-3">
-            <h3 className="text-sm font-semibold shrink-0" style={{ color: '#EAEAEA' }}>{setName}</h3>
-            <div className="flex-1 h-px" style={{ backgroundColor: '#363d52' }} />
-            <span className="text-xs shrink-0" style={{ color: '#8892a4' }}>{count} {count === 1 ? 'card' : 'cards'}</span>
           </div>
         )
 
