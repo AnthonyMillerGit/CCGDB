@@ -9,7 +9,7 @@ func (a *App) getCollection(w http.ResponseWriter, r *http.Request) {
 	user := getUser(r)
 	rows, err := a.db.Query(r.Context(), `
 		SELECT
-		    uc.id, uc.printing_id, uc.quantity, uc.is_foil, uc.added_at,
+		    uc.id, uc.printing_id, uc.quantity, uc.is_foil, uc.condition, uc.added_at,
 		    p.image_url, p.rarity, p.collector_number,
 		    c.id AS card_id, c.name AS card_name,
 		    s.id AS set_id, s.name AS set_name,
@@ -38,7 +38,7 @@ func (a *App) getCollection(w http.ResponseWriter, r *http.Request) {
 			gameName, gameSlug string
 		)
 		if err := rows.Scan(
-			&card.ID, &card.PrintingID, &card.Quantity, &card.IsFoil, &card.AddedAt,
+			&card.ID, &card.PrintingID, &card.Quantity, &card.IsFoil, &card.Condition, &card.AddedAt,
 			&card.ImageURL, &card.Rarity, &card.CollectorNumber,
 			&card.CardID, &card.CardName,
 			&card.SetID, &card.SetName,
@@ -84,15 +84,20 @@ func (a *App) addToCollection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	condition := body.Condition
+	if condition == "" {
+		condition = "NM"
+	}
+
 	var item CollectionItem
 	err := a.db.QueryRow(r.Context(), `
-		INSERT INTO user_collections (user_id, printing_id, quantity, is_foil)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO user_collections (user_id, printing_id, quantity, is_foil, condition)
+		VALUES ($1, $2, $3, $4, $5)
 		ON CONFLICT (user_id, printing_id, is_foil)
 		DO UPDATE SET quantity = user_collections.quantity + EXCLUDED.quantity
-		RETURNING id, printing_id, quantity, is_foil, added_at
-	`, user.ID, body.PrintingID, body.Quantity, body.IsFoil,
-	).Scan(&item.ID, &item.PrintingID, &item.Quantity, &item.IsFoil, &item.AddedAt)
+		RETURNING id, printing_id, quantity, is_foil, condition, added_at
+	`, user.ID, body.PrintingID, body.Quantity, body.IsFoil, condition,
+	).Scan(&item.ID, &item.PrintingID, &item.Quantity, &item.IsFoil, &item.Condition, &item.AddedAt)
 	if err != nil {
 		jsonError(w, "Database error", http.StatusInternalServerError)
 		return
@@ -115,11 +120,12 @@ func (a *App) updateCollectionQuantity(w http.ResponseWriter, r *http.Request) {
 
 	var item CollectionItem
 	err = a.db.QueryRow(r.Context(), `
-		UPDATE user_collections SET quantity = $1
+		UPDATE user_collections
+		SET quantity = $1, condition = CASE WHEN $5 = '' THEN condition ELSE $5 END
 		WHERE user_id = $2 AND printing_id = $3 AND is_foil = $4
-		RETURNING id, printing_id, quantity, is_foil, added_at
-	`, body.Quantity, user.ID, printingID, body.IsFoil,
-	).Scan(&item.ID, &item.PrintingID, &item.Quantity, &item.IsFoil, &item.AddedAt)
+		RETURNING id, printing_id, quantity, is_foil, condition, added_at
+	`, body.Quantity, user.ID, printingID, body.IsFoil, body.Condition,
+	).Scan(&item.ID, &item.PrintingID, &item.Quantity, &item.IsFoil, &item.Condition, &item.AddedAt)
 	if err != nil {
 		jsonError(w, "Item not in collection", http.StatusNotFound)
 		return

@@ -1,7 +1,10 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
+
+const CONDITION_COLORS = { NM: '#1eff00', LP: '#08D9D6', MP: '#f4c542', HP: '#ff9a3c', DM: '#FF2E63' }
+const CONDITION_LABELS = { NM: 'Near Mint', LP: 'Light Play', MP: 'Moderate Play', HP: 'Heavy Play', DM: 'Damaged' }
 
 function QuantityControl({ quantity, onIncrease, onDecrease }) {
   return (
@@ -31,6 +34,9 @@ export default function CollectionGamePage() {
 
   const [gameData, setGameData] = useState(null)
   const [loading, setLoading] = useState(true)
+
+  const undoRef = useRef(null)
+  const [undoCard, setUndoCard] = useState(null)
 
   const [search, setSearch] = useState('')
   const [setFilter, setSetFilter] = useState(searchParams.get('set') ?? '')
@@ -67,6 +73,10 @@ export default function CollectionGamePage() {
       const res = await authFetch(`${API_URL}/api/users/me/collection/${card.printing_id}?foil=${card.is_foil}`, { method: 'DELETE' })
       if (!res.ok) return
       setGameData(prev => prev && { ...prev, cards: prev.cards.filter(c => !sameCard(c, card)) })
+      if (undoRef.current?.timer) clearTimeout(undoRef.current.timer)
+      const timer = setTimeout(() => { undoRef.current = null; setUndoCard(null) }, 4000)
+      undoRef.current = { card, timer }
+      setUndoCard(card)
     } else {
       const res = await authFetch(`${API_URL}/api/users/me/collection/${card.printing_id}`, {
         method: 'PATCH',
@@ -79,6 +89,38 @@ export default function CollectionGamePage() {
         cards: prev.cards.map(c => sameCard(c, card) ? { ...c, quantity: result.quantity } : c)
       })
     }
+  }, [authFetch])
+
+  async function handleUndo() {
+    const undo = undoRef.current
+    if (!undo) return
+    clearTimeout(undo.timer)
+    undoRef.current = null
+    setUndoCard(null)
+    const res = await authFetch(`${API_URL}/api/users/me/collection`, {
+      method: 'POST',
+      body: JSON.stringify({ printing_id: undo.card.printing_id, quantity: 1, is_foil: undo.card.is_foil, condition: undo.card.condition }),
+    })
+    if (!res.ok) return
+    const result = await res.json()
+    setGameData(prev => {
+      if (!prev) return prev
+      const exists = prev.cards.find(c => sameCard(c, undo.card))
+      if (exists) return { ...prev, cards: prev.cards.map(c => sameCard(c, undo.card) ? { ...c, quantity: result.quantity } : c) }
+      return { ...prev, cards: [...prev.cards, { ...undo.card, quantity: result.quantity }] }
+    })
+  }
+
+  const handleConditionChange = useCallback(async (card, newCondition) => {
+    const res = await authFetch(`${API_URL}/api/users/me/collection/${card.printing_id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ quantity: card.quantity, is_foil: card.is_foil, condition: newCondition }),
+    })
+    if (!res.ok) return
+    setGameData(prev => prev && {
+      ...prev,
+      cards: prev.cards.map(c => sameCard(c, card) ? { ...c, condition: newCondition } : c)
+    })
   }, [authFetch])
 
   const allSets = useMemo(() => {
@@ -251,8 +293,41 @@ export default function CollectionGamePage() {
                 onIncrease={() => handleIncrease(card)}
                 onDecrease={() => handleDecrease(card)}
               />
+              <select
+                value={card.condition || 'NM'}
+                onChange={e => handleConditionChange(card, e.target.value)}
+                title={CONDITION_LABELS[card.condition || 'NM']}
+                className="w-full text-xs px-1.5 py-0.5 rounded mt-1 font-medium"
+                style={{
+                  backgroundColor: '#1e2330',
+                  border: `1px solid ${CONDITION_COLORS[card.condition || 'NM']}55`,
+                  color: CONDITION_COLORS[card.condition || 'NM'],
+                  outline: 'none',
+                }}
+              >
+                {Object.entries(CONDITION_LABELS).map(([val, label]) => (
+                  <option key={val} value={val}>{val} — {label}</option>
+                ))}
+              </select>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Undo toast */}
+      {undoCard && (
+        <div
+          className="fixed bottom-6 left-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl"
+          style={{ transform: 'translateX(-50%)', backgroundColor: '#2d3243', border: '1px solid #4a5268', color: '#EAEAEA', whiteSpace: 'nowrap' }}
+        >
+          <span className="text-sm">Removed <strong>{undoCard.card_name}</strong></span>
+          <button
+            onClick={handleUndo}
+            className="text-sm font-semibold px-2 py-0.5 rounded"
+            style={{ color: '#08D9D6', backgroundColor: '#1e2330', border: '1px solid #363d52' }}
+          >
+            Undo
+          </button>
         </div>
       )}
 

@@ -149,6 +149,7 @@ type CollectionCard struct {
 	PrintingID      int       `json:"printing_id"`
 	Quantity        int       `json:"quantity"`
 	IsFoil          bool      `json:"is_foil"`
+	Condition       string    `json:"condition"`
 	AddedAt         time.Time `json:"added_at"`
 	ImageURL        *string   `json:"image_url"`
 	Rarity          *string   `json:"rarity"`
@@ -171,18 +172,21 @@ type CollectionItem struct {
 	PrintingID int       `json:"printing_id"`
 	Quantity   int       `json:"quantity"`
 	IsFoil     bool      `json:"is_foil"`
+	Condition  string    `json:"condition"`
 	AddedAt    time.Time `json:"added_at"`
 }
 
 type CollectionAddRequest struct {
-	PrintingID int  `json:"printing_id"`
-	Quantity   int  `json:"quantity"`
-	IsFoil     bool `json:"is_foil"`
+	PrintingID int    `json:"printing_id"`
+	Quantity   int    `json:"quantity"`
+	IsFoil     bool   `json:"is_foil"`
+	Condition  string `json:"condition"`
 }
 
 type CollectionUpdateRequest struct {
-	Quantity int  `json:"quantity"`
-	IsFoil   bool `json:"is_foil"`
+	Quantity  int    `json:"quantity"`
+	IsFoil    bool   `json:"is_foil"`
+	Condition string `json:"condition"`
 }
 
 // ── Decks ─────────────────────────────────────────────────────────────────────
