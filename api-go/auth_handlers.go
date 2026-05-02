@@ -57,9 +57,9 @@ func (a *App) register(w http.ResponseWriter, r *http.Request) {
 
 	var user User
 	err = a.db.QueryRow(r.Context(),
-		"INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email, is_verified, is_admin, created_at",
+		"INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email, display_name, avatar_color, is_verified, is_admin, created_at",
 		username, email, hash,
-	).Scan(&user.ID, &user.Username, &user.Email, &user.IsVerified, &user.IsAdmin, &user.CreatedAt)
+	).Scan(&user.ID, &user.Username, &user.Email, &user.DisplayName, &user.AvatarColor, &user.IsVerified, &user.IsAdmin, &user.CreatedAt)
 	if err != nil {
 		jsonError(w, "Server error", http.StatusInternalServerError)
 		return
@@ -101,9 +101,9 @@ func (a *App) login(w http.ResponseWriter, r *http.Request) {
 	var user User
 	var passwordHash string
 	err := a.db.QueryRow(r.Context(),
-		"SELECT id, username, email, password_hash, is_verified, is_admin, created_at FROM users WHERE email = $1",
+		"SELECT id, username, email, password_hash, display_name, avatar_color, is_verified, is_admin, created_at FROM users WHERE email = $1",
 		strings.ToLower(strings.TrimSpace(body.Email)),
-	).Scan(&user.ID, &user.Username, &user.Email, &passwordHash, &user.IsVerified, &user.IsAdmin, &user.CreatedAt)
+	).Scan(&user.ID, &user.Username, &user.Email, &passwordHash, &user.DisplayName, &user.AvatarColor, &user.IsVerified, &user.IsAdmin, &user.CreatedAt)
 	if err != nil || !verifyPassword(body.Password, passwordHash) {
 		jsonError(w, "Invalid email or password", http.StatusUnauthorized)
 		return
@@ -268,4 +268,40 @@ func (a *App) resetPassword(w http.ResponseWriter, r *http.Request) {
 	a.db.Exec(r.Context(), "UPDATE password_reset_tokens SET used_at = NOW() WHERE id = $1", id)
 
 	jsonResponse(w, map[string]string{"message": "Password updated successfully"}, http.StatusOK)
+}
+
+func (a *App) updateProfile(w http.ResponseWriter, r *http.Request) {
+	user := getUser(r)
+	var body UpdateProfileRequest
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		jsonError(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if body.DisplayName != nil {
+		name := strings.TrimSpace(*body.DisplayName)
+		if len(name) > 50 {
+			jsonError(w, "Display name must be 50 characters or fewer", http.StatusBadRequest)
+			return
+		}
+		a.db.Exec(r.Context(), "UPDATE users SET display_name = $1 WHERE id = $2", name, user.ID)
+	}
+
+	if body.AvatarColor != nil {
+		color := strings.TrimSpace(*body.AvatarColor)
+		if len(color) != 7 || color[0] != '#' {
+			jsonError(w, "Invalid color format", http.StatusBadRequest)
+			return
+		}
+		a.db.Exec(r.Context(), "UPDATE users SET avatar_color = $1 WHERE id = $2", color, user.ID)
+	}
+
+	var updated User
+	a.db.QueryRow(r.Context(),
+		"SELECT id, username, email, display_name, avatar_color, is_verified, is_admin, created_at FROM users WHERE id = $1",
+		user.ID,
+	).Scan(&updated.ID, &updated.Username, &updated.Email, &updated.DisplayName, &updated.AvatarColor,
+		&updated.IsVerified, &updated.IsAdmin, &updated.CreatedAt)
+
+	jsonResponse(w, updated, http.StatusOK)
 }

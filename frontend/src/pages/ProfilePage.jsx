@@ -3,6 +3,11 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
 
+const AVATAR_COLORS = [
+  '#08D9D6', '#FF2E63', '#7C3AED', '#2563EB', '#16A34A',
+  '#EA580C', '#CA8A04', '#DB2777', '#0891B2', '#64748B',
+]
+
 async function triggerDownload(authFetch, url, filename) {
   const res = await authFetch(url)
   if (!res.ok) return
@@ -783,7 +788,7 @@ function MyDecksTab({ authFetch }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function ProfilePage() {
-  const { user, authFetch, logout } = useAuth()
+  const { user, authFetch, logout, updateUser } = useAuth()
   const navigate = useNavigate()
   const [fullUser, setFullUser] = useState(null)
   const [collection, setCollection] = useState([])
@@ -821,6 +826,46 @@ export default function ProfilePage() {
   const [importResult, setImportResult] = useState(null)
   const [importing, setImporting] = useState(false)
   const [confirm, setConfirm] = useState(null)
+
+  const [editingDisplayName, setEditingDisplayName] = useState(false)
+  const [displayNameInput, setDisplayNameInput] = useState('')
+  const [showColorPicker, setShowColorPicker] = useState(false)
+  const colorPickerRef = useRef(null)
+
+  useEffect(() => {
+    if (!showColorPicker) return
+    function handleClick(e) {
+      if (colorPickerRef.current && !colorPickerRef.current.contains(e.target)) setShowColorPicker(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showColorPicker])
+
+  async function saveDisplayName() {
+    const trimmed = displayNameInput.trim()
+    if (trimmed === (fullUser?.display_name ?? '')) { setEditingDisplayName(false); return }
+    const res = await authFetch(`${API_URL}/api/auth/me`, {
+      method: 'PATCH',
+      body: JSON.stringify({ display_name: trimmed }),
+    })
+    if (!res.ok) { setEditingDisplayName(false); return }
+    const updated = await res.json()
+    setFullUser(updated)
+    updateUser({ display_name: trimmed })
+    setEditingDisplayName(false)
+  }
+
+  async function handleColorChange(color) {
+    setShowColorPicker(false)
+    const res = await authFetch(`${API_URL}/api/auth/me`, {
+      method: 'PATCH',
+      body: JSON.stringify({ avatar_color: color }),
+    })
+    if (!res.ok) return
+    const updated = await res.json()
+    setFullUser(updated)
+    updateUser({ avatar_color: color })
+  }
 
   async function handleClearGame(game) {
     setConfirm({
@@ -869,7 +914,10 @@ export default function ProfilePage() {
     ? new Date(fullUser.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
     : null
 
-  const initials = user?.username?.slice(0, 2).toUpperCase() || '??'
+  const displayName = fullUser?.display_name || ''
+  const initials = displayName
+    ? displayName.slice(0, 2).toUpperCase()
+    : (user?.username?.slice(0, 2).toUpperCase() || '??')
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -881,16 +929,70 @@ export default function ProfilePage() {
         style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
       >
         <div className="flex items-center gap-4">
-          {/* Avatar */}
-          <div
-            className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold flex-shrink-0"
-            style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
-          >
-            {initials}
+          {/* Avatar — click to change color */}
+          <div className="relative flex-shrink-0" ref={colorPickerRef}>
+            <div
+              className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold cursor-pointer select-none"
+              style={{ backgroundColor: fullUser?.avatar_color || '#08D9D6', color: '#252A34' }}
+              onClick={() => setShowColorPicker(o => !o)}
+              title="Change avatar color"
+            >
+              {initials}
+            </div>
+            {showColorPicker && (
+              <div
+                className="absolute left-0 top-16 z-20 p-2 rounded-xl shadow-xl grid gap-2"
+                style={{ backgroundColor: '#1e2330', border: '1px solid #363d52', gridTemplateColumns: 'repeat(5, 1fr)' }}
+              >
+                {AVATAR_COLORS.map(color => (
+                  <button
+                    key={color}
+                    className="w-7 h-7 rounded-full border-2 transition-transform hover:scale-110"
+                    style={{
+                      backgroundColor: color,
+                      borderColor: (fullUser?.avatar_color || '#08D9D6') === color ? '#fff' : 'transparent',
+                    }}
+                    onClick={() => handleColorChange(color)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
           {/* Info */}
           <div>
-            <h2 className="text-xl font-bold" style={{ color: '#EAEAEA' }}>{user?.username}</h2>
+            {/* Display name — inline edit */}
+            {editingDisplayName ? (
+              <div className="flex items-center gap-2 mb-0.5">
+                <input
+                  autoFocus
+                  className="text-lg font-bold rounded px-2 py-0.5 outline-none"
+                  style={{ backgroundColor: '#363d52', color: '#EAEAEA', border: '1px solid #4a5268', maxWidth: '200px' }}
+                  value={displayNameInput}
+                  onChange={e => setDisplayNameInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') saveDisplayName(); if (e.key === 'Escape') setEditingDisplayName(false) }}
+                  maxLength={50}
+                />
+                <button onClick={saveDisplayName} className="text-xs font-semibold" style={{ color: '#08D9D6' }}>Save</button>
+                <button onClick={() => setEditingDisplayName(false)} className="text-xs" style={{ color: '#8892a4' }}>Cancel</button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 mb-0.5">
+                <h2 className="text-xl font-bold" style={{ color: '#EAEAEA' }}>
+                  {displayName || user?.username}
+                </h2>
+                <button
+                  onClick={() => { setDisplayNameInput(displayName); setEditingDisplayName(true) }}
+                  className="text-xs"
+                  style={{ color: '#8892a4' }}
+                  title="Edit display name"
+                >
+                  Edit
+                </button>
+              </div>
+            )}
+            {displayName && (
+              <p className="text-xs -mt-0.5 mb-0.5" style={{ color: '#8892a4' }}>@{user?.username}</p>
+            )}
             <p className="text-sm" style={{ color: '#8892a4' }}>{user?.email}</p>
             <div className="flex items-center gap-3 mt-1">
               {user?.is_verified ? (

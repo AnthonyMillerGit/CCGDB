@@ -75,9 +75,9 @@ func (a *App) requireAuth(next http.Handler) http.Handler {
 		}
 		var user User
 		err = a.db.QueryRow(r.Context(),
-			"SELECT id, username, email, is_verified, is_admin, created_at FROM users WHERE id = $1",
+			"SELECT id, username, email, display_name, avatar_color, is_verified, is_admin, created_at FROM users WHERE id = $1",
 			userID,
-		).Scan(&user.ID, &user.Username, &user.Email, &user.IsVerified, &user.IsAdmin, &user.CreatedAt)
+		).Scan(&user.ID, &user.Username, &user.Email, &user.DisplayName, &user.AvatarColor, &user.IsVerified, &user.IsAdmin, &user.CreatedAt)
 		if err != nil {
 			jsonError(w, "User not found", http.StatusUnauthorized)
 			return

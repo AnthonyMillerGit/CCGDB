@@ -27,6 +27,14 @@ export function AuthProvider({ children }) {
     setUser(null)
   }, [])
 
+  const updateUser = useCallback((updates) => {
+    setUser(prev => {
+      const updated = { ...prev, ...updates }
+      localStorage.setItem('ccgdb_user', JSON.stringify(updated))
+      return updated
+    })
+  }, [])
+
   const register = useCallback(async (username, email, password) => {
     const res = await fetch(`${API_URL}/api/auth/register`, {
       method: 'POST',
@@ -68,7 +76,7 @@ export function AuthProvider({ children }) {
   }, [token])
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, register, authFetch }}>
+    <AuthContext.Provider value={{ user, token, login, logout, register, authFetch, updateUser }}>
       {children}
     </AuthContext.Provider>
   )
