@@ -10,15 +10,15 @@ import (
 )
 
 type WishlistItem struct {
-	ID         int64   `json:"id"`
-	PrintingID int64   `json:"printing_id"`
-	CardID     int64   `json:"card_id"`
-	CardName   string  `json:"card_name"`
-	SetName    string  `json:"set_name"`
-	GameSlug   string  `json:"game_slug"`
-	GameName   string  `json:"game_name"`
-	ImageURL   *string `json:"image_url"`
-	CardType   *string `json:"card_type"`
+	ID         int       `json:"id"`
+	PrintingID int       `json:"printing_id"`
+	CardID     int       `json:"card_id"`
+	CardName   string    `json:"card_name"`
+	SetName    string    `json:"set_name"`
+	GameSlug   string    `json:"game_slug"`
+	GameName   string    `json:"game_name"`
+	ImageURL   *string   `json:"image_url"`
+	CardType   *string   `json:"card_type"`
 	AddedAt    time.Time `json:"added_at"`
 }
 
@@ -59,14 +59,14 @@ func (a *App) addToWishlist(w http.ResponseWriter, r *http.Request) {
 	user := getUser(r)
 
 	var body struct {
-		PrintingID int64 `json:"printing_id"`
+		PrintingID int `json:"printing_id"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.PrintingID == 0 {
 		jsonError(w, "printing_id is required", http.StatusBadRequest)
 		return
 	}
 
-	var id int64
+	var id int
 	err := a.db.QueryRow(r.Context(), `
 		INSERT INTO wishlists (user_id, printing_id)
 		VALUES ($1, $2)
@@ -114,14 +114,14 @@ func (a *App) addMissingSetToWishlist(w http.ResponseWriter, r *http.Request) {
 
 	tag, err := a.db.Exec(r.Context(), `
 		INSERT INTO wishlists (user_id, printing_id)
-		SELECT $1::bigint, p.id
+		SELECT $1, p.id
 		FROM printings p
-		WHERE p.set_id = $2::bigint
+		WHERE p.set_id = $2
 		  AND p.card_id NOT IN (
 		    SELECT DISTINCT p2.card_id
 		    FROM user_collections uc
 		    JOIN printings p2 ON p2.id = uc.printing_id
-		    WHERE uc.user_id = $1::bigint AND p2.set_id = $2::bigint
+		    WHERE uc.user_id = $1 AND p2.set_id = $2
 		  )
 		ON CONFLICT (user_id, printing_id) DO NOTHING
 	`, user.ID, setID)
@@ -131,6 +131,21 @@ func (a *App) addMissingSetToWishlist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	jsonResponse(w, map[string]int{"added": int(tag.RowsAffected())}, http.StatusOK)
+}
+
+func (a *App) checkWishlistItem(w http.ResponseWriter, r *http.Request) {
+	user := getUser(r)
+	printingID, err := parseIntParam(r, "printingID")
+	if err != nil {
+		jsonError(w, "Invalid printing ID", http.StatusBadRequest)
+		return
+	}
+	var exists bool
+	a.db.QueryRow(r.Context(),
+		"SELECT EXISTS(SELECT 1 FROM wishlists WHERE user_id = $1 AND printing_id = $2)",
+		user.ID, printingID,
+	).Scan(&exists)
+	jsonResponse(w, map[string]bool{"wishlisted": exists}, http.StatusOK)
 }
 
 func (a *App) clearWishlist(w http.ResponseWriter, r *http.Request) {

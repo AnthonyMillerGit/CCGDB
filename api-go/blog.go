@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -158,27 +159,10 @@ func (a *App) syncPostTags(r *http.Request, postID int, gameIDs, setIDs, cardIDs
 
 // ── Public handlers ───────────────────────────────────────────────────────────
 
-func (a *App) listPosts(w http.ResponseWriter, r *http.Request) {
-	limitStr := r.URL.Query().Get("limit")
-	limit := 20
-	if limitStr == "5" {
-		limit = 5
-	}
-
-	rows, err := a.db.Query(r.Context(), `
-		SELECT p.id, u.username, p.title, p.slug, p.excerpt, p.published_at, p.created_at
-		FROM posts p
-		JOIN users u ON u.id = p.author_id
-		WHERE p.published_at IS NOT NULL AND p.published_at <= NOW()
-		ORDER BY p.published_at DESC
-		LIMIT $1
-	`, limit)
-	if err != nil {
-		jsonError(w, "Database error", http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
-
+func scanPostSummaries(rows interface {
+	Next() bool
+	Scan(...any) error
+}) []PostSummary {
 	posts := []PostSummary{}
 	for rows.Next() {
 		var p PostSummary
@@ -188,7 +172,30 @@ func (a *App) listPosts(w http.ResponseWriter, r *http.Request) {
 		}
 		posts = append(posts, p)
 	}
-	jsonResponse(w, posts, http.StatusOK)
+	return posts
+}
+
+func (a *App) listPosts(w http.ResponseWriter, r *http.Request) {
+	limit := parseIntQuery(r, "limit", 20)
+	offset := 0
+	if v, err := strconv.Atoi(r.URL.Query().Get("offset")); err == nil && v > 0 {
+		offset = v
+	}
+
+	rows, err := a.db.Query(r.Context(), `
+		SELECT p.id, u.username, p.title, p.slug, p.excerpt, p.published_at, p.created_at
+		FROM posts p
+		JOIN users u ON u.id = p.author_id
+		WHERE p.published_at IS NOT NULL AND p.published_at <= NOW()
+		ORDER BY p.published_at DESC
+		LIMIT $1 OFFSET $2
+	`, limit, offset)
+	if err != nil {
+		jsonError(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	jsonResponse(w, scanPostSummaries(rows), http.StatusOK)
 }
 
 func (a *App) getPost(w http.ResponseWriter, r *http.Request) {
@@ -226,17 +233,7 @@ func (a *App) getGamePosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer rows.Close()
-
-	posts := []PostSummary{}
-	for rows.Next() {
-		var p PostSummary
-		if err := rows.Scan(&p.ID, &p.AuthorName, &p.Title, &p.Slug,
-			&p.Excerpt, &p.PublishedAt, &p.CreatedAt); err != nil {
-			continue
-		}
-		posts = append(posts, p)
-	}
-	jsonResponse(w, posts, http.StatusOK)
+	jsonResponse(w, scanPostSummaries(rows), http.StatusOK)
 }
 
 func (a *App) getCardPosts(w http.ResponseWriter, r *http.Request) {
@@ -258,17 +255,7 @@ func (a *App) getCardPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer rows.Close()
-
-	posts := []PostSummary{}
-	for rows.Next() {
-		var p PostSummary
-		if err := rows.Scan(&p.ID, &p.AuthorName, &p.Title, &p.Slug,
-			&p.Excerpt, &p.PublishedAt, &p.CreatedAt); err != nil {
-			continue
-		}
-		posts = append(posts, p)
-	}
-	jsonResponse(w, posts, http.StatusOK)
+	jsonResponse(w, scanPostSummaries(rows), http.StatusOK)
 }
 
 // ── Admin handlers ────────────────────────────────────────────────────────────
@@ -409,17 +396,7 @@ func (a *App) listDraftPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer rows.Close()
-
-	posts := []PostSummary{}
-	for rows.Next() {
-		var p PostSummary
-		if err := rows.Scan(&p.ID, &p.AuthorName, &p.Title, &p.Slug,
-			&p.Excerpt, &p.PublishedAt, &p.CreatedAt); err != nil {
-			continue
-		}
-		posts = append(posts, p)
-	}
-	jsonResponse(w, posts, http.StatusOK)
+	jsonResponse(w, scanPostSummaries(rows), http.StatusOK)
 }
 
 func (a *App) getPostAdmin(w http.ResponseWriter, r *http.Request) {

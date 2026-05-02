@@ -188,6 +188,12 @@ func (a *App) deleteDeck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+type deckCardResult struct {
+	ID       int `json:"id"`
+	CardID   int `json:"card_id"`
+	Quantity int `json:"quantity"`
+}
+
 func (a *App) addCardToDeck(w http.ResponseWriter, r *http.Request) {
 	user := getUser(r)
 	deckID, err := parseIntParam(r, "deckID")
@@ -221,12 +227,7 @@ func (a *App) addCardToDeck(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type Result struct {
-		ID       int `json:"id"`
-		CardID   int `json:"card_id"`
-		Quantity int `json:"quantity"`
-	}
-	var result Result
+	var result deckCardResult
 	err = a.db.QueryRow(r.Context(), `
 		INSERT INTO deck_cards (deck_id, card_id, quantity)
 		VALUES ($1, $2, $3)
@@ -266,12 +267,7 @@ func (a *App) updateDeckCard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type Result struct {
-		ID       int `json:"id"`
-		CardID   int `json:"card_id"`
-		Quantity int `json:"quantity"`
-	}
-	var result Result
+	var result deckCardResult
 	err = a.db.QueryRow(r.Context(), `
 		UPDATE deck_cards SET quantity = $1
 		WHERE deck_id = $2 AND card_id = $3

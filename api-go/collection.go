@@ -9,7 +9,7 @@ func (a *App) getCollection(w http.ResponseWriter, r *http.Request) {
 	user := getUser(r)
 	rows, err := a.db.Query(r.Context(), `
 		SELECT
-		    uc.id, uc.printing_id, uc.quantity, uc.added_at,
+		    uc.id, uc.printing_id, uc.quantity, uc.is_foil, uc.added_at,
 		    p.image_url, p.rarity, p.collector_number,
 		    c.id AS card_id, c.name AS card_name,
 		    s.id AS set_id, s.name AS set_name,
@@ -38,7 +38,7 @@ func (a *App) getCollection(w http.ResponseWriter, r *http.Request) {
 			gameName, gameSlug string
 		)
 		if err := rows.Scan(
-			&card.ID, &card.PrintingID, &card.Quantity, &card.AddedAt,
+			&card.ID, &card.PrintingID, &card.Quantity, &card.IsFoil, &card.AddedAt,
 			&card.ImageURL, &card.Rarity, &card.CollectorNumber,
 			&card.CardID, &card.CardName,
 			&card.SetID, &card.SetName,
@@ -86,13 +86,13 @@ func (a *App) addToCollection(w http.ResponseWriter, r *http.Request) {
 
 	var item CollectionItem
 	err := a.db.QueryRow(r.Context(), `
-		INSERT INTO user_collections (user_id, printing_id, quantity)
-		VALUES ($1, $2, $3)
-		ON CONFLICT (user_id, printing_id)
+		INSERT INTO user_collections (user_id, printing_id, quantity, is_foil)
+		VALUES ($1, $2, $3, $4)
+		ON CONFLICT (user_id, printing_id, is_foil)
 		DO UPDATE SET quantity = user_collections.quantity + EXCLUDED.quantity
-		RETURNING id, printing_id, quantity, added_at
-	`, user.ID, body.PrintingID, body.Quantity,
-	).Scan(&item.ID, &item.PrintingID, &item.Quantity, &item.AddedAt)
+		RETURNING id, printing_id, quantity, is_foil, added_at
+	`, user.ID, body.PrintingID, body.Quantity, body.IsFoil,
+	).Scan(&item.ID, &item.PrintingID, &item.Quantity, &item.IsFoil, &item.AddedAt)
 	if err != nil {
 		jsonError(w, "Database error", http.StatusInternalServerError)
 		return
@@ -116,10 +116,10 @@ func (a *App) updateCollectionQuantity(w http.ResponseWriter, r *http.Request) {
 	var item CollectionItem
 	err = a.db.QueryRow(r.Context(), `
 		UPDATE user_collections SET quantity = $1
-		WHERE user_id = $2 AND printing_id = $3
-		RETURNING id, printing_id, quantity, added_at
-	`, body.Quantity, user.ID, printingID,
-	).Scan(&item.ID, &item.PrintingID, &item.Quantity, &item.AddedAt)
+		WHERE user_id = $2 AND printing_id = $3 AND is_foil = $4
+		RETURNING id, printing_id, quantity, is_foil, added_at
+	`, body.Quantity, user.ID, printingID, body.IsFoil,
+	).Scan(&item.ID, &item.PrintingID, &item.Quantity, &item.IsFoil, &item.AddedAt)
 	if err != nil {
 		jsonError(w, "Item not in collection", http.StatusNotFound)
 		return
@@ -134,10 +134,14 @@ func (a *App) removeFromCollection(w http.ResponseWriter, r *http.Request) {
 		jsonError(w, "Invalid printing ID", http.StatusBadRequest)
 		return
 	}
-	a.db.Exec(r.Context(),
-		"DELETE FROM user_collections WHERE user_id = $1 AND printing_id = $2",
-		user.ID, printingID,
-	)
+	isFoil := r.URL.Query().Get("foil") == "true"
+	if _, err := a.db.Exec(r.Context(),
+		"DELETE FROM user_collections WHERE user_id = $1 AND printing_id = $2 AND is_foil = $3",
+		user.ID, printingID, isFoil,
+	); err != nil {
+		jsonError(w, "Database error", http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -150,11 +154,11 @@ func (a *App) addSetToCollection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err = a.db.Exec(r.Context(), `
-		INSERT INTO user_collections (user_id, printing_id, quantity)
-		SELECT $1, p.id, 1
+		INSERT INTO user_collections (user_id, printing_id, quantity, is_foil)
+		SELECT $1, p.id, 1, false
 		FROM printings p
 		WHERE p.set_id = $2
-		ON CONFLICT (user_id, printing_id)
+		ON CONFLICT (user_id, printing_id, is_foil)
 		DO UPDATE SET quantity = user_collections.quantity + 1
 	`, user.ID, setID)
 	if err != nil {
@@ -227,13 +231,14 @@ func (a *App) getCollectionItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	isFoil := r.URL.Query().Get("foil") == "true"
 	var item CollectionItem
 	err = a.db.QueryRow(r.Context(), `
-		SELECT id, printing_id, quantity, added_at
+		SELECT id, printing_id, quantity, is_foil, added_at
 		FROM user_collections
-		WHERE user_id = $1 AND printing_id = $2
-	`, user.ID, printingID,
-	).Scan(&item.ID, &item.PrintingID, &item.Quantity, &item.AddedAt)
+		WHERE user_id = $1 AND printing_id = $2 AND is_foil = $3
+	`, user.ID, printingID, isFoil,
+	).Scan(&item.ID, &item.PrintingID, &item.Quantity, &item.IsFoil, &item.AddedAt)
 	if err != nil {
 		// Not found — return null (matches Python's fetchone() returning None)
 		jsonResponse(w, nil, http.StatusOK)

@@ -76,7 +76,7 @@ func (a *App) register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwt, err := a.createToken(user.ID)
+	authToken, err := a.createToken(user.ID)
 	if err != nil {
 		jsonError(w, "Server error", http.StatusInternalServerError)
 		return
@@ -88,7 +88,7 @@ func (a *App) register(w http.ResponseWriter, r *http.Request) {
 			body.Username, a.cfg.AppURL, token, a.cfg.AppName),
 	)
 
-	jsonResponse(w, AuthResponse{Token: jwt, User: user}, http.StatusCreated)
+	jsonResponse(w, AuthResponse{Token: authToken, User: user}, http.StatusCreated)
 }
 
 func (a *App) login(w http.ResponseWriter, r *http.Request) {
@@ -109,12 +109,12 @@ func (a *App) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwt, err := a.createToken(user.ID)
+	authToken, err := a.createToken(user.ID)
 	if err != nil {
 		jsonError(w, "Server error", http.StatusInternalServerError)
 		return
 	}
-	jsonResponse(w, AuthResponse{Token: jwt, User: user}, http.StatusOK)
+	jsonResponse(w, AuthResponse{Token: authToken, User: user}, http.StatusOK)
 }
 
 func (a *App) me(w http.ResponseWriter, r *http.Request) {
@@ -148,7 +148,10 @@ func (a *App) verifyEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.db.Exec(r.Context(), "UPDATE users SET is_verified = TRUE WHERE id = $1", userID)
+	if _, err := a.db.Exec(r.Context(), "UPDATE users SET is_verified = TRUE WHERE id = $1", userID); err != nil {
+		jsonError(w, "Server error", http.StatusInternalServerError)
+		return
+	}
 	a.db.Exec(r.Context(), "UPDATE email_verification_tokens SET used_at = NOW() WHERE id = $1", id)
 
 	jsonResponse(w, map[string]string{"message": "Email verified successfully"}, http.StatusOK)
@@ -203,10 +206,13 @@ func (a *App) forgotPassword(w http.ResponseWriter, r *http.Request) {
 
 	token := secureToken()
 	expires := time.Now().UTC().Add(time.Hour)
-	a.db.Exec(r.Context(),
+	if _, err := a.db.Exec(r.Context(),
 		"INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)",
 		userID, token, expires,
-	)
+	); err != nil {
+		jsonResponse(w, map[string]string{"message": safeMsg}, http.StatusOK)
+		return
+	}
 
 	go a.sendEmail(body.Email,
 		fmt.Sprintf("Reset your %s password", a.cfg.AppName),
@@ -255,7 +261,10 @@ func (a *App) resetPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.db.Exec(r.Context(), "UPDATE users SET password_hash = $1 WHERE id = $2", hash, userID)
+	if _, err := a.db.Exec(r.Context(), "UPDATE users SET password_hash = $1 WHERE id = $2", hash, userID); err != nil {
+		jsonError(w, "Server error", http.StatusInternalServerError)
+		return
+	}
 	a.db.Exec(r.Context(), "UPDATE password_reset_tokens SET used_at = NOW() WHERE id = $1", id)
 
 	jsonResponse(w, map[string]string{"message": "Password updated successfully"}, http.StatusOK)

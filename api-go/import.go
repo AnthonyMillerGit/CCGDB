@@ -148,11 +148,11 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		// Upsert into user_collections
+		// Upsert into user_collections (is_foil defaults to false on import)
 		_, err = a.db.Exec(r.Context(), `
-			INSERT INTO user_collections (user_id, printing_id, quantity)
-			VALUES ($1, $2, $3)
-			ON CONFLICT (user_id, printing_id)
+			INSERT INTO user_collections (user_id, printing_id, quantity, is_foil)
+			VALUES ($1, $2, $3, false)
+			ON CONFLICT (user_id, printing_id, is_foil)
 			DO UPDATE SET quantity = user_collections.quantity + EXCLUDED.quantity
 		`, user.ID, printingID, row.Quantity)
 		if err != nil {

@@ -72,6 +72,7 @@ func (a *App) routes() http.Handler {
 		jsonResponse(w, map[string]string{"message": "CCG Platform API", "version": "0.1.0"}, http.StatusOK)
 	})
 
+	r.Get("/api/stats", a.getStats)
 	r.Get("/api/games", a.getGames)
 	r.Get("/api/games/{slug}", a.getGame)
 	r.Get("/api/games/{slug}/sets", a.getGameSets)
@@ -136,6 +137,7 @@ func (a *App) routes() http.Handler {
 		// Wishlist
 		r.Get("/api/users/me/wishlist", a.getWishlist)
 		r.Post("/api/users/me/wishlist", a.addToWishlist)
+		r.Get("/api/users/me/wishlist/check/{printingID}", a.checkWishlistItem)
 		r.Post("/api/users/me/wishlist/set/{setID}", a.addMissingSetToWishlist)
 		r.Delete("/api/users/me/wishlist", a.clearWishlist)
 		r.Delete("/api/users/me/wishlist/{printingID}", a.removeFromWishlist)

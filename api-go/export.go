@@ -111,18 +111,17 @@ func (a *App) exportDeck(w http.ResponseWriter, r *http.Request) {
 		    c.name AS card_name,
 		    c.card_type,
 		    COALESCE(p.collector_number, '') AS collector_number,
-		    COALESCE(s.name, '') AS set_name,
+		    COALESCE(p.set_name, '') AS set_name,
 		    dc.quantity
 		FROM deck_cards dc
 		JOIN cards c ON c.id = dc.card_id
 		LEFT JOIN LATERAL (
-		    SELECT p2.collector_number, s2.name
+		    SELECT p2.collector_number, s2.name AS set_name
 		    FROM printings p2
 		    JOIN sets s2 ON s2.id = p2.set_id
 		    WHERE p2.card_id = c.id
 		    ORDER BY p2.id LIMIT 1
 		) p ON TRUE
-		LEFT JOIN sets s ON s.name = p.name
 		WHERE dc.deck_id = $1
 		ORDER BY c.card_type, c.name
 	`, deckID)

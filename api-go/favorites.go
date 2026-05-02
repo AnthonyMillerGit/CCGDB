@@ -1,11 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"net/http"
-	"strconv"
-
-	"github.com/go-chi/chi/v5"
 )
 
 func (a *App) getFavoriteGames(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +27,7 @@ func (a *App) getFavoriteGames(w http.ResponseWriter, r *http.Request) {
 		CardBackImage string `json:"card_back_image"`
 	}
 
-	var games []gameRow
+	games := []gameRow{}
 	for rows.Next() {
 		var g gameRow
 		if err := rows.Scan(&g.ID, &g.Name, &g.Slug, &g.CardBackImage); err != nil {
@@ -40,17 +36,12 @@ func (a *App) getFavoriteGames(w http.ResponseWriter, r *http.Request) {
 		}
 		games = append(games, g)
 	}
-	if games == nil {
-		games = []gameRow{}
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(games)
+	jsonResponse(w, games, http.StatusOK)
 }
 
 func (a *App) addFavoriteGame(w http.ResponseWriter, r *http.Request) {
 	user := getUser(r)
-	gameID, err := strconv.Atoi(chi.URLParam(r, "gameID"))
+	gameID, err := parseIntParam(r, "gameID")
 	if err != nil {
 		jsonError(w, "Invalid game ID", http.StatusBadRequest)
 		return
@@ -71,7 +62,7 @@ func (a *App) addFavoriteGame(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) removeFavoriteGame(w http.ResponseWriter, r *http.Request) {
 	user := getUser(r)
-	gameID, err := strconv.Atoi(chi.URLParam(r, "gameID"))
+	gameID, err := parseIntParam(r, "gameID")
 	if err != nil {
 		jsonError(w, "Invalid game ID", http.StatusBadRequest)
 		return

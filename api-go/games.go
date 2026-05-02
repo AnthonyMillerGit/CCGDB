@@ -4,11 +4,23 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
 )
 
 func (a *App) getGames(w http.ResponseWriter, r *http.Request) {
-	rows, err := a.db.Query(r.Context(),
-		"SELECT id, name, slug, description, card_back_image FROM games ORDER BY name")
+	q := r.URL.Query().Get("q")
+	var (
+		rows pgx.Rows
+		err  error
+	)
+	if q != "" {
+		rows, err = a.db.Query(r.Context(),
+			"SELECT id, name, slug, description, card_back_image FROM games WHERE name ILIKE $1 ORDER BY name",
+			"%"+escapeLike(q)+"%")
+	} else {
+		rows, err = a.db.Query(r.Context(),
+			"SELECT id, name, slug, description, card_back_image FROM games ORDER BY name")
+	}
 	if err != nil {
 		jsonError(w, "Database error", http.StatusInternalServerError)
 		return
@@ -25,6 +37,26 @@ func (a *App) getGames(w http.ResponseWriter, r *http.Request) {
 		games = append(games, g)
 	}
 	jsonResponse(w, games, http.StatusOK)
+}
+
+func (a *App) getStats(w http.ResponseWriter, r *http.Request) {
+	type Stats struct {
+		Games int `json:"games"`
+		Sets  int `json:"sets"`
+		Cards int `json:"cards"`
+	}
+	var s Stats
+	err := a.db.QueryRow(r.Context(), `
+		SELECT
+		    (SELECT COUNT(*) FROM games) AS games,
+		    (SELECT COUNT(*) FROM sets)  AS sets,
+		    (SELECT COUNT(*) FROM cards) AS cards
+	`).Scan(&s.Games, &s.Sets, &s.Cards)
+	if err != nil {
+		jsonError(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	jsonResponse(w, s, http.StatusOK)
 }
 
 func (a *App) getGame(w http.ResponseWriter, r *http.Request) {
