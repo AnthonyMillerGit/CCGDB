@@ -74,15 +74,15 @@ export default function SearchBar() {
           placeholder="Search cards..."
           className="w-full px-4 py-2 rounded-lg text-sm outline-none"
           style={{
-            backgroundColor: '#1a1f2e',
-            border: '1px solid #363d52',
-            color: '#EAEAEA',
+            backgroundColor: '#1f1f25',
+            border: '1px solid #42424e',
+            color: '#EDF2F6',
           }}
         />
         {loading && (
           <div className="absolute right-3 top-2.5">
             <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin"
-              style={{ borderColor: '#08D9D6', borderTopColor: 'transparent' }} />
+              style={{ borderColor: '#6A7EFC', borderTopColor: 'transparent' }} />
           </div>
         )}
       </div>
@@ -90,7 +90,7 @@ export default function SearchBar() {
       {showSuggestions && suggestions.length > 0 && (
         <div
           className="absolute top-full left-0 right-0 mt-1 rounded-lg overflow-hidden z-50 border max-h-80 overflow-y-auto"
-          style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}
+          style={{ backgroundColor: '#35353f', borderColor: '#42424e' }}
         >
           {suggestions.map((card, i) => (
             <div
@@ -98,7 +98,7 @@ export default function SearchBar() {
               onClick={() => handleSelect(card)}
               className="px-3 py-2 cursor-pointer flex items-center gap-3"
               style={{
-                backgroundColor: i === activeIndex ? '#363d52' : 'transparent',
+                backgroundColor: i === activeIndex ? '#42424e' : 'transparent',
               }}
               onMouseEnter={() => setActiveIndex(i)}
             >
@@ -108,8 +108,8 @@ export default function SearchBar() {
                 style={{
                   width: '36px',
                   height: '50px',
-                  backgroundColor: '#1a1f2e',
-                  border: '1px solid #363d52',
+                  backgroundColor: '#1f1f25',
+                  border: '1px solid #42424e',
                 }}
               >
                 {card.image_url ? (
@@ -120,17 +120,17 @@ export default function SearchBar() {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <span style={{ color: '#363d52', fontSize: '16px' }}>🃏</span>
+                    <span style={{ color: '#42424e', fontSize: '16px' }}>🃏</span>
                   </div>
                 )}
               </div>
 
               {/* Card info */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate" style={{ color: '#EAEAEA' }}>
+                <p className="text-sm font-medium truncate" style={{ color: '#EDF2F6' }}>
                   {card.name}
                 </p>
-                <p className="text-xs truncate" style={{ color: '#8892a4' }}>
+                <p className="text-xs truncate" style={{ color: '#8e8e9e' }}>
                   {card.card_type || card.game}
                 </p>
               </div>
@@ -139,8 +139,8 @@ export default function SearchBar() {
               <span
                 className="text-xs font-bold px-2 py-0.5 rounded flex-shrink-0"
                 style={{
-                  backgroundColor: '#1a1f2e',
-                  color: GAME_COLORS[card.game_slug] || '#8892a4'
+                  backgroundColor: '#1f1f25',
+                  color: GAME_COLORS[card.game_slug] || '#8e8e9e'
                 }}
               >
                 {card.game_slug?.toUpperCase()}

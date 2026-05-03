@@ -41,7 +41,7 @@ export default function GamesPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <p style={{ color: '#8892a4' }} className="text-lg">Loading games...</p>
+      <p style={{ color: '#8e8e9e' }} className="text-lg">Loading games...</p>
     </div>
   )
 
@@ -56,8 +56,8 @@ export default function GamesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-3xl font-bold mb-1" style={{ color: '#EAEAEA' }}>Games</h2>
-          <p style={{ color: '#8892a4' }}>
+          <h2 className="text-3xl font-bold mb-1" style={{ color: '#EDF2F6' }}>Games</h2>
+          <p style={{ color: '#8e8e9e' }}>
             {filtered.length} game{filtered.length !== 1 ? 's' : ''}
             {search && ` matching "${search}"`}
           </p>
@@ -69,24 +69,24 @@ export default function GamesPage() {
           onChange={e => setSearch(e.target.value)}
           className="rounded-lg px-4 py-2 text-sm outline-none w-full sm:w-64"
           style={{
-            backgroundColor: '#2d3243',
-            border: '1px solid #363d52',
-            color: '#EAEAEA',
+            backgroundColor: '#35353f',
+            border: '1px solid #42424e',
+            color: '#EDF2F6',
           }}
-          onFocus={e => e.target.style.borderColor = '#08D9D6'}
-          onBlur={e => e.target.style.borderColor = '#363d52'}
+          onFocus={e => e.target.style.borderColor = '#6A7EFC'}
+          onBlur={e => e.target.style.borderColor = '#42424e'}
         />
       </div>
 
       {/* Favorites row */}
       {user && favoriteGames.length > 0 && !search && (
         <div className="mb-10">
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#8892a4' }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#8e8e9e' }}>
             ★ Favorites
           </p>
           <div
             className="p-4 rounded-xl border"
-            style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}
+            style={{ backgroundColor: '#35353f', borderColor: '#42424e' }}
           >
             <div className="flex gap-4 overflow-x-auto pb-1">
               {favoriteGames.map(game => (
@@ -121,7 +121,7 @@ export default function GamesPage() {
 
       {filtered.length === 0 && (
         <div className="flex items-center justify-center h-48">
-          <p style={{ color: '#8892a4' }}>No games found matching "{search}"</p>
+          <p style={{ color: '#8e8e9e' }}>No games found matching "{search}"</p>
         </div>
       )}
     </div>
@@ -147,7 +147,7 @@ function GameCard({ game, isFavorite, showStar, onClick, onToggleFavorite }) {
           style={{
             backgroundColor: isFavorite ? 'rgba(8,217,214,0.15)' : 'rgba(0,0,0,0.45)',
             opacity: isFavorite ? 1 : (hovered ? 1 : 0),
-            color: isFavorite ? '#08D9D6' : '#8892a4',
+            color: isFavorite ? '#6A7EFC' : '#8e8e9e',
             fontSize: '0.7rem',
           }}
           title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
@@ -160,9 +160,9 @@ function GameCard({ game, isFavorite, showStar, onClick, onToggleFavorite }) {
       <div
         className="w-full rounded-xl overflow-hidden border transition-all duration-200"
         style={{
-          borderColor: hovered ? '#08D9D6' : (isFavorite ? '#2a5a58' : '#363d52'),
+          borderColor: hovered ? '#6A7EFC' : (isFavorite ? '#2a5a58' : '#42424e'),
           boxShadow: hovered ? '0 0 16px rgba(8, 217, 214, 0.25)' : 'none',
-          backgroundColor: '#2d3243',
+          backgroundColor: '#35353f',
         }}
       >
         {game.card_back_image ? (
@@ -174,17 +174,17 @@ function GameCard({ game, isFavorite, showStar, onClick, onToggleFavorite }) {
         ) : (
           <div
             className="w-full aspect-[2.5/3.5] flex flex-col items-center justify-center gap-2 p-2"
-            style={{ backgroundColor: '#2d3243' }}
+            style={{ backgroundColor: '#35353f' }}
           >
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-lg"
-              style={{ backgroundColor: '#363d52' }}
+              style={{ backgroundColor: '#42424e' }}
             >
               🃏
             </div>
             <span
               className="text-xs text-center leading-tight"
-              style={{ color: '#8892a4' }}
+              style={{ color: '#8e8e9e' }}
             >
               {game.name}
             </span>
@@ -195,7 +195,7 @@ function GameCard({ game, isFavorite, showStar, onClick, onToggleFavorite }) {
       {/* Name below card */}
       <p
         className="text-xs font-medium text-center mt-2 leading-tight px-1 transition-colors duration-200"
-        style={{ color: hovered ? '#08D9D6' : '#EAEAEA' }}
+        style={{ color: hovered ? '#6A7EFC' : '#EDF2F6' }}
       >
         {game.name}
       </p>

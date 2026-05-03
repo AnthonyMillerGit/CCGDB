@@ -1,17 +1,17 @@
 // App-wide color palette
 export const COLORS = {
-  accent:      '#08D9D6',
-  danger:      '#FF2E63',
+  accent:      '#6A7EFC',
+  danger:      '#FF5656',
   warning:     '#f4c542',
-  textPrimary: '#EAEAEA',
-  textMuted:   '#8892a4',
-  surface:     '#2d3243',
-  border:      '#363d52',
+  textPrimary: '#EDF2F6',
+  textMuted:   '#8e8e9e',
+  surface:     '#35353f',
+  border:      '#42424e',
 }
 
 // Per-game accent colors (keyed by game slug)
 export const GAME_COLORS = {
-  mtg:          '#08D9D6',
+  mtg:          '#6A7EFC',
   pokemon:      '#FFCC00',
   yugioh:       '#8844FF',
   startrek_1e:  '#4B9CD3',

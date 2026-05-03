@@ -28,7 +28,7 @@ function NavLink({ to, children }) {
     <Link
       to={to}
       className="text-sm font-medium transition-colors"
-      style={{ color: active ? '#08D9D6' : '#8892a4' }}
+      style={{ color: active ? '#6A7EFC' : '#8e8e9e' }}
     >
       {children}
     </Link>
@@ -62,27 +62,27 @@ function UserMenu({ user }) {
       <button
         onClick={() => setOpen(o => !o)}
         className="text-sm font-medium px-3 py-1.5 rounded flex items-center gap-2"
-        style={{ backgroundColor: '#363d52', border: '1px solid #4a5268', color: '#08D9D6' }}
+        style={{ backgroundColor: '#42424e', border: '1px solid #555562', color: '#6A7EFC' }}
       >
         <span
           className="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
+          style={{ backgroundColor: '#6A7EFC', color: '#26262e' }}
         >
           {user.username.slice(0, 1).toUpperCase()}
         </span>
         {user.username}
-        <span className="text-xs" style={{ color: '#8892a4' }}>{open ? '▲' : '▼'}</span>
+        <span className="text-xs" style={{ color: '#8e8e9e' }}>{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
         <div
           className="absolute right-0 mt-1 w-44 rounded-lg overflow-hidden z-50"
-          style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
+          style={{ backgroundColor: '#35353f', border: '1px solid #42424e', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
         >
           {items.map(([label, to]) =>
             to === null ? (
               <div key={label} className="px-4 py-1.5 text-xs font-semibold uppercase"
-                style={{ color: '#4a5268', borderTop: '1px solid #363d52', marginTop: '4px', paddingTop: '8px' }}>
+                style={{ color: '#555562', borderTop: '1px solid #42424e', marginTop: '4px', paddingTop: '8px' }}>
                 Admin
               </div>
             ) : (
@@ -91,8 +91,8 @@ function UserMenu({ user }) {
                 to={to}
                 onClick={() => setOpen(false)}
                 className="block px-4 py-2.5 text-sm transition-colors hover:bg-opacity-50"
-                style={{ color: '#EAEAEA', textDecoration: 'none', backgroundColor: 'transparent' }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#363d52'}
+                style={{ color: '#EDF2F6', textDecoration: 'none', backgroundColor: 'transparent' }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#42424e'}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 {label}
@@ -111,11 +111,11 @@ function Header() {
   return (
     <header
       className="border-b px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-6"
-      style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}
+      style={{ backgroundColor: '#35353f', borderColor: '#42424e' }}
     >
       <h1
         className="text-xl sm:text-2xl font-bold cursor-pointer flex-shrink-0"
-        style={{ color: '#08D9D6' }}
+        style={{ color: '#6A7EFC' }}
         onClick={() => navigate('/')}
       >
         CCGVault
@@ -126,7 +126,7 @@ function Header() {
         <button
           onClick={() => goToRandomCard(navigate)}
           className="text-sm font-medium transition-colors"
-          style={{ color: '#8892a4', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          style={{ color: '#8e8e9e', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
           🎲 Random
         </button>
@@ -139,7 +139,7 @@ function Header() {
           <Link
             to="/login"
             className="text-sm font-medium px-3 py-1.5 rounded"
-            style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
+            style={{ backgroundColor: '#FF5656', color: '#26262e' }}
           >
             Login
           </Link>
@@ -153,7 +153,7 @@ function Footer() {
   return (
     <footer
       className="border-t mt-12 px-6 py-8 flex flex-col items-center gap-3"
-      style={{ borderColor: '#363d52', color: '#8892a4' }}
+      style={{ borderColor: '#42424e', color: '#8e8e9e' }}
     >
       <p className="text-sm">© {new Date().getFullYear()} CCGVault — built by a collector, for collectors</p>
       <a
@@ -161,16 +161,16 @@ function Footer() {
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-2 text-sm px-4 py-2 rounded transition-opacity hover:opacity-80"
-        style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#08D9D6' }}
+        style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#6A7EFC' }}
       >
         ☕ Buy me a coffee
       </a>
-      <p className="text-xs text-center max-w-2xl leading-relaxed" style={{ color: '#4a5268' }}>
+      <p className="text-xs text-center max-w-2xl leading-relaxed" style={{ color: '#555562' }}>
         CCGVault is an independent fan site and is not affiliated with, endorsed by, or sponsored by
         any card game publisher. All card names, images, and game content are the property of their
         respective owners. CCGVault is a non-commercial reference tool for collectors and players.
         For DMCA inquiries or takedown requests, contact{' '}
-        <a href="mailto:admin@ccgvault.io" style={{ color: '#8892a4' }}>admin@ccgvault.io</a>.
+        <a href="mailto:admin@ccgvault.io" style={{ color: '#8e8e9e' }}>admin@ccgvault.io</a>.
       </p>
     </footer>
   )
@@ -180,7 +180,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#252A34', color: '#EAEAEA' }}>
+        <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#26262e', color: '#EDF2F6' }}>
           <Header />
           <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
             <Routes>

@@ -49,22 +49,22 @@ export default function LandingPage() {
 
       {/* Hero */}
       <div className="text-center py-20">
-        <h1 className="text-5xl font-bold mb-4" style={{ color: '#08D9D6' }}>CCGVault</h1>
-        <p className="text-xl mb-2" style={{ color: '#EAEAEA' }}>
+        <h1 className="text-5xl font-bold mb-4" style={{ color: '#6A7EFC' }}>CCGVault</h1>
+        <p className="text-xl mb-2" style={{ color: '#EDF2F6' }}>
           The collectible card game database for everyone.
         </p>
         <div className="flex items-center justify-center gap-4 flex-wrap">
           <button
             onClick={() => navigate('/games')}
             className="px-6 py-3 rounded-lg font-semibold text-base transition-opacity hover:opacity-90"
-            style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
+            style={{ backgroundColor: '#FF5656', color: '#26262e' }}
           >
             Browse Games
           </button>
           <button
             onClick={() => goToRandomCard(navigate)}
             className="px-6 py-3 rounded-lg font-semibold text-base transition-opacity hover:opacity-90"
-            style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
+            style={{ backgroundColor: '#FF5656', color: '#26262e' }}
           >
             🎲 Random Card
           </button>
@@ -72,7 +72,7 @@ export default function LandingPage() {
             <Link
               to="/login"
               className="px-6 py-3 rounded-lg font-semibold text-base"
-              style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }}
+              style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6' }}
             >
               Sign Up Free
             </Link>
@@ -84,25 +84,25 @@ export default function LandingPage() {
       {stats && (
         <div
           className="flex flex-col md:flex-row items-center gap-4 px-8 py-8 rounded-xl mb-16"
-          style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
+          style={{ backgroundColor: '#35353f', border: '1px solid #42424e' }}
         >
           {/* Stats + description — 50% */}
           <div className="flex flex-col items-center md:items-start gap-4 w-full md:w-1/2">
             <div className="flex items-center gap-12">
               <div className="text-center md:text-left">
-                <p className="text-6xl font-bold" style={{ color: '#08D9D6' }}>{stats.games}</p>
-                <p className="text-lg mt-1" style={{ color: '#EAEAEA' }}>Games</p>
+                <p className="text-6xl font-bold" style={{ color: '#6A7EFC' }}>{stats.games}</p>
+                <p className="text-lg mt-1" style={{ color: '#EDF2F6' }}>Games</p>
               </div>
               <div className="text-center md:text-left">
-                <p className="text-6xl font-bold" style={{ color: '#08D9D6' }}>{stats.sets?.toLocaleString()}</p>
-                <p className="text-lg mt-1" style={{ color: '#EAEAEA' }}>Sets</p>
+                <p className="text-6xl font-bold" style={{ color: '#6A7EFC' }}>{stats.sets?.toLocaleString()}</p>
+                <p className="text-lg mt-1" style={{ color: '#EDF2F6' }}>Sets</p>
               </div>
               <div className="text-center md:text-left">
-                <p className="text-6xl font-bold" style={{ color: '#08D9D6' }}>{stats.cards?.toLocaleString()}</p>
-                <p className="text-lg mt-1" style={{ color: '#EAEAEA' }}>Cards</p>
+                <p className="text-6xl font-bold" style={{ color: '#6A7EFC' }}>{stats.cards?.toLocaleString()}</p>
+                <p className="text-lg mt-1" style={{ color: '#EDF2F6' }}>Cards</p>
               </div>
             </div>
-            <p className="text-base text-center md:text-left" style={{ color: '#8892a4' }}>
+            <p className="text-base text-center md:text-left" style={{ color: '#8e8e9e' }}>
               CCGVault is a collector's companion — track your collection, build decks,
               and explore card games in one place. Whether you're rediscovering a game
               from the 90s or diving into something new, we've got the cards.
@@ -141,22 +141,22 @@ export default function LandingPage() {
       {posts.length > 0 && (
         <div className="mb-16">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold" style={{ color: '#EAEAEA' }}>Latest from the Blog</h2>
-            <Link to="/blog" className="text-sm" style={{ color: '#08D9D6' }}>All posts →</Link>
+            <h2 className="text-xl font-bold" style={{ color: '#EDF2F6' }}>Latest from the Blog</h2>
+            <Link to="/blog" className="text-sm" style={{ color: '#6A7EFC' }}>All posts →</Link>
           </div>
           <div className="flex flex-col gap-4">
             {posts.map(post => (
               <Link
                 key={post.id}
                 to={`/blog/${post.slug}`}
-                className="p-5 rounded-xl transition-colors hover:border-[#08D9D6]"
-                style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
+                className="p-5 rounded-xl transition-colors hover:border-[#6A7EFC]"
+                style={{ backgroundColor: '#35353f', border: '1px solid #42424e' }}
               >
-                <p className="font-semibold mb-1" style={{ color: '#EAEAEA' }}>{post.title}</p>
+                <p className="font-semibold mb-1" style={{ color: '#EDF2F6' }}>{post.title}</p>
                 {post.excerpt && (
-                  <p className="text-sm line-clamp-2" style={{ color: '#8892a4' }}>{post.excerpt}</p>
+                  <p className="text-sm line-clamp-2" style={{ color: '#8e8e9e' }}>{post.excerpt}</p>
                 )}
-                <p className="text-xs mt-2" style={{ color: '#4a5268' }}>
+                <p className="text-xs mt-2" style={{ color: '#555562' }}>
                   {new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
               </Link>

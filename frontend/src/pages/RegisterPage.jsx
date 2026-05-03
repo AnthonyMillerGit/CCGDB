@@ -27,7 +27,7 @@ export default function RegisterPage() {
 
   return (
     <div className="max-w-md mx-auto mt-16">
-      <h2 className="text-2xl font-bold mb-6" style={{ color: '#08D9D6' }}>Create Account</h2>
+      <h2 className="text-2xl font-bold mb-6" style={{ color: '#6A7EFC' }}>Create Account</h2>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
           <label className="block text-sm mb-1 text-gray-400">Username</label>
@@ -37,7 +37,7 @@ export default function RegisterPage() {
             onChange={e => setUsername(e.target.value)}
             required
             className="w-full px-3 py-2 rounded text-white"
-            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
+            style={{ backgroundColor: '#35353f', border: '1px solid #42424e' }}
           />
         </div>
         <div>
@@ -48,7 +48,7 @@ export default function RegisterPage() {
             onChange={e => setEmail(e.target.value)}
             required
             className="w-full px-3 py-2 rounded text-white"
-            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
+            style={{ backgroundColor: '#35353f', border: '1px solid #42424e' }}
           />
         </div>
         <div>
@@ -60,7 +60,7 @@ export default function RegisterPage() {
             required
             minLength={8}
             className="w-full px-3 py-2 rounded text-white"
-            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
+            style={{ backgroundColor: '#35353f', border: '1px solid #42424e' }}
           />
         </div>
         {error && <p className="text-red-400 text-sm">{error}</p>}
@@ -68,14 +68,14 @@ export default function RegisterPage() {
           type="submit"
           disabled={loading}
           className="py-2 rounded font-semibold disabled:opacity-50"
-          style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
+          style={{ backgroundColor: '#FF5656', color: '#26262e' }}
         >
           {loading ? 'Creating account…' : 'Create Account'}
         </button>
       </form>
       <p className="mt-4 text-sm text-gray-400">
         Already have an account?{' '}
-        <Link to="/login" style={{ color: '#08D9D6' }}>Sign in</Link>
+        <Link to="/login" style={{ color: '#6A7EFC' }}>Sign in</Link>
       </p>
     </div>
   )

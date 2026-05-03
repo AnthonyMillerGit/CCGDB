@@ -101,7 +101,7 @@ export default function CardsPage() {
 
   const handleMouseEnter = (e, card) => {
     if (!card.image_url || isTouchDevice) return
-    e.currentTarget.style.borderColor = '#08D9D6'
+    e.currentTarget.style.borderColor = '#6A7EFC'
     e.currentTarget.style.transform = 'scale(1.05)'
 
     const rect = e.currentTarget.getBoundingClientRect()
@@ -116,14 +116,14 @@ export default function CardsPage() {
   }
 
   const handleMouseLeave = (e) => {
-    e.currentTarget.style.borderColor = '#363d52'
+    e.currentTarget.style.borderColor = '#42424e'
     e.currentTarget.style.transform = 'scale(1)'
     setHoveredCard(null)
   }
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <p className="text-lg" style={{ color: '#8892a4' }}>Loading cards...</p>
+      <p className="text-lg" style={{ color: '#8e8e9e' }}>Loading cards...</p>
     </div>
   )
 
@@ -132,7 +132,7 @@ export default function CardsPage() {
       <button
         onClick={() => navigate(-1)}
         className="text-sm mb-6 flex items-center gap-1 hover:opacity-80 transition-opacity"
-        style={{ color: '#08D9D6' }}
+        style={{ color: '#6A7EFC' }}
       >
         ← Back to Sets
       </button>
@@ -142,16 +142,16 @@ export default function CardsPage() {
         <div className="mb-8">
           <p
             className="text-sm font-medium mb-1 cursor-pointer hover:opacity-80 transition-opacity"
-            style={{ color: '#08D9D6' }}
+            style={{ color: '#6A7EFC' }}
             onClick={() => navigate(`/games/${setInfo.game_slug}`)}
           >
             {setInfo.game_name}
           </p>
-          <h2 className="text-3xl font-bold mb-1" style={{ color: '#EAEAEA' }}>
+          <h2 className="text-3xl font-bold mb-1" style={{ color: '#EDF2F6' }}>
             {setInfo.name}
           </h2>
           <div className="flex items-center gap-3 mt-2 flex-wrap">
-            <p style={{ color: '#8892a4' }}>
+            <p style={{ color: '#8e8e9e' }}>
               {cards.length} cards
               {setInfo.release_date && (
                 <span> · {new Date(setInfo.release_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
@@ -163,9 +163,9 @@ export default function CardsPage() {
                 disabled={addingSet}
                 className="text-sm px-3 py-1 rounded transition-opacity hover:opacity-80"
                 style={{
-                  backgroundColor: '#2d3243',
-                  border: '1px solid #08D9D6',
-                  color: '#08D9D6',
+                  backgroundColor: '#35353f',
+                  border: '1px solid #6A7EFC',
+                  color: '#6A7EFC',
                   opacity: addingSet ? 0.6 : 1,
                   cursor: addingSet ? 'not-allowed' : 'pointer',
                 }}
@@ -183,7 +183,7 @@ export default function CardsPage() {
           value={sort}
           onChange={e => { setSort(e.target.value); setPage(1) }}
           className="text-sm px-3 py-1.5 rounded"
-          style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }}
+          style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6' }}
         >
           <option value="number_asc">Collector # ↑</option>
           <option value="name_asc">Name A→Z</option>
@@ -195,14 +195,14 @@ export default function CardsPage() {
           value={pageSize}
           onChange={e => { setPageSize(Number(e.target.value)); setPage(1) }}
           className="text-sm px-3 py-1.5 rounded"
-          style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }}
+          style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6' }}
         >
           <option value={25}>25 / page</option>
           <option value={50}>50 / page</option>
           <option value={100}>100 / page</option>
           <option value={0}>Show all</option>
         </select>
-        <span className="text-xs ml-auto" style={{ color: '#8892a4' }}>
+        <span className="text-xs ml-auto" style={{ color: '#8e8e9e' }}>
           {sortedCards.length} cards
           {totalPages > 1 && ` · page ${safePage} of ${totalPages}`}
         </span>
@@ -217,7 +217,7 @@ export default function CardsPage() {
               key={card.id}
               onClick={() => navigate(`/cards/${card.id}`)}
               className="rounded-xl overflow-hidden cursor-pointer transition-all duration-200 border relative"
-              style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}
+              style={{ backgroundColor: '#35353f', borderColor: '#42424e' }}
               onMouseEnter={e => handleMouseEnter(e, card)}
               onMouseLeave={handleMouseLeave}
             >
@@ -225,7 +225,7 @@ export default function CardsPage() {
               {isOwned && (
                 <div
                   className="absolute top-1.5 right-1.5 z-10 text-xs font-bold px-1.5 py-0.5 rounded"
-                  style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
+                  style={{ backgroundColor: '#6A7EFC', color: '#26262e' }}
                 >
                   ×{quantity}
                 </div>
@@ -235,22 +235,22 @@ export default function CardsPage() {
                 <img src={card.image_url} alt={card.name} className="w-full" />
               ) : (
                 <div className="aspect-[2.5/3.5] flex items-center justify-center p-3"
-                  style={{ backgroundColor: '#363d52' }}>
-                  <span className="text-sm text-center" style={{ color: '#8892a4' }}>{card.name}</span>
+                  style={{ backgroundColor: '#42424e' }}>
+                  <span className="text-sm text-center" style={{ color: '#8e8e9e' }}>{card.name}</span>
                 </div>
               )}
 
               <div className="p-2">
-                <p className="text-xs font-medium truncate" style={{ color: '#EAEAEA' }}>{card.name}</p>
+                <p className="text-xs font-medium truncate" style={{ color: '#EDF2F6' }}>{card.name}</p>
                 <div className="flex items-center justify-between mt-0.5">
-                  <p className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(card.rarity)] || '#8892a4' }}>{card.rarity}</p>
+                  <p className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(card.rarity)] || '#8e8e9e' }}>{card.rarity}</p>
                   {user && (
                     <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
                       {isOwned && (
                         <button
                           onClick={e => handleRemove(e, card)}
                           className="text-xs px-1 rounded leading-none"
-                          style={{ color: '#FF2E63', backgroundColor: '#2d3243' }}
+                          style={{ color: '#FF5656', backgroundColor: '#35353f' }}
                           title="Remove one"
                         >
                           −
@@ -259,7 +259,7 @@ export default function CardsPage() {
                       <button
                         onClick={e => handleAdd(e, card)}
                         className="text-xs px-1 rounded leading-none"
-                        style={{ color: '#08D9D6', backgroundColor: '#2d3243' }}
+                        style={{ color: '#6A7EFC', backgroundColor: '#35353f' }}
                         title="Add to collection"
                       >
                         +
@@ -280,7 +280,7 @@ export default function CardsPage() {
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={safePage === 1}
             className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: safePage === 1 ? '#4a5268' : '#EAEAEA', cursor: safePage === 1 ? 'not-allowed' : 'pointer' }}
+            style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: safePage === 1 ? '#555562' : '#EDF2F6', cursor: safePage === 1 ? 'not-allowed' : 'pointer' }}
           >
             ‹ Prev
           </button>
@@ -294,16 +294,16 @@ export default function CardsPage() {
             }, [])
             .map((p, i) =>
               p === '…' ? (
-                <span key={`e-${i}`} className="text-sm px-1" style={{ color: '#4a5268' }}>…</span>
+                <span key={`e-${i}`} className="text-sm px-1" style={{ color: '#555562' }}>…</span>
               ) : (
                 <button
                   key={p}
                   onClick={() => setPage(p)}
                   className="text-sm w-8 h-8 rounded"
                   style={{
-                    backgroundColor: p === safePage ? '#08D9D6' : '#2d3243',
-                    border: '1px solid #363d52',
-                    color: p === safePage ? '#13172b' : '#EAEAEA',
+                    backgroundColor: p === safePage ? '#6A7EFC' : '#35353f',
+                    border: '1px solid #42424e',
+                    color: p === safePage ? '#1f1f25' : '#EDF2F6',
                     fontWeight: p === safePage ? '600' : '400',
                   }}
                 >{p}</button>
@@ -314,7 +314,7 @@ export default function CardsPage() {
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={safePage === totalPages}
             className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: safePage === totalPages ? '#4a5268' : '#EAEAEA', cursor: safePage === totalPages ? 'not-allowed' : 'pointer' }}
+            style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: safePage === totalPages ? '#555562' : '#EDF2F6', cursor: safePage === totalPages ? 'not-allowed' : 'pointer' }}
           >
             Next ›
           </button>
@@ -329,19 +329,19 @@ export default function CardsPage() {
             left: Math.max(8, Math.min(tooltipPos.x, window.innerWidth - 368)),
             top: Math.max(8, Math.min(tooltipPos.y, window.innerHeight - 508)),
             width: 360,
-            border: '2px solid #08D9D6',
-            backgroundColor: '#2d3243',
+            border: '2px solid #6A7EFC',
+            backgroundColor: '#35353f',
             transition: 'opacity 0.15s ease',
             boxShadow: '0 0 40px rgba(8, 217, 214, 0.3)',
           }}
         >
           <img src={hoveredCard.image_url} alt={hoveredCard.name} className="w-full" />
           <div className="p-2">
-            <p className="text-sm font-semibold truncate" style={{ color: '#EAEAEA' }}>
+            <p className="text-sm font-semibold truncate" style={{ color: '#EDF2F6' }}>
               {hoveredCard.name}
             </p>
             {hoveredCard.rarity && (
-              <p className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(hoveredCard.rarity)] || '#8892a4' }}>{hoveredCard.rarity}</p>
+              <p className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(hoveredCard.rarity)] || '#8e8e9e' }}>{hoveredCard.rarity}</p>
             )}
           </div>
         </div>

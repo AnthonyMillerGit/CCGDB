@@ -1,6 +1,6 @@
-.editor-content h1 { font-size: 2em; font-weight: 700; margin: 0.75em 0 0.25em; color: #EAEAEA; }
-.editor-content h2 { font-size: 1.5em; font-weight: 700; margin: 0.75em 0 0.25em; color: #EAEAEA; }
-.editor-content h3 { font-size: 1.25em; font-weight: 600; margin: 0.75em 0 0.25em; color: #EAEAEA; }
+.editor-content h1 { font-size: 2em; font-weight: 700; margin: 0.75em 0 0.25em; color: #EDF2F6; }
+.editor-content h2 { font-size: 1.5em; font-weight: 700; margin: 0.75em 0 0.25em; color: #EDF2F6; }
+.editor-content h3 { font-size: 1.25em; font-weight: 600; margin: 0.75em 0 0.25em; color: #EDF2F6; }
 .editor-content p  { margin: 0.5em 0; }
 .editor-content strong { font-weight: 700; }
 .editor-content em { font-style: italic; }
@@ -8,18 +8,18 @@
 .editor-content ul { list-style-type: disc; padding-left: 1.5em; margin: 0.5em 0; }
 .editor-content ol { list-style-type: decimal; padding-left: 1.5em; margin: 0.5em 0; }
 .editor-content li { margin: 0.25em 0; }
-.editor-content blockquote { border-left: 3px solid #08D9D6; padding-left: 1em; margin: 0.75em 0; color: #8892a4; font-style: italic; }
-.editor-content pre  { background: #1e2330; border: 1px solid #363d52; border-radius: 6px; padding: 1em; overflow-x: auto; margin: 0.75em 0; }
-.editor-content code { font-family: monospace; font-size: 0.9em; background: #1e2330; padding: 0.1em 0.3em; border-radius: 3px; }
+.editor-content blockquote { border-left: 3px solid #6A7EFC; padding-left: 1em; margin: 0.75em 0; color: #8e8e9e; font-style: italic; }
+.editor-content pre  { background: #1f1f25; border: 1px solid #42424e; border-radius: 6px; padding: 1em; overflow-x: auto; margin: 0.75em 0; }
+.editor-content code { font-family: monospace; font-size: 0.9em; background: #1f1f25; padding: 0.1em 0.3em; border-radius: 3px; }
 .editor-content pre code { background: none; padding: 0; }
-.editor-content hr { border: none; border-top: 1px solid #363d52; margin: 1.5em 0; }
+.editor-content hr { border: none; border-top: 1px solid #42424e; margin: 1.5em 0; }
 .editor-content img { max-width: 100%; border-radius: 8px; margin: 0.75em 0; }
-.editor-content a  { color: #08D9D6; text-decoration: underline; }
+.editor-content a  { color: #6A7EFC; text-decoration: underline; }
 
 /* Tippy popup theme for mention dropdown */
 .tippy-box[data-theme~='ccgvault'] {
-  background-color: #2d3243;
-  border: 1px solid #363d52;
+  background-color: #35353f;
+  border: 1px solid #42424e;
   border-radius: 10px;
   overflow: hidden;
   padding: 0;
@@ -32,7 +32,7 @@
 .editor-content p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: #4a5268;
+  color: #555562;
   pointer-events: none;
   height: 0;
 }

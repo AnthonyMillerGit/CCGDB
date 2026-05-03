@@ -31,8 +31,8 @@ function MenuBar({ editor }) {
       title={label}
       className="px-2 py-1 rounded text-xs font-medium transition-colors"
       style={{
-        backgroundColor: active ? '#08D9D6' : '#363d52',
-        color: active ? '#252A34' : '#EAEAEA',
+        backgroundColor: active ? '#6A7EFC' : '#42424e',
+        color: active ? '#26262e' : '#EDF2F6',
       }}
     >
       {label}
@@ -41,24 +41,24 @@ function MenuBar({ editor }) {
 
   return (
     <div className="flex flex-wrap gap-1 p-2 rounded-t-lg border-b"
-      style={{ backgroundColor: '#2d3243', borderColor: '#363d52' }}>
+      style={{ backgroundColor: '#35353f', borderColor: '#42424e' }}>
       {btn(() => editor.chain().focus().toggleBold().run(), 'Bold', editor.isActive('bold'))}
       {btn(() => editor.chain().focus().toggleItalic().run(), 'Italic', editor.isActive('italic'))}
       {btn(() => editor.chain().focus().toggleStrike().run(), 'Strike', editor.isActive('strike'))}
-      <span style={{ borderLeft: '1px solid #363d52', margin: '0 4px' }} />
+      <span style={{ borderLeft: '1px solid #42424e', margin: '0 4px' }} />
       {btn(() => editor.chain().focus().toggleHeading({ level: 2 }).run(), 'H2', editor.isActive('heading', { level: 2 }))}
       {btn(() => editor.chain().focus().toggleHeading({ level: 3 }).run(), 'H3', editor.isActive('heading', { level: 3 }))}
-      <span style={{ borderLeft: '1px solid #363d52', margin: '0 4px' }} />
+      <span style={{ borderLeft: '1px solid #42424e', margin: '0 4px' }} />
       {btn(() => editor.chain().focus().toggleBulletList().run(), '• List', editor.isActive('bulletList'))}
       {btn(() => editor.chain().focus().toggleOrderedList().run(), '1. List', editor.isActive('orderedList'))}
-      <span style={{ borderLeft: '1px solid #363d52', margin: '0 4px' }} />
+      <span style={{ borderLeft: '1px solid #42424e', margin: '0 4px' }} />
       {btn(() => editor.chain().focus().toggleBlockquote().run(), 'Quote', editor.isActive('blockquote'))}
       {btn(() => editor.chain().focus().toggleCodeBlock().run(), 'Code', editor.isActive('codeBlock'))}
-      <span style={{ borderLeft: '1px solid #363d52', margin: '0 4px' }} />
+      <span style={{ borderLeft: '1px solid #42424e', margin: '0 4px' }} />
       {btn(insertLink, '🔗 Link', editor.isActive('link'))}
       {btn(insertImage, '🖼 Image', false)}
       {btn(() => editor.chain().focus().setHorizontalRule().run(), '— Rule', false)}
-      <span style={{ borderLeft: '1px solid #363d52', margin: '0 4px' }} />
+      <span style={{ borderLeft: '1px solid #42424e', margin: '0 4px' }} />
       {btn(() => editor.chain().focus().undo().run(), '↩ Undo', false)}
       {btn(() => editor.chain().focus().redo().run(), '↪ Redo', false)}
     </div>
@@ -85,15 +85,15 @@ function TagSearch({ label, searchUrl, selected, onAdd, onRemove, displayKey, id
 
   return (
     <div>
-      <p className="text-xs font-semibold uppercase mb-2" style={{ color: '#8892a4' }}>{label}</p>
+      <p className="text-xs font-semibold uppercase mb-2" style={{ color: '#8e8e9e' }}>{label}</p>
       <div className="flex flex-wrap gap-2 mb-2">
         {selected.map(item => (
           <span key={item[idKey]}
             className="flex items-center gap-1 text-xs px-2 py-1 rounded-full"
-            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#08D9D6' }}>
+            style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#6A7EFC' }}>
             {item[displayKey]}
             <button type="button" onClick={() => onRemove(item[idKey])}
-              className="ml-1 hover:opacity-70" style={{ color: '#FF2E63' }}>×</button>
+              className="ml-1 hover:opacity-70" style={{ color: '#FF5656' }}>×</button>
           </span>
         ))}
       </div>
@@ -104,16 +104,16 @@ function TagSearch({ label, searchUrl, selected, onAdd, onRemove, displayKey, id
           onChange={e => setQuery(e.target.value)}
           placeholder={`Search ${label.toLowerCase()}…`}
           className="w-full px-3 py-1.5 rounded text-sm outline-none"
-          style={{ backgroundColor: '#1e2330', border: '1px solid #363d52', color: '#EAEAEA' }}
+          style={{ backgroundColor: '#1f1f25', border: '1px solid #42424e', color: '#EDF2F6' }}
         />
         {results.length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-1 rounded shadow-lg z-10 py-1"
-            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}>
+            style={{ backgroundColor: '#35353f', border: '1px solid #42424e' }}>
             {results.map(item => (
               <button key={item[idKey] ?? item.id} type="button"
                 onClick={() => { onAdd(item); setQuery(''); setResults([]) }}
-                className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#363d52] transition-colors"
-                style={{ color: '#EAEAEA' }}>
+                className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#42424e] transition-colors"
+                style={{ color: '#EDF2F6' }}>
                 {item.name}
               </button>
             ))}
@@ -150,7 +150,7 @@ export default function PostEditorPage() {
     editorProps: {
       attributes: {
         class: 'editor-content outline-none min-h-[250px] sm:min-h-[400px] px-4 py-4 sm:px-5 sm:py-5',
-        style: 'color: #EAEAEA; font-size: 1rem; line-height: 1.75;',
+        style: 'color: #EDF2F6; font-size: 1rem; line-height: 1.75;',
       },
     },
   })
@@ -242,14 +242,14 @@ export default function PostEditorPage() {
     setSaving(false)
   }
 
-  const inputStyle = { backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }
+  const inputStyle = { backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6' }
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <RouterLink to="/admin/posts" className="text-sm" style={{ color: '#8892a4' }}>← Posts</RouterLink>
-          <h1 className="text-2xl font-bold" style={{ color: '#EAEAEA' }}>
+          <RouterLink to="/admin/posts" className="text-sm" style={{ color: '#8e8e9e' }}>← Posts</RouterLink>
+          <h1 className="text-2xl font-bold" style={{ color: '#EDF2F6' }}>
             {isEdit ? 'Edit Post' : 'New Post'}
           </h1>
         </div>
@@ -257,7 +257,7 @@ export default function PostEditorPage() {
 
       {error && (
         <div className="mb-4 px-4 py-3 rounded text-sm"
-          style={{ backgroundColor: '#3a1a1a', border: '1px solid #6a2d2d', color: '#FF2E63' }}>
+          style={{ backgroundColor: '#3a1a1a', border: '1px solid #6a2d2d', color: '#FF5656' }}>
           {error}
         </div>
       )}
@@ -293,16 +293,16 @@ export default function PostEditorPage() {
       </div>
 
       {/* Editor */}
-      <div className="rounded-lg overflow-hidden mb-6" style={{ border: '1px solid #363d52' }}>
+      <div className="rounded-lg overflow-hidden mb-6" style={{ border: '1px solid #42424e' }}>
         <MenuBar editor={editor} />
-        <div style={{ backgroundColor: '#1e2330' }}>
+        <div style={{ backgroundColor: '#1f1f25' }}>
           <EditorContent editor={editor} />
         </div>
       </div>
 
       {/* Tags */}
       <div className="p-4 rounded-lg mb-6 flex flex-col gap-4"
-        style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}>
+        style={{ backgroundColor: '#35353f', border: '1px solid #42424e' }}>
         <TagSearch
           label="Games"
           searchUrl={`${API_URL}/api/games?q=`}
@@ -326,7 +326,7 @@ export default function PostEditorPage() {
       {/* Publish date + actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <label className="text-sm" style={{ color: '#8892a4' }}>Publish date</label>
+          <label className="text-sm" style={{ color: '#8e8e9e' }}>Publish date</label>
           <input
             type="datetime-local"
             value={publishedAt}
@@ -339,18 +339,18 @@ export default function PostEditorPage() {
           {isEdit && publishedAt && new Date(publishedAt) <= new Date() && (
             <button type="button" onClick={handleUnpublish} disabled={saving}
               className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
-              style={{ backgroundColor: '#363d52', color: '#FF2E63', border: '1px solid #4a5268' }}>
+              style={{ backgroundColor: '#42424e', color: '#FF5656', border: '1px solid #555562' }}>
               Unpublish
             </button>
           )}
           <button type="button" onClick={() => handleSave(false)} disabled={saving}
             className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
-            style={{ backgroundColor: '#363d52', color: '#EAEAEA' }}>
+            style={{ backgroundColor: '#42424e', color: '#EDF2F6' }}>
             {saving ? 'Saving…' : 'Save Draft'}
           </button>
           <button type="button" onClick={() => handleSave(true)} disabled={saving}
             className="px-5 py-2 rounded text-sm font-semibold disabled:opacity-50"
-            style={{ backgroundColor: '#08D9D6', color: '#252A34' }}>
+            style={{ backgroundColor: '#FF5656', color: '#26262e' }}>
             {saving ? 'Publishing…' : 'Publish'}
           </button>
         </div>

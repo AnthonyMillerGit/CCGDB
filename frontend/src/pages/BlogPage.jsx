@@ -43,25 +43,25 @@ export default function BlogPage() {
   return (
     <div className="max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold" style={{ color: '#EAEAEA' }}>Blog</h1>
+        <h1 className="text-3xl font-bold" style={{ color: '#EDF2F6' }}>Blog</h1>
         {user?.is_admin && (
           <Link
             to="/admin/posts/new"
             className="px-4 py-2 rounded text-sm font-semibold"
-            style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
+            style={{ backgroundColor: '#FF5656', color: '#26262e' }}
           >
             + New Post
           </Link>
         )}
       </div>
 
-      {loading && <p style={{ color: '#8892a4' }}>Loading posts…</p>}
+      {loading && <p style={{ color: '#8e8e9e' }}>Loading posts…</p>}
 
       {!loading && posts.length === 0 && (
-        <div className="text-center py-20" style={{ color: '#8892a4' }}>
+        <div className="text-center py-20" style={{ color: '#8e8e9e' }}>
           <p className="text-lg mb-2">No posts yet.</p>
           {user?.is_admin && (
-            <p>Hit <strong style={{ color: '#EAEAEA' }}>+ New Post</strong> to write your first one.</p>
+            <p>Hit <strong style={{ color: '#EDF2F6' }}>+ New Post</strong> to write your first one.</p>
           )}
         </div>
       )}
@@ -71,14 +71,14 @@ export default function BlogPage() {
           <Link
             key={post.id}
             to={`/blog/${post.slug}`}
-            className="p-6 rounded-xl transition-colors hover:border-[#08D9D6]"
-            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
+            className="p-6 rounded-xl transition-colors hover:border-[#6A7EFC]"
+            style={{ backgroundColor: '#35353f', border: '1px solid #42424e' }}
           >
-            <h2 className="text-xl font-bold mb-2" style={{ color: '#EAEAEA' }}>{post.title}</h2>
+            <h2 className="text-xl font-bold mb-2" style={{ color: '#EDF2F6' }}>{post.title}</h2>
             {post.excerpt && (
-              <p className="text-sm mb-3 line-clamp-3" style={{ color: '#8892a4' }}>{post.excerpt}</p>
+              <p className="text-sm mb-3 line-clamp-3" style={{ color: '#8e8e9e' }}>{post.excerpt}</p>
             )}
-            <div className="flex items-center gap-3 text-xs" style={{ color: '#4a5268' }}>
+            <div className="flex items-center gap-3 text-xs" style={{ color: '#555562' }}>
               <span>{post.author_name}</span>
               <span>·</span>
               <span>{new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
@@ -93,7 +93,7 @@ export default function BlogPage() {
             onClick={loadMore}
             disabled={loadingMore}
             className="px-6 py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition-opacity hover:opacity-80"
-            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#08D9D6' }}
+            style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#6A7EFC' }}
           >
             {loadingMore ? 'Loading…' : 'Load more posts'}
           </button>

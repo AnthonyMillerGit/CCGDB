@@ -59,8 +59,8 @@ function SetRow({ set, isLast, onClick }) {
       onClick={onClick}
       className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 py-3 sm:px-5 sm:py-4 cursor-pointer transition-all duration-150 gap-1 sm:gap-0"
       style={{
-        backgroundColor: hovered ? '#363d52' : '#2d3243',
-        borderBottom: isLast ? 'none' : '1px solid #363d52',
+        backgroundColor: hovered ? '#42424e' : '#35353f',
+        borderBottom: isLast ? 'none' : '1px solid #42424e',
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -69,15 +69,15 @@ function SetRow({ set, isLast, onClick }) {
         {set.icon_url && (
           <img src={set.icon_url} alt="" className="w-5 h-5 invert opacity-50" />
         )}
-        <span className="font-medium" style={{ color: '#EAEAEA' }}>{set.name}</span>
+        <span className="font-medium" style={{ color: '#EDF2F6' }}>{set.name}</span>
       </div>
       <div className="flex items-center gap-3 sm:gap-6 shrink-0">
-        <span className="text-xs sm:text-sm" style={{ color: '#8892a4' }}>
+        <span className="text-xs sm:text-sm" style={{ color: '#8e8e9e' }}>
           {formatDate(set.release_date)}
         </span>
         <span
           className="text-sm transition-colors duration-150 hidden sm:block"
-          style={{ color: hovered ? '#08D9D6' : '#363d52' }}
+          style={{ color: hovered ? '#6A7EFC' : '#42424e' }}
         >
           →
         </span>
@@ -110,7 +110,7 @@ export default function SetsPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <p className="text-lg" style={{ color: '#8892a4' }}>Loading sets...</p>
+      <p className="text-lg" style={{ color: '#8e8e9e' }}>Loading sets...</p>
     </div>
   )
 
@@ -132,17 +132,17 @@ export default function SetsPage() {
       <button
         onClick={() => navigate('/')}
         className="text-sm mb-6 flex items-center gap-1 hover:opacity-80 transition-opacity"
-        style={{ color: '#08D9D6' }}
+        style={{ color: '#6A7EFC' }}
       >
         ← Back to Games
       </button>
 
       <div className="flex gap-6 items-start mb-2">
         <div className="flex-1">
-          <h1 className="text-4xl font-bold mb-3" style={{ color: '#EAEAEA' }}>{game?.name}</h1>
+          <h1 className="text-4xl font-bold mb-3" style={{ color: '#EDF2F6' }}>{game?.name}</h1>
 
           {gameInfo?.description && (
-            <p className="text-base mb-4 leading-relaxed" style={{ color: '#8892a4' }}>
+            <p className="text-base mb-4 leading-relaxed" style={{ color: '#8e8e9e' }}>
               {gameInfo.description}
             </p>
           )}
@@ -156,7 +156,7 @@ export default function SetsPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm px-3 py-1.5 rounded-lg border transition-all duration-150 hover:opacity-80"
-                  style={{ color: '#08D9D6', borderColor: '#08D9D6', textDecoration: 'none' }}
+                  style={{ color: '#6A7EFC', borderColor: '#6A7EFC', textDecoration: 'none' }}
                 >
                   {link.label} ↗
                 </a>
@@ -175,21 +175,21 @@ export default function SetsPage() {
         )}
       </div>
 
-      <h2 className="text-xs font-semibold uppercase tracking-widest mb-2 mt-2" style={{ color: '#8892a4' }}>
+      <h2 className="text-xs font-semibold uppercase tracking-widest mb-2 mt-2" style={{ color: '#8e8e9e' }}>
         Sets — {filteredSets.length} total
       </h2>
 
       {/* Filter row — only show if more than one tab available */}
       {availableTabs.length > 1 && (
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-6 text-sm">
-          <span style={{ color: '#8892a4' }}>Show:</span>
+          <span style={{ color: '#8e8e9e' }}>Show:</span>
           {availableTabs.map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className="transition-all duration-150 hover:opacity-100"
               style={{
-                color: activeTab === tab.key ? '#08D9D6' : '#8892a4',
+                color: activeTab === tab.key ? '#6A7EFC' : '#8e8e9e',
                 fontWeight: activeTab === tab.key ? '600' : '400',
                 textDecoration: activeTab === tab.key ? 'underline' : 'none',
                 textUnderlineOffset: '3px',
@@ -215,11 +215,11 @@ export default function SetsPage() {
               <div key={tab.key}>
                 <p
                   className="text-xs font-semibold uppercase tracking-widest mb-2"
-                  style={{ color: '#8892a4' }}
+                  style={{ color: '#8e8e9e' }}
                 >
                   {tab.label}
                 </p>
-                <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#363d52' }}>
+                <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#42424e' }}>
                   {sets
                     .filter(s => s.set_type === tab.key)
                     .map((set, index, arr) => (
@@ -239,11 +239,11 @@ export default function SetsPage() {
             <div>
               <p
                 className="text-xs font-semibold uppercase tracking-widest mb-2"
-                style={{ color: '#8892a4' }}
+                style={{ color: '#8e8e9e' }}
               >
                 Other
               </p>
-              <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#363d52' }}>
+              <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#42424e' }}>
                 {sets
                   .filter(s => !availableTabs.find(t => t.key !== 'all' && t.key === s.set_type))
                   .map((set, index, arr) => (
@@ -260,7 +260,7 @@ export default function SetsPage() {
         </div>
       ) : (
         /* Flat list — filtered view or games with no categories */
-        <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#363d52' }}>
+        <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#42424e' }}>
           {filteredSets.map((set, index) => (
             <SetRow
               key={set.id}

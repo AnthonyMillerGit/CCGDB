@@ -10,9 +10,9 @@ function postStatus(post) {
 }
 
 const STATUS_STYLE = {
-  published: { bg: '#0a2e2d', color: '#08D9D6', border: '#08D9D6', label: 'Published' },
+  published: { bg: '#1a1e40', color: '#6A7EFC', border: '#6A7EFC', label: 'Published' },
   scheduled:  { bg: '#2e2a0a', color: '#f4c542', border: '#f4c542', label: 'Scheduled' },
-  draft:      { bg: '#252A34', color: '#8892a4', border: '#4a5268', label: 'Draft' },
+  draft:      { bg: '#26262e', color: '#8e8e9e', border: '#555562', label: 'Draft' },
 }
 
 export default function AdminPostsPage() {
@@ -53,7 +53,7 @@ export default function AdminPostsPage() {
     if (items.length === 0) return null
     return (
       <div className="mb-8">
-        <h2 className="text-xs font-semibold uppercase mb-3" style={{ color: '#8892a4' }}>{title}</h2>
+        <h2 className="text-xs font-semibold uppercase mb-3" style={{ color: '#8e8e9e' }}>{title}</h2>
         <div className="flex flex-col gap-3">
           {items.map(post => {
             const s = STATUS_STYLE[postStatus(post)]
@@ -61,7 +61,7 @@ export default function AdminPostsPage() {
               <div
                 key={post.slug}
                 className="p-4 rounded-xl flex items-center justify-between gap-4"
-                style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}
+                style={{ backgroundColor: '#35353f', border: '1px solid #42424e' }}
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -72,14 +72,14 @@ export default function AdminPostsPage() {
                       {s.label}
                     </span>
                     {post.published_at && (
-                      <span className="text-xs" style={{ color: '#4a5268' }}>
+                      <span className="text-xs" style={{ color: '#555562' }}>
                         {new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                       </span>
                     )}
                   </div>
-                  <p className="font-semibold truncate" style={{ color: '#EAEAEA' }}>{post.title}</p>
+                  <p className="font-semibold truncate" style={{ color: '#EDF2F6' }}>{post.title}</p>
                   {post.excerpt && (
-                    <p className="text-xs mt-0.5 truncate" style={{ color: '#8892a4' }}>{post.excerpt}</p>
+                    <p className="text-xs mt-0.5 truncate" style={{ color: '#8e8e9e' }}>{post.excerpt}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -87,7 +87,7 @@ export default function AdminPostsPage() {
                     <Link
                       to={`/blog/${post.slug}`}
                       className="text-xs px-3 py-1.5 rounded"
-                      style={{ backgroundColor: '#363d52', color: '#8892a4', border: '1px solid #4a5268' }}
+                      style={{ backgroundColor: '#42424e', color: '#8e8e9e', border: '1px solid #555562' }}
                     >
                       View
                     </Link>
@@ -95,7 +95,7 @@ export default function AdminPostsPage() {
                   <Link
                     to={`/admin/posts/${post.slug}/edit`}
                     className="text-xs px-3 py-1.5 rounded"
-                    style={{ backgroundColor: '#363d52', color: '#08D9D6', border: '1px solid #4a5268' }}
+                    style={{ backgroundColor: '#42424e', color: '#6A7EFC', border: '1px solid #555562' }}
                   >
                     Edit
                   </Link>
@@ -103,7 +103,7 @@ export default function AdminPostsPage() {
                     onClick={() => setConfirm(post)}
                     disabled={deleting === post.slug}
                     className="text-xs px-3 py-1.5 rounded disabled:opacity-50"
-                    style={{ backgroundColor: '#363d52', color: '#FF2E63', border: '1px solid #4a5268' }}
+                    style={{ backgroundColor: '#42424e', color: '#FF5656', border: '1px solid #555562' }}
                   >
                     {deleting === post.slug ? '…' : 'Delete'}
                   </button>
@@ -120,17 +120,17 @@ export default function AdminPostsPage() {
     <div className="max-w-4xl mx-auto">
       {confirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}>
-          <div className="rounded-xl p-6 w-full max-w-sm mx-4" style={{ backgroundColor: '#2d3243', border: '1px solid #363d52' }}>
-            <p className="text-sm mb-6" style={{ color: '#EAEAEA' }}>
+          <div className="rounded-xl p-6 w-full max-w-sm mx-4" style={{ backgroundColor: '#35353f', border: '1px solid #42424e' }}>
+            <p className="text-sm mb-6" style={{ color: '#EDF2F6' }}>
               Delete <strong>"{confirm.title}"</strong>? This cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
               <button onClick={() => setConfirm(null)} className="px-4 py-2 rounded text-sm"
-                style={{ backgroundColor: '#363d52', color: '#EAEAEA' }}>
+                style={{ backgroundColor: '#42424e', color: '#EDF2F6' }}>
                 Cancel
               </button>
               <button onClick={() => handleDelete(confirm)} className="px-4 py-2 rounded text-sm font-semibold"
-                style={{ backgroundColor: '#FF2E63', color: '#fff' }}>
+                style={{ backgroundColor: '#FF5656', color: '#fff' }}>
                 Delete
               </button>
             </div>
@@ -139,22 +139,22 @@ export default function AdminPostsPage() {
       )}
 
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold" style={{ color: '#EAEAEA' }}>Posts</h1>
+        <h1 className="text-2xl font-bold" style={{ color: '#EDF2F6' }}>Posts</h1>
         <Link
           to="/admin/posts/new"
           className="px-4 py-2 rounded text-sm font-semibold"
-          style={{ backgroundColor: '#08D9D6', color: '#252A34' }}
+          style={{ backgroundColor: '#FF5656', color: '#26262e' }}
         >
           + New Post
         </Link>
       </div>
 
-      {loading && <p style={{ color: '#8892a4' }}>Loading…</p>}
+      {loading && <p style={{ color: '#8e8e9e' }}>Loading…</p>}
 
       {!loading && posts.length === 0 && (
-        <div className="text-center py-20" style={{ color: '#8892a4' }}>
+        <div className="text-center py-20" style={{ color: '#8e8e9e' }}>
           <p className="text-lg mb-2">No posts yet.</p>
-          <p>Hit <strong style={{ color: '#EAEAEA' }}>+ New Post</strong> to write your first one.</p>
+          <p>Hit <strong style={{ color: '#EDF2F6' }}>+ New Post</strong> to write your first one.</p>
         </div>
       )}
 

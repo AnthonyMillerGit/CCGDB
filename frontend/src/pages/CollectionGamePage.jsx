@@ -3,7 +3,7 @@ import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
 
-const CONDITION_COLORS = { NM: '#1eff00', LP: '#08D9D6', MP: '#f4c542', HP: '#ff9a3c', DM: '#FF2E63' }
+const CONDITION_COLORS = { NM: '#1eff00', LP: '#6A7EFC', MP: '#f4c542', HP: '#ff9a3c', DM: '#FF5656' }
 const CONDITION_LABELS = { NM: 'Near Mint', LP: 'Light Play', MP: 'Moderate Play', HP: 'Heavy Play', DM: 'Damaged' }
 
 function QuantityControl({ quantity, onIncrease, onDecrease }) {
@@ -12,13 +12,13 @@ function QuantityControl({ quantity, onIncrease, onDecrease }) {
       <button
         onClick={e => { e.preventDefault(); onDecrease() }}
         className="w-5 h-5 rounded text-xs font-bold flex items-center justify-center"
-        style={{ backgroundColor: '#2d3243', color: '#e05c5c', border: '1px solid #363d52' }}
+        style={{ backgroundColor: '#35353f', color: '#e05c5c', border: '1px solid #42424e' }}
       >−</button>
-      <span className="text-xs font-medium w-5 text-center" style={{ color: '#EAEAEA' }}>{quantity}</span>
+      <span className="text-xs font-medium w-5 text-center" style={{ color: '#EDF2F6' }}>{quantity}</span>
       <button
         onClick={e => { e.preventDefault(); onIncrease() }}
         className="w-5 h-5 rounded text-xs font-bold flex items-center justify-center"
-        style={{ backgroundColor: '#2d3243', color: '#08D9D6', border: '1px solid #363d52' }}
+        style={{ backgroundColor: '#35353f', color: '#6A7EFC', border: '1px solid #42424e' }}
       >+</button>
     </div>
   )
@@ -179,7 +179,7 @@ export default function CollectionGamePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p style={{ color: '#8892a4' }}>Loading collection…</p>
+        <p style={{ color: '#8e8e9e' }}>Loading collection…</p>
       </div>
     )
   }
@@ -187,8 +187,8 @@ export default function CollectionGamePage() {
   if (!gameData) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20">
-        <p style={{ color: '#8892a4' }}>No cards found for this game.</p>
-        <Link to="/profile" style={{ color: '#08D9D6' }}>← Back to collection</Link>
+        <p style={{ color: '#8e8e9e' }}>No cards found for this game.</p>
+        <Link to="/profile" style={{ color: '#6A7EFC' }}>← Back to collection</Link>
       </div>
     )
   }
@@ -196,21 +196,21 @@ export default function CollectionGamePage() {
   return (
     <div className="px-4 py-8 mx-auto" style={{ maxWidth: '1400px' }}>
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm mb-6" style={{ color: '#8892a4' }}>
-        <Link to="/profile" style={{ color: '#08D9D6' }}>My Collection</Link>
+      <nav className="flex items-center gap-2 text-sm mb-6" style={{ color: '#8e8e9e' }}>
+        <Link to="/profile" style={{ color: '#6A7EFC' }}>My Collection</Link>
         <span>›</span>
-        <span style={{ color: '#EAEAEA' }}>{gameData.game_name}</span>
+        <span style={{ color: '#EDF2F6' }}>{gameData.game_name}</span>
       </nav>
 
       {/* Header */}
       <div className="flex items-start justify-between mb-4 gap-4">
         <div>
-          <h1 className="text-2xl font-bold mb-1" style={{ color: '#EAEAEA' }}>{gameData.game_name}</h1>
-          <p className="text-sm" style={{ color: '#8892a4' }}>
-            <strong style={{ color: '#EAEAEA' }}>{isFiltered ? filteredCards.length : totalUnique}</strong>
+          <h1 className="text-2xl font-bold mb-1" style={{ color: '#EDF2F6' }}>{gameData.game_name}</h1>
+          <p className="text-sm" style={{ color: '#8e8e9e' }}>
+            <strong style={{ color: '#EDF2F6' }}>{isFiltered ? filteredCards.length : totalUnique}</strong>
             {isFiltered && <span> / {totalUnique}</span>} unique cards
             {' · '}
-            <strong style={{ color: '#EAEAEA' }}>{isFiltered ? filteredCopies : totalCopies}</strong>
+            <strong style={{ color: '#EDF2F6' }}>{isFiltered ? filteredCopies : totalCopies}</strong>
             {isFiltered && <span> / {totalCopies}</span>} copies
           </p>
         </div>
@@ -220,25 +220,25 @@ export default function CollectionGamePage() {
               onClick={() => setGroupBySet(g => !g)}
               className="text-xs px-3 py-1.5 rounded"
               style={{
-                backgroundColor: groupBySet ? '#08D9D6' : '#2d3243',
-                color: groupBySet ? '#13172b' : '#8892a4',
-                border: '1px solid #363d52',
+                backgroundColor: groupBySet ? '#6A7EFC' : '#35353f',
+                color: groupBySet ? '#1f1f25' : '#8e8e9e',
+                border: '1px solid #42424e',
               }}
             >
               Group by set
             </button>
           )}
-          <div className="flex rounded overflow-hidden" style={{ border: '1px solid #363d52' }}>
+          <div className="flex rounded overflow-hidden" style={{ border: '1px solid #42424e' }}>
             <button
               onClick={() => setViewMode('grid')}
               className="px-2.5 py-1.5 text-sm"
-              style={{ backgroundColor: viewMode === 'grid' ? '#08D9D6' : '#2d3243', color: viewMode === 'grid' ? '#13172b' : '#8892a4' }}
+              style={{ backgroundColor: viewMode === 'grid' ? '#6A7EFC' : '#35353f', color: viewMode === 'grid' ? '#1f1f25' : '#8e8e9e' }}
               title="Grid view"
             >⊞</button>
             <button
               onClick={() => setViewMode('list')}
               className="px-2.5 py-1.5 text-sm"
-              style={{ backgroundColor: viewMode === 'list' ? '#08D9D6' : '#2d3243', color: viewMode === 'list' ? '#13172b' : '#8892a4' }}
+              style={{ backgroundColor: viewMode === 'list' ? '#6A7EFC' : '#35353f', color: viewMode === 'list' ? '#1f1f25' : '#8e8e9e' }}
               title="List view"
             >≡</button>
           </div>
@@ -253,13 +253,13 @@ export default function CollectionGamePage() {
           value={search}
           onChange={e => { setSearch(e.target.value); resetPage() }}
           className="flex-1 min-w-[160px] text-sm px-3 py-1.5 rounded"
-          style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA', outline: 'none' }}
+          style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6', outline: 'none' }}
         />
         <select
           value={setFilter}
           onChange={e => { setSetFilter(e.target.value); resetPage() }}
           className="text-sm px-3 py-1.5 rounded"
-          style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: setFilter ? '#EAEAEA' : '#8892a4' }}
+          style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: setFilter ? '#EDF2F6' : '#8e8e9e' }}
         >
           <option value="">All Sets</option>
           {allSets.map(s => <option key={s} value={s}>{s}</option>)}
@@ -268,7 +268,7 @@ export default function CollectionGamePage() {
           value={sort}
           onChange={e => { setSort(e.target.value); resetPage() }}
           className="text-sm px-3 py-1.5 rounded"
-          style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }}
+          style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6' }}
         >
           <option value="name_asc">Name A→Z</option>
           <option value="name_desc">Name Z→A</option>
@@ -280,7 +280,7 @@ export default function CollectionGamePage() {
           value={pageSize}
           onChange={e => { setPageSize(Number(e.target.value)); resetPage() }}
           className="text-sm px-3 py-1.5 rounded"
-          style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#EAEAEA' }}
+          style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6' }}
         >
           <option value={25}>25 / page</option>
           <option value={50}>50 / page</option>
@@ -290,7 +290,7 @@ export default function CollectionGamePage() {
           <button
             onClick={() => { setSearch(''); setSetFilter(''); resetPage() }}
             className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: '#8892a4' }}
+            style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#8e8e9e' }}
           >
             Clear
           </button>
@@ -299,7 +299,7 @@ export default function CollectionGamePage() {
 
       {/* No results */}
       {isFiltered && filteredCards.length === 0 && (
-        <p className="text-center py-12" style={{ color: '#8892a4' }}>No cards match your filters.</p>
+        <p className="text-center py-12" style={{ color: '#8e8e9e' }}>No cards match your filters.</p>
       )}
 
       {/* Cards */}
@@ -311,22 +311,22 @@ export default function CollectionGamePage() {
             <Link to={`/cards/${card.card_id}`} className="block relative group">
               <div
                 className="rounded-lg overflow-hidden transition-all duration-150 group-hover:ring-1"
-                style={{ backgroundColor: '#2d3243', ringColor: '#08D9D6' }}
+                style={{ backgroundColor: '#35353f', ringColor: '#6A7EFC' }}
               >
                 {card.image_url ? (
                   <img src={card.image_url} alt={card.card_name} className="w-full" />
                 ) : (
-                  <div className="aspect-[2.5/3.5] flex items-center justify-center p-2" style={{ backgroundColor: '#363d52' }}>
-                    <span className="text-xs text-center leading-tight" style={{ color: '#8892a4' }}>{card.card_name}</span>
+                  <div className="aspect-[2.5/3.5] flex items-center justify-center p-2" style={{ backgroundColor: '#42424e' }}>
+                    <span className="text-xs text-center leading-tight" style={{ color: '#8e8e9e' }}>{card.card_name}</span>
                   </div>
                 )}
               </div>
             </Link>
             <div className="flex items-center gap-1 mt-1">
-              <p className="text-xs font-medium truncate" style={{ color: '#EAEAEA' }} title={card.card_name}>{card.card_name}</p>
+              <p className="text-xs font-medium truncate" style={{ color: '#EDF2F6' }} title={card.card_name}>{card.card_name}</p>
               {card.is_foil && <span className="text-xs shrink-0" style={{ color: '#facc15' }} title="Foil">✦</span>}
             </div>
-            <p className="text-xs truncate mb-1" style={{ color: '#8892a4' }} title={card.set_name}>{card.set_name}</p>
+            <p className="text-xs truncate mb-1" style={{ color: '#8e8e9e' }} title={card.set_name}>{card.set_name}</p>
             <div className="flex items-center gap-2 mt-1">
               <QuantityControl quantity={card.quantity} onIncrease={() => handleIncrease(card)} onDecrease={() => handleDecrease(card)} />
               <select
@@ -334,7 +334,7 @@ export default function CollectionGamePage() {
                 onChange={e => handleConditionChange(card, e.target.value)}
                 title={CONDITION_LABELS[card.condition || 'NM']}
                 className="text-xs px-1 py-0.5 rounded font-medium"
-                style={{ backgroundColor: '#1e2330', border: `1px solid ${conditionColor(card)}55`, color: conditionColor(card), outline: 'none' }}
+                style={{ backgroundColor: '#1f1f25', border: `1px solid ${conditionColor(card)}55`, color: conditionColor(card), outline: 'none' }}
               >
                 {Object.keys(CONDITION_LABELS).map(val => <option key={val} value={val}>{val}</option>)}
               </select>
@@ -343,29 +343,29 @@ export default function CollectionGamePage() {
         )
 
         const listCard = card => (
-          <div key={card.id} className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ backgroundColor: '#2d3243' }}>
+          <div key={card.id} className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ backgroundColor: '#35353f' }}>
             <Link to={`/cards/${card.card_id}`} className="shrink-0">
               {card.image_url ? (
                 <img src={card.image_url} alt={card.card_name} className="rounded object-cover" style={{ width: '40px', height: '56px' }} />
               ) : (
-                <div className="rounded flex items-center justify-center" style={{ width: '40px', height: '56px', backgroundColor: '#363d52' }}>
-                  <span className="text-xs" style={{ color: '#8892a4' }}>?</span>
+                <div className="rounded flex items-center justify-center" style={{ width: '40px', height: '56px', backgroundColor: '#42424e' }}>
+                  <span className="text-xs" style={{ color: '#8e8e9e' }}>?</span>
                 </div>
               )}
             </Link>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
-                <p className="text-sm font-medium truncate" style={{ color: '#EAEAEA' }}>{card.card_name}</p>
+                <p className="text-sm font-medium truncate" style={{ color: '#EDF2F6' }}>{card.card_name}</p>
                 {card.is_foil && <span className="text-xs shrink-0" style={{ color: '#facc15' }}>✦</span>}
               </div>
-              <p className="text-xs truncate" style={{ color: '#8892a4' }}>{card.set_name}</p>
+              <p className="text-xs truncate" style={{ color: '#8e8e9e' }}>{card.set_name}</p>
             </div>
             <select
               value={card.condition || 'NM'}
               onChange={e => handleConditionChange(card, e.target.value)}
               title={CONDITION_LABELS[card.condition || 'NM']}
               className="text-xs px-1.5 py-1 rounded font-medium shrink-0"
-              style={{ width: '130px', backgroundColor: '#1e2330', border: `1px solid ${conditionColor(card)}55`, color: conditionColor(card), outline: 'none' }}
+              style={{ width: '130px', backgroundColor: '#1f1f25', border: `1px solid ${conditionColor(card)}55`, color: conditionColor(card), outline: 'none' }}
             >
               {Object.entries(CONDITION_LABELS).map(([val, label]) => (
                 <option key={val} value={val}>{val} — {label}</option>
@@ -377,9 +377,9 @@ export default function CollectionGamePage() {
 
         const setHeader = (setName, count) => (
           <div className="flex items-center gap-3 px-4 py-2 rounded-lg mb-3 mt-1"
-            style={{ backgroundColor: '#252a3b', border: '1px solid #363d52' }}>
-            <span className="text-sm font-semibold" style={{ color: '#08D9D6' }}>{setName}</span>
-            <span className="text-xs" style={{ color: '#8892a4' }}>{count} {count === 1 ? 'card' : 'cards'}</span>
+            style={{ backgroundColor: '#252a3b', border: '1px solid #42424e' }}>
+            <span className="text-sm font-semibold" style={{ color: '#6A7EFC' }}>{setName}</span>
+            <span className="text-xs" style={{ color: '#8e8e9e' }}>{count} {count === 1 ? 'card' : 'cards'}</span>
           </div>
         )
 
@@ -411,13 +411,13 @@ export default function CollectionGamePage() {
       {undoCard && (
         <div
           className="fixed bottom-6 left-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl"
-          style={{ transform: 'translateX(-50%)', backgroundColor: '#2d3243', border: '1px solid #4a5268', color: '#EAEAEA', whiteSpace: 'nowrap' }}
+          style={{ transform: 'translateX(-50%)', backgroundColor: '#35353f', border: '1px solid #555562', color: '#EDF2F6', whiteSpace: 'nowrap' }}
         >
           <span className="text-sm">Removed <strong>{undoCard.card_name}</strong></span>
           <button
             onClick={handleUndo}
             className="text-sm font-semibold px-2 py-0.5 rounded"
-            style={{ color: '#08D9D6', backgroundColor: '#1e2330', border: '1px solid #363d52' }}
+            style={{ color: '#6A7EFC', backgroundColor: '#1f1f25', border: '1px solid #42424e' }}
           >
             Undo
           </button>
@@ -431,7 +431,7 @@ export default function CollectionGamePage() {
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={safePage === 1}
             className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: safePage === 1 ? '#4a5268' : '#EAEAEA', cursor: safePage === 1 ? 'not-allowed' : 'pointer' }}
+            style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: safePage === 1 ? '#555562' : '#EDF2F6', cursor: safePage === 1 ? 'not-allowed' : 'pointer' }}
           >
             ‹ Prev
           </button>
@@ -446,16 +446,16 @@ export default function CollectionGamePage() {
             }, [])
             .map((p, i) =>
               p === '…' ? (
-                <span key={`ellipsis-${i}`} className="text-sm px-1" style={{ color: '#4a5268' }}>…</span>
+                <span key={`ellipsis-${i}`} className="text-sm px-1" style={{ color: '#555562' }}>…</span>
               ) : (
                 <button
                   key={p}
                   onClick={() => setPage(p)}
                   className="text-sm w-8 h-8 rounded"
                   style={{
-                    backgroundColor: p === safePage ? '#08D9D6' : '#2d3243',
-                    border: '1px solid #363d52',
-                    color: p === safePage ? '#13172b' : '#EAEAEA',
+                    backgroundColor: p === safePage ? '#6A7EFC' : '#35353f',
+                    border: '1px solid #42424e',
+                    color: p === safePage ? '#1f1f25' : '#EDF2F6',
                     fontWeight: p === safePage ? '600' : '400',
                   }}
                 >
@@ -469,12 +469,12 @@ export default function CollectionGamePage() {
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={safePage === totalPages}
             className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: '#2d3243', border: '1px solid #363d52', color: safePage === totalPages ? '#4a5268' : '#EAEAEA', cursor: safePage === totalPages ? 'not-allowed' : 'pointer' }}
+            style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: safePage === totalPages ? '#555562' : '#EDF2F6', cursor: safePage === totalPages ? 'not-allowed' : 'pointer' }}
           >
             Next ›
           </button>
 
-          <span className="text-xs ml-2" style={{ color: '#8892a4' }}>
+          <span className="text-xs ml-2" style={{ color: '#8e8e9e' }}>
             {pageStart + 1}–{Math.min(pageStart + pageSize, filteredCards.length)} of {filteredCards.length}
           </span>
         </div>
