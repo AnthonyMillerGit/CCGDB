@@ -27,6 +27,16 @@ type SetSummary struct {
 	SetType     *string `json:"set_type"`
 }
 
+type RecentSet struct {
+	SetID         int     `json:"set_id"`
+	SetName       string  `json:"set_name"`
+	ReleaseDate   *string `json:"release_date"`
+	TotalCards    *int    `json:"total_cards"`
+	GameName      string  `json:"game_name"`
+	GameSlug      string  `json:"game_slug"`
+	CardBackImage *string `json:"card_back_image"`
+}
+
 type SetDetail struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name"`
@@ -155,7 +165,7 @@ type CollectionCard struct {
 	ID              int       `json:"id"`
 	PrintingID      int       `json:"printing_id"`
 	Quantity        int       `json:"quantity"`
-	IsFoil          bool      `json:"is_foil"`
+	Finish          string    `json:"finish"`
 	Condition       string    `json:"condition"`
 	AddedAt         time.Time `json:"added_at"`
 	ImageURL        *string   `json:"image_url"`
@@ -178,21 +188,37 @@ type CollectionItem struct {
 	ID         int       `json:"id"`
 	PrintingID int       `json:"printing_id"`
 	Quantity   int       `json:"quantity"`
-	IsFoil     bool      `json:"is_foil"`
+	Finish     string    `json:"finish"`
 	Condition  string    `json:"condition"`
 	AddedAt    time.Time `json:"added_at"`
+}
+
+type CollectionCardItem struct {
+	ID              int       `json:"id"`
+	PrintingID      int       `json:"printing_id"`
+	Quantity        int       `json:"quantity"`
+	Finish          string    `json:"finish"`
+	Condition       string    `json:"condition"`
+	AddedAt         time.Time `json:"added_at"`
+	SetID           int       `json:"set_id"`
+	SetName         string    `json:"set_name"`
+	SetCode         string    `json:"set_code"`
+	ReleaseDate     *string   `json:"release_date"`
+	CollectorNumber *string   `json:"collector_number"`
+	Rarity          *string   `json:"rarity"`
+	ImageURL        *string   `json:"image_url"`
 }
 
 type CollectionAddRequest struct {
 	PrintingID int    `json:"printing_id"`
 	Quantity   int    `json:"quantity"`
-	IsFoil     bool   `json:"is_foil"`
+	Finish     string `json:"finish"`
 	Condition  string `json:"condition"`
 }
 
 type CollectionUpdateRequest struct {
 	Quantity  int    `json:"quantity"`
-	IsFoil    bool   `json:"is_foil"`
+	Finish    string `json:"finish"`
 	Condition string `json:"condition"`
 }
 

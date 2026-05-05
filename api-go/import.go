@@ -35,7 +35,41 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 		GameName        string `json:"game_name"`
 		SetName         string `json:"set_name"`
 		CollectorNumber string `json:"collector_number"`
+		Condition       string `json:"condition"`
+		Finish          string `json:"finish"`
 		Quantity        int    `json:"quantity"`
+	}
+
+	// normCondition maps various condition strings to our stored codes (NM/LP/MP/HP/DM).
+	normCondition := func(s string) string {
+		switch strings.ToLower(strings.TrimSpace(s)) {
+		case "nm", "near mint", "mint", "m":
+			return "NM"
+		case "lp", "lightly played", "slightly played", "sp", "excellent", "ex":
+			return "LP"
+		case "mp", "moderately played", "good", "g", "played":
+			return "MP"
+		case "hp", "heavily played", "poor", "p":
+			return "HP"
+		case "dm", "damaged", "d":
+			return "DM"
+		default:
+			return "NM"
+		}
+	}
+
+	// parseFinish maps old foil booleans and new finish strings to 'normal'/'foil'/'other'.
+	parseFinish := func(s string) string {
+		switch strings.ToLower(strings.TrimSpace(s)) {
+		case "foil", "true", "yes", "1", "etched foil", "etched":
+			return "foil"
+		case "other":
+			return "other"
+		case "normal", "false", "no", "0", "":
+			return "normal"
+		default:
+			return "normal"
+		}
 	}
 
 	var rows []importRow
@@ -49,6 +83,10 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 		if err := json.Unmarshal(data, &rows); err != nil {
 			jsonError(w, "Invalid JSON format", http.StatusBadRequest)
 			return
+		}
+		// Normalise condition on JSON rows too
+		for i := range rows {
+			rows[i].Condition = normCondition(rows[i].Condition)
 		}
 	} else {
 		// Default: treat as CSV
@@ -91,6 +129,10 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 			if q, err := strconv.Atoi(qtyStr); err == nil && q > 0 {
 				qty = q
 			}
+			// Finish: our format uses "finish"; legacy/Moxfield exports use "foil"/"is_foil"
+			foilRaw := colFirst(record, "finish", "foil", "is_foil", "is foil", "foil?")
+			// Condition: Moxfield = "condition", full words like "Near Mint"
+			condRaw := colFirst(record, "condition", "cond")
 			rows = append(rows, importRow{
 				// Card name: ours = "card name", Moxfield = "name"
 				CardName: colFirst(record, "card name", "name", "card"),
@@ -100,7 +142,9 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 				SetName: colFirst(record, "set", "edition", "set name", "expansion"),
 				// Collector number: ours = "collector #", Moxfield = "collector number"
 				CollectorNumber: colFirst(record, "collector #", "collector number", "number", "#"),
-				Quantity: qty,
+				Condition:       normCondition(condRaw),
+				Finish:          parseFinish(foilRaw),
+				Quantity:        qty,
 			})
 		}
 	}
@@ -148,13 +192,18 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		// Upsert into user_collections (is_foil defaults to false on import)
+		condition := row.Condition
+		if condition == "" {
+			condition = "NM"
+		}
 		_, err = a.db.Exec(r.Context(), `
-			INSERT INTO user_collections (user_id, printing_id, quantity, is_foil)
-			VALUES ($1, $2, $3, false)
-			ON CONFLICT (user_id, printing_id, is_foil)
-			DO UPDATE SET quantity = user_collections.quantity + EXCLUDED.quantity
-		`, user.ID, printingID, row.Quantity)
+			INSERT INTO user_collections (user_id, printing_id, quantity, finish, condition)
+			VALUES ($1, $2, $3, $4, $5)
+			ON CONFLICT (user_id, printing_id, finish)
+			DO UPDATE SET
+			    quantity  = user_collections.quantity + EXCLUDED.quantity,
+			    condition = EXCLUDED.condition
+		`, user.ID, printingID, row.Quantity, row.Finish, condition)
 		if err != nil {
 			skipped++
 			continue

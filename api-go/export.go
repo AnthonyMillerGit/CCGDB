@@ -24,7 +24,7 @@ func (a *App) exportCollection(w http.ResponseWriter, r *http.Request) {
 		    COALESCE(p.collector_number, '') AS collector_number,
 		    COALESCE(p.rarity, '') AS rarity,
 		    uc.quantity,
-		    uc.is_foil,
+		    uc.finish,
 		    uc.condition
 		FROM user_collections uc
 		JOIN printings p ON p.id = uc.printing_id
@@ -47,7 +47,7 @@ func (a *App) exportCollection(w http.ResponseWriter, r *http.Request) {
 		CollectorNumber string `json:"collector_number"`
 		Rarity          string `json:"rarity"`
 		Quantity        int    `json:"quantity"`
-		IsFoil          bool   `json:"is_foil"`
+		Finish          string `json:"finish"`
 		Condition       string `json:"condition"`
 	}
 
@@ -55,7 +55,7 @@ func (a *App) exportCollection(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var rec collectionRow
 		if err := rows.Scan(&rec.CardName, &rec.GameName, &rec.SetName,
-			&rec.CollectorNumber, &rec.Rarity, &rec.Quantity, &rec.IsFoil, &rec.Condition); err != nil {
+			&rec.CollectorNumber, &rec.Rarity, &rec.Quantity, &rec.Finish, &rec.Condition); err != nil {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}
@@ -79,13 +79,13 @@ func (a *App) exportCollection(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Disposition", `attachment; filename="collection.csv"`)
 		w.Header().Set("Content-Type", "text/csv")
 		cw := csv.NewWriter(w)
-		cw.Write([]string{"Card Name", "Game", "Set", "Collector #", "Rarity", "Quantity", "Foil", "Condition"})
+		cw.Write([]string{"Card Name", "Game", "Set", "Collector #", "Rarity", "Quantity", "Finish", "Condition"})
 		for _, rec := range records {
 			cw.Write([]string{
 				rec.CardName, rec.GameName, rec.SetName,
 				rec.CollectorNumber, rec.Rarity,
 				strconv.Itoa(rec.Quantity),
-				strconv.FormatBool(rec.IsFoil),
+				rec.Finish,
 				rec.Condition,
 			})
 		}
