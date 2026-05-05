@@ -12,6 +12,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import ProfilePage from './pages/ProfilePage'
 import CollectionGamePage from './pages/CollectionGamePage'
+import CollectionCardPage from './pages/CollectionCardPage'
 import LandingPage from './pages/LandingPage'
 import BlogPage from './pages/BlogPage'
 import PostPage from './pages/PostPage'
@@ -201,6 +202,7 @@ function App() {
               <Route path="/verify-email" element={<VerifyEmailPage />} />
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
               <Route path="/collection/:gameSlug" element={<ProtectedRoute><CollectionGamePage /></ProtectedRoute>} />
+              <Route path="/collection/:gameSlug/cards/:cardId" element={<ProtectedRoute><CollectionCardPage /></ProtectedRoute>} />
             </Routes>
           </main>
           <Footer />

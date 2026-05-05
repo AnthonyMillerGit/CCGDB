@@ -39,6 +39,38 @@ func (a *App) getGames(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, games, http.StatusOK)
 }
 
+func (a *App) getRecentSets(w http.ResponseWriter, r *http.Request) {
+	limit := parseIntQuery(r, "limit", 10)
+	if limit > 50 {
+		limit = 50
+	}
+	rows, err := a.db.Query(r.Context(), `
+		SELECT s.id, s.name, s.release_date::text, s.total_cards,
+		       g.name, g.slug, g.card_back_image
+		FROM sets s
+		JOIN games g ON g.id = s.game_id
+		WHERE s.release_date IS NOT NULL AND s.release_date <= CURRENT_DATE
+		ORDER BY s.release_date DESC
+		LIMIT $1
+	`, limit)
+	if err != nil {
+		jsonError(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	sets := []RecentSet{}
+	for rows.Next() {
+		var s RecentSet
+		if err := rows.Scan(&s.SetID, &s.SetName, &s.ReleaseDate, &s.TotalCards,
+			&s.GameName, &s.GameSlug, &s.CardBackImage); err != nil {
+			continue
+		}
+		sets = append(sets, s)
+	}
+	jsonResponse(w, sets, http.StatusOK)
+}
+
 func (a *App) getStats(w http.ResponseWriter, r *http.Request) {
 	type Stats struct {
 		Games int `json:"games"`

@@ -14,7 +14,9 @@
 .editor-content pre code { background: none; padding: 0; }
 .editor-content hr { border: none; border-top: 1px solid #42424e; margin: 1.5em 0; }
 .editor-content img { max-width: 100%; border-radius: 8px; margin: 0.75em 0; }
+.editor-content img:first-child { display: block; max-width: 320px; margin: 0.5em auto 2em; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
 .editor-content a  { color: #6A7EFC; text-decoration: underline; }
+.editor-content a[href^="/cards/"] { color: #f472b6; text-decoration-style: dotted; }
 
 /* Tippy popup theme for mention dropdown */
 .tippy-box[data-theme~='ccgvault'] {

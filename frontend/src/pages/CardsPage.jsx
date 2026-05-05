@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
-import { RARITY_COLORS, normalizeRarity } from '../theme'
+import { RARITY_COLORS, normalizeRarity, rarityRank } from '../theme'
 
 const isTouchDevice = window.matchMedia('(hover: none)').matches
 
@@ -17,6 +17,8 @@ export default function CardsPage() {
   const [owned, setOwned] = useState({})
   const [addingSet, setAddingSet] = useState(false)
   const [sort, setSort] = useState('name_asc')
+  const [rarityFilter, setRarityFilter] = useState([])
+  const [rarityOpen, setRarityOpen] = useState(false)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(25)
   const navigate = useNavigate()
@@ -41,21 +43,28 @@ export default function CardsPage() {
       .catch(() => setOwned({}))
   }, [user, setId, authFetch])
 
+  const allRarities = useMemo(() => {
+    const seen = new Set()
+    for (const c of cards) if (c.rarity) seen.add(c.rarity)
+    return [...seen].sort((a, b) => rarityRank(a) - rarityRank(b))
+  }, [cards])
+
   const sortedCards = useMemo(() => {
-    return [...cards].sort((a, b) => {
+    let filtered = rarityFilter.length > 0 ? cards.filter(c => rarityFilter.includes(c.rarity)) : cards
+    return [...filtered].sort((a, b) => {
       switch (sort) {
-        case 'name_asc':    return a.name.localeCompare(b.name)
-        case 'name_desc':   return b.name.localeCompare(a.name)
-        case 'rarity_asc':  return (a.rarity || '').localeCompare(b.rarity || '') || a.name.localeCompare(b.name)
-        case 'rarity_desc': return (b.rarity || '').localeCompare(a.rarity || '') || a.name.localeCompare(b.name)
-        default: { // number_asc — collector number order (original API order)
+        case 'name_asc':      return a.name.localeCompare(b.name)
+        case 'name_desc':     return b.name.localeCompare(a.name)
+        case 'rarity_desc':   return rarityRank(a.rarity) - rarityRank(b.rarity) || a.name.localeCompare(b.name)
+        case 'rarity_asc':    return rarityRank(b.rarity) - rarityRank(a.rarity) || a.name.localeCompare(b.name)
+        default: {
           const na = parseInt(a.collector_number) || 0
           const nb = parseInt(b.collector_number) || 0
           return na !== nb ? na - nb : a.name.localeCompare(b.name)
         }
       }
     })
-  }, [cards, sort])
+  }, [cards, sort, rarityFilter])
 
   const showAll = pageSize === 0
   const totalPages = showAll ? 1 : Math.max(1, Math.ceil(sortedCards.length / pageSize))
@@ -73,32 +82,6 @@ export default function CardsPage() {
     setAddingSet(false)
   }
 
-  async function handleAdd(e, card) {
-    e.stopPropagation()
-    const res = await authFetch(`${API_URL}/api/users/me/collection`, {
-      method: 'POST',
-      body: JSON.stringify({ printing_id: card.printing_id, quantity: 1, is_foil: false }),
-    })
-    if (res.ok) {
-      const result = await res.json()
-      setOwned(prev => ({ ...prev, [card.printing_id]: result.quantity }))
-    }
-  }
-
-  async function handleRemove(e, card) {
-    e.stopPropagation()
-    const res = await authFetch(`${API_URL}/api/users/me/collection/${card.printing_id}?foil=false`, {
-      method: 'DELETE',
-    })
-    if (res.ok) {
-      setOwned(prev => {
-        const next = { ...prev }
-        delete next[card.printing_id]
-        return next
-      })
-    }
-  }
-
   const handleMouseEnter = (e, card) => {
     if (!card.image_url || isTouchDevice) return
     e.currentTarget.style.borderColor = '#6A7EFC'
@@ -106,7 +89,7 @@ export default function CardsPage() {
 
     const rect = e.currentTarget.getBoundingClientRect()
     const tooltipWidth = 360
-    const tooltipHeight = 500
+    const tooltipHeight = 504
 
     setTooltipPos({
       x: rect.left + rect.width / 2 - tooltipWidth / 2,
@@ -177,7 +160,7 @@ export default function CardsPage() {
         </div>
       )}
 
-      {/* Sort bar */}
+      {/* Sort / filter bar */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <select
           value={sort}
@@ -188,9 +171,58 @@ export default function CardsPage() {
           <option value="number_asc">Collector # ↑</option>
           <option value="name_asc">Name A→Z</option>
           <option value="name_desc">Name Z→A</option>
-          <option value="rarity_asc">Rarity A→Z</option>
-          <option value="rarity_desc">Rarity Z→A</option>
+          <option value="rarity_desc">Rarity: High→Low</option>
+          <option value="rarity_asc">Rarity: Low→High</option>
         </select>
+
+        {/* Rarity filter dropdown */}
+        {allRarities.length > 0 && (
+          <div className="relative">
+            <button
+              onClick={() => setRarityOpen(o => !o)}
+              className="text-sm px-3 py-1.5 rounded flex items-center gap-1.5"
+              style={{
+                backgroundColor: '#35353f',
+                border: `1px solid ${rarityFilter.length > 0 ? '#6A7EFC' : '#42424e'}`,
+                color: rarityFilter.length > 0 ? '#6A7EFC' : '#EDF2F6',
+              }}
+            >
+              Show{rarityFilter.length > 0 ? ` (${rarityFilter.length})` : ''} ▾
+            </button>
+            {rarityOpen && (
+              <div className="absolute z-20 mt-1 rounded-lg shadow-xl min-w-[160px]"
+                style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e' }}>
+                <div className="p-1">
+                  {allRarities.map(r => (
+                    <label key={r} className="flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer hover:opacity-80"
+                      style={{ backgroundColor: rarityFilter.includes(r) ? '#35353f' : 'transparent' }}>
+                      <input
+                        type="checkbox"
+                        checked={rarityFilter.includes(r)}
+                        onChange={() => {
+                          setRarityFilter(prev =>
+                            prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]
+                          )
+                          setPage(1)
+                        }}
+                        className="accent-[#6A7EFC]"
+                      />
+                      <span className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(r)] || '#8e8e9e' }}>{r}</span>
+                    </label>
+                  ))}
+                  {rarityFilter.length > 0 && (
+                    <button
+                      onClick={() => { setRarityFilter([]); setPage(1) }}
+                      className="w-full text-xs px-3 py-1.5 mt-1 rounded text-left"
+                      style={{ color: '#8e8e9e', borderTop: '1px solid #42424e' }}
+                    >Clear filter</button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <select
           value={pageSize}
           onChange={e => { setPageSize(Number(e.target.value)); setPage(1) }}
@@ -240,33 +272,9 @@ export default function CardsPage() {
                 </div>
               )}
 
-              <div className="p-2">
-                <p className="text-xs font-medium truncate" style={{ color: '#EDF2F6' }}>{card.name}</p>
-                <div className="flex items-center justify-between mt-0.5">
-                  <p className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(card.rarity)] || '#8e8e9e' }}>{card.rarity}</p>
-                  {user && (
-                    <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
-                      {isOwned && (
-                        <button
-                          onClick={e => handleRemove(e, card)}
-                          className="text-xs px-1 rounded leading-none"
-                          style={{ color: '#FF5656', backgroundColor: '#35353f' }}
-                          title="Remove one"
-                        >
-                          −
-                        </button>
-                      )}
-                      <button
-                        onClick={e => handleAdd(e, card)}
-                        className="text-xs px-1 rounded leading-none"
-                        style={{ color: '#6A7EFC', backgroundColor: '#35353f' }}
-                        title="Add to collection"
-                      >
-                        +
-                      </button>
-                    </div>
-                  )}
-                </div>
+              <div className="p-2 flex items-end justify-between gap-1">
+                <p className="text-xs font-medium leading-tight" style={{ color: '#EDF2F6' }}>{card.name}</p>
+                <p className="text-xs capitalize shrink-0" style={{ color: RARITY_COLORS[normalizeRarity(card.rarity)] || '#8e8e9e' }}>{card.rarity}</p>
               </div>
             </div>
           )
@@ -324,26 +332,15 @@ export default function CardsPage() {
       {/* Hover magnification tooltip */}
       {hoveredCard && hoveredCard.image_url && (
         <div
-          className="fixed pointer-events-none z-50 rounded-xl overflow-hidden shadow-2xl"
+          className="fixed pointer-events-none z-50 rounded-xl overflow-hidden"
           style={{
             left: Math.max(8, Math.min(tooltipPos.x, window.innerWidth - 368)),
             top: Math.max(8, Math.min(tooltipPos.y, window.innerHeight - 508)),
             width: 360,
-            border: '2px solid #6A7EFC',
-            backgroundColor: '#35353f',
-            transition: 'opacity 0.15s ease',
-            boxShadow: '0 0 40px rgba(8, 217, 214, 0.3)',
+            boxShadow: '0 8px 48px rgba(0,0,0,0.7)',
           }}
         >
           <img src={hoveredCard.image_url} alt={hoveredCard.name} className="w-full" />
-          <div className="p-2">
-            <p className="text-sm font-semibold truncate" style={{ color: '#EDF2F6' }}>
-              {hoveredCard.name}
-            </p>
-            {hoveredCard.rarity && (
-              <p className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(hoveredCard.rarity)] || '#8e8e9e' }}>{hoveredCard.rarity}</p>
-            )}
-          </div>
         </div>
       )}
     </div>

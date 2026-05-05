@@ -78,6 +78,7 @@ func (a *App) routes() http.Handler {
 	r.Get("/api/games/{slug}/sets", a.getGameSets)
 
 	// Specific set routes before parameterized card route
+	r.Get("/api/sets/recent", a.getRecentSets)
 	r.Get("/api/sets/{setID}", a.getSet)
 	r.Get("/api/sets/{setID}/cards", a.getSetCards)
 
@@ -132,6 +133,7 @@ func (a *App) routes() http.Handler {
 		r.Get("/api/users/me/collection/set/{setID}", a.getCollectionForSet)
 		r.Post("/api/users/me/collection/set/{setID}", a.addSetToCollection)
 		r.Get("/api/users/me/collection/set/{setID}/missing", a.getMissingCardsForSet)
+		r.Get("/api/users/me/collection/card/{cardID}", a.getCollectionForCard)
 		r.Get("/api/users/me/collection/printing/{printingID}", a.getCollectionItem)
 		r.Patch("/api/users/me/collection/{printingID}", a.updateCollectionQuantity)
 		r.Delete("/api/users/me/collection/{printingID}", a.removeFromCollection)

@@ -68,6 +68,13 @@ export function normalizeRarity(raw) {
   return null
 }
 
+// Rarity sort order — 0 = most rare, higher = more common
+const RARITY_RANK = { ultra: 0, promo: 1, super: 2, rare: 3, uncommon: 4, common: 5, fixed: 6 }
+export function rarityRank(raw) {
+  const tier = normalizeRarity(raw)
+  return tier !== null ? (RARITY_RANK[tier] ?? 7) : 8
+}
+
 // Pokémon type colors
 export const TYPE_COLORS = {
   Fire:       '#FF4422',
