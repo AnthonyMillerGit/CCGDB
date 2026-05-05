@@ -1,9 +1,216 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
+import MTGCardInfo     from '../components/card-templates/MTGCardInfo'
 import PokemonCardInfo from '../components/card-templates/PokemonCardInfo'
+import MECCGCardInfo   from '../components/card-templates/MECCGCardInfo'
+import YuGiOhCardInfo  from '../components/card-templates/YuGiOhCardInfo'
+import GenericCardInfo from '../components/card-templates/GenericCardInfo'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
 import { RARITY_COLORS, normalizeRarity } from '../theme'
+
+const CONDITIONS = ['NM', 'LP', 'MP', 'HP', 'DM']
+const FINISHES   = ['normal', 'foil', 'other']
+
+// ── Collection modal ──────────────────────────────────────────────────────────
+
+function CollectionModal({ printing, cardCollectionItems, onClose, onSave }) {
+  const existingForPrinting = cardCollectionItems.filter(i => i.printing_id === printing.id)
+
+  const [entries, setEntries] = useState(() =>
+    existingForPrinting.map(i => ({ ...i, _orig: i, _deleted: false }))
+  )
+  const [newFinish, setNewFinish]     = useState('normal')
+  const [newQty, setNewQty]           = useState(1)
+  const [newCondition, setNewCondition] = useState('NM')
+  const [saving, setSaving]           = useState(false)
+
+  const usedFinishes = entries.filter(e => !e._deleted).map(e => e.finish)
+  const availableFinishes = FINISHES.filter(f => !usedFinishes.includes(f))
+
+  useEffect(() => {
+    if (!availableFinishes.includes(newFinish)) {
+      setNewFinish(availableFinishes[0] ?? 'other')
+    }
+  }, [entries])
+
+  function setEntryField(finish, field, value) {
+    setEntries(prev => prev.map(e => e.finish === finish ? { ...e, [field]: value } : e))
+  }
+
+  function markDeleted(finish) {
+    setEntries(prev => prev.map(e => e.finish === finish ? { ...e, _deleted: true } : e))
+  }
+
+  async function handleSave() {
+    setSaving(true)
+    const ops = []
+
+    for (const entry of entries) {
+      const orig = entry._orig
+      if (entry._deleted) {
+        ops.push(onSave.remove(printing.id, orig.finish))
+      } else {
+        const qtyChanged  = entry.quantity !== orig.quantity
+        const condChanged = entry.condition !== orig.condition
+        if (qtyChanged || condChanged) {
+          ops.push(onSave.update(printing.id, entry.quantity, entry.finish, entry.condition))
+        }
+      }
+    }
+
+    await Promise.all(ops)
+    setSaving(false)
+    onClose()
+  }
+
+  async function handleAdd() {
+    if (!newFinish || newQty < 1) return
+    setSaving(true)
+    await onSave.add(printing.id, newQty, newFinish, newCondition)
+    setSaving(false)
+    onClose()
+  }
+
+  const activeEntries = entries.filter(e => !e._deleted)
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div
+        className="w-full max-w-sm rounded-2xl p-6 shadow-2xl"
+        style={{ backgroundColor: '#26262e', border: '1px solid #42424e' }}
+      >
+        <div className="flex items-start justify-between mb-5">
+          <div>
+            <h3 className="text-base font-bold" style={{ color: '#EDF2F6' }}>Edit Collection</h3>
+            <p className="text-xs mt-0.5" style={{ color: '#8e8e9e' }}>{printing.set_name}</p>
+          </div>
+          <button onClick={onClose} className="text-lg leading-none hover:opacity-70" style={{ color: '#8e8e9e' }}>×</button>
+        </div>
+
+        {/* Existing entries */}
+        {activeEntries.length > 0 && (
+          <div className="flex flex-col gap-3 mb-5">
+            {activeEntries.map(entry => (
+              <div key={entry.finish} className="flex items-center gap-2">
+                <span
+                  className={`text-xs font-bold w-14 shrink-0${entry.finish === 'foil' ? ' foil-rainbow' : ''}`}
+                  style={entry.finish === 'foil' ? {} : { color: '#8e8e9e' }}
+                >
+                  {entry.finish}
+                </span>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={entry.quantity}
+                  onChange={e => {
+                    const v = parseInt(e.target.value)
+                    if (!isNaN(v) && v >= 1) setEntryField(entry.finish, 'quantity', v)
+                  }}
+                  className="w-16 px-2 py-1 rounded text-sm text-center outline-none"
+                  style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6' }}
+                />
+                <select
+                  value={entry.condition}
+                  onChange={e => setEntryField(entry.finish, 'condition', e.target.value)}
+                  className="flex-1 px-2 py-1 rounded text-sm outline-none"
+                  style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6' }}
+                >
+                  {CONDITIONS.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <button
+                  onClick={() => markDeleted(entry.finish)}
+                  className="shrink-0 text-sm hover:opacity-70"
+                  style={{ color: '#FF5656' }}
+                >×</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Divider + Add form */}
+        {availableFinishes.length > 0 && (
+          <>
+            {activeEntries.length > 0 && (
+              <div className="border-t mb-4" style={{ borderColor: '#42424e' }} />
+            )}
+            <p className="text-xs font-semibold uppercase mb-3" style={{ color: '#8e8e9e' }}>
+              {activeEntries.length === 0 ? 'Add to Collection' : 'Add Another'}
+            </p>
+            <div className="flex items-center gap-2 mb-5">
+              <select
+                value={newFinish}
+                onChange={e => setNewFinish(e.target.value)}
+                className="px-2 py-1 rounded text-sm outline-none"
+                style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6', width: '90px' }}
+              >
+                {availableFinishes.map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={newQty}
+                onChange={e => {
+                  const v = parseInt(e.target.value)
+                  if (!isNaN(v) && v >= 1) setNewQty(v)
+                }}
+                className="w-16 px-2 py-1 rounded text-sm text-center outline-none"
+                style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6' }}
+              />
+              <select
+                value={newCondition}
+                onChange={e => setNewCondition(e.target.value)}
+                className="flex-1 px-2 py-1 rounded text-sm outline-none"
+                style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6' }}
+              >
+                {CONDITIONS.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          </>
+        )}
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2 rounded-lg text-sm font-medium"
+            style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#8e8e9e' }}
+          >
+            Cancel
+          </button>
+          {availableFinishes.length > 0 && (
+            <button
+              onClick={handleAdd}
+              disabled={saving}
+              className="flex-1 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
+              style={{ backgroundColor: '#6A7EFC', color: '#1f1f25' }}
+            >
+              {saving ? '…' : activeEntries.length === 0 ? 'Add' : 'Add Entry'}
+            </button>
+          )}
+          {activeEntries.length > 0 && (
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex-1 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
+              style={{ backgroundColor: '#35353f', border: '1px solid #6A7EFC', color: '#6A7EFC' }}
+            >
+              {saving ? '…' : 'Save'}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Deck button ───────────────────────────────────────────────────────────────
 
 function AddToDeckButton({ card, authFetch }) {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -144,47 +351,7 @@ function AddToDeckButton({ card, authFetch }) {
   )
 }
 
-function ManaCost({ cost }) {
-  if (!cost) return null
-  const symbols = cost.match(/\{[^}]+\}/g) || []
-  return (
-    <span className="flex items-center gap-1 flex-wrap">
-      {symbols.map((symbol, i) => {
-        const code = symbol.replace('{', '').replace('}', '')
-        return (
-          <img
-            key={i}
-            src={`https://svgs.scryfall.io/card-symbols/${code}.svg`}
-            alt={symbol}
-            className="w-7 h-7"
-          />
-        )
-      })}
-    </span>
-  )
-}
-
-function LegalityBadge({ format, status }) {
-  const styles = {
-    legal: { backgroundColor: '#1a3a2a', borderColor: '#2d6a4f', color: '#6A7EFC' },
-    not_legal: { backgroundColor: '#35353f', borderColor: '#42424e', color: '#8e8e9e' },
-    banned: { backgroundColor: '#3a1a1a', borderColor: '#6a2d2d', color: '#FF5656' },
-    restricted: { backgroundColor: '#3a3a1a', borderColor: '#6a6a2d', color: '#f4c542' },
-  }
-  const labels = {
-    legal: 'Legal',
-    not_legal: 'Not Legal',
-    banned: 'Banned',
-    restricted: 'Restricted',
-  }
-  const style = styles[status] ?? styles.not_legal
-  return (
-    <div className="border rounded-lg px-3 py-2" style={style}>
-      <p className="text-xs uppercase tracking-wide opacity-60">{format}</p>
-      <p className="text-sm font-medium">{labels[status] ?? status}</p>
-    </div>
-  )
-}
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function CardDetailPage() {
   const { cardId } = useParams()
@@ -193,11 +360,10 @@ export default function CardDetailPage() {
   const [loading, setLoading] = useState(true)
   const [flipped, setFlipped] = useState(false)
   const [selectedPrinting, setSelectedPrinting] = useState(null)
-  const [collectionItem, setCollectionItem] = useState(null)
-  const [collectionLoading, setCollectionLoading] = useState(false)
-  const [isFoil, setIsFoil] = useState(false)
+  const [cardCollectionItems, setCardCollectionItems] = useState([])
   const [wishlisted, setWishlisted] = useState(false)
   const [wishlistLoading, setWishlistLoading] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
   const navigate = useNavigate()
   const { user, authFetch } = useAuth()
 
@@ -221,13 +387,13 @@ export default function CardDetailPage() {
     load()
   }, [cardId])
 
-  const fetchCollectionItem = useCallback((printingId, foil = false) => {
-    if (!user || !printingId) { setCollectionItem(null); return }
-    authFetch(`${API_URL}/api/users/me/collection/printing/${printingId}?foil=${foil}`)
+  useEffect(() => {
+    if (!user) { setCardCollectionItems([]); return }
+    authFetch(`${API_URL}/api/users/me/collection/card/${cardId}`)
       .then(r => r.json())
-      .then(data => setCollectionItem(data || null))
-      .catch(() => setCollectionItem(null))
-  }, [user, authFetch])
+      .then(data => setCardCollectionItems(Array.isArray(data) ? data : []))
+      .catch(() => setCardCollectionItems([]))
+  }, [cardId, user, authFetch])
 
   const fetchWishlistStatus = useCallback((printingId) => {
     if (!user || !printingId) { setWishlisted(false); return }
@@ -238,34 +404,8 @@ export default function CardDetailPage() {
   }, [user, authFetch])
 
   useEffect(() => {
-    fetchCollectionItem(selectedPrinting?.id, isFoil)
     fetchWishlistStatus(selectedPrinting?.id)
-  }, [selectedPrinting?.id, isFoil, fetchCollectionItem, fetchWishlistStatus])
-
-  const handleAddToCollection = async () => {
-    if (!selectedPrinting) return
-    setCollectionLoading(true)
-    try {
-      await authFetch(`${API_URL}/api/users/me/collection`, {
-        method: 'POST',
-        body: JSON.stringify({ printing_id: selectedPrinting.id, quantity: 1, is_foil: isFoil }),
-      })
-      fetchCollectionItem(selectedPrinting.id, isFoil)
-    } finally {
-      setCollectionLoading(false)
-    }
-  }
-
-  const handleRemoveFromCollection = async () => {
-    if (!selectedPrinting) return
-    setCollectionLoading(true)
-    try {
-      await authFetch(`${API_URL}/api/users/me/collection/${selectedPrinting.id}?foil=${isFoil}`, { method: 'DELETE' })
-      setCollectionItem(null)
-    } finally {
-      setCollectionLoading(false)
-    }
-  }
+  }, [selectedPrinting?.id, fetchWishlistStatus])
 
   const handleToggleWishlist = async () => {
     if (!selectedPrinting) return
@@ -292,6 +432,38 @@ export default function CardDetailPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  // Modal save operations
+  const modalSaveOps = {
+    add: async (printingId, quantity, finish, condition) => {
+      const res = await authFetch(`${API_URL}/api/users/me/collection`, {
+        method: 'POST',
+        body: JSON.stringify({ printing_id: printingId, quantity, finish, condition }),
+      })
+      if (!res.ok) return
+      const result = await res.json()
+      setCardCollectionItems(prev => {
+        const exists = prev.find(i => i.printing_id === printingId && i.finish === finish)
+        if (exists) return prev.map(i => i.printing_id === printingId && i.finish === finish ? { ...i, quantity: result.quantity } : i)
+        return [...prev, { id: result.id, printing_id: printingId, quantity: result.quantity, finish, condition }]
+      })
+    },
+    update: async (printingId, quantity, finish, condition) => {
+      const res = await authFetch(`${API_URL}/api/users/me/collection/${printingId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ quantity, finish, condition }),
+      })
+      if (!res.ok) return
+      const result = await res.json()
+      setCardCollectionItems(prev => prev.map(i =>
+        i.printing_id === printingId && i.finish === finish ? { ...i, quantity: result.quantity, condition } : i
+      ))
+    },
+    remove: async (printingId, finish) => {
+      await authFetch(`${API_URL}/api/users/me/collection/${printingId}?finish=${finish}`, { method: 'DELETE' })
+      setCardCollectionItems(prev => prev.filter(i => !(i.printing_id === printingId && i.finish === finish)))
+    },
+  }
+
   if (loading) return (
     <div className="flex items-center justify-center h-64">
       <p className="text-lg" style={{ color: '#8e8e9e' }}>Loading card...</p>
@@ -305,22 +477,11 @@ export default function CardDetailPage() {
   )
 
   const attrs = card.attributes || {}
-  const legalities = attrs.legalities || {}
-  const keywords = attrs.keywords || []
-  const cardFaces = attrs.card_faces || []
-  const isDoubleFaced = cardFaces.length > 0
-
-  const frontFace = cardFaces[0] || {}
-  const backFace = cardFaces[1] || {}
-  const activeFace = flipped ? backFace : frontFace
-
-  const power = isDoubleFaced ? activeFace.power : attrs.power
-  const toughness = isDoubleFaced ? activeFace.toughness : attrs.toughness
-  const loyalty = isDoubleFaced ? activeFace.loyalty : attrs.loyalty
-  const manaCost = isDoubleFaced ? activeFace.mana_cost : attrs.mana_cost
-  const rulesText = isDoubleFaced ? activeFace.oracle_text : card.rules_text
-  const typeLine = isDoubleFaced ? activeFace.type_line : card.card_type
+  const isDoubleFaced = (attrs.card_faces || []).length > 0
   const rarityColor = RARITY_COLORS[normalizeRarity(selectedPrinting?.rarity)] || '#8e8e9e'
+
+  const ownedForPrinting = cardCollectionItems.filter(i => i.printing_id === selectedPrinting?.id)
+  const totalOwnedForPrinting = ownedForPrinting.reduce((s, i) => s + i.quantity, 0)
 
   return (
     <div>
@@ -373,26 +534,9 @@ export default function CardDetailPage() {
             {card.game}
           </Link>
 
-          <div className="flex items-start gap-4 mt-2 mb-2 flex-wrap">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight" style={{ color: '#EDF2F6' }}>{card.name}</h2>
-            <div className="mt-2"><ManaCost cost={manaCost} /></div>
-          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mt-2 mb-2" style={{ color: '#EDF2F6' }}>{card.name}</h2>
 
-          <div className="flex items-center gap-4 mb-4 flex-wrap">
-            <p className="text-xl" style={{ color: '#8e8e9e' }}>{typeLine}</p>
-            {power && toughness && (
-              <span className="font-bold text-xl px-3 py-1 rounded border"
-                style={{ color: '#EDF2F6', borderColor: '#42424e', backgroundColor: '#35353f' }}>
-                {power}/{toughness}
-              </span>
-            )}
-            {loyalty && (
-              <span className="font-bold text-xl px-3 py-1 rounded border"
-                style={{ color: '#EDF2F6', borderColor: '#42424e', backgroundColor: '#35353f' }}>
-                Loyalty: {loyalty}
-              </span>
-            )}
-          </div>
+          <p className="text-xl mb-4" style={{ color: '#8e8e9e' }}>{card.card_type}</p>
 
           {selectedPrinting && (
             <div className="flex items-center gap-3 mb-6">
@@ -410,22 +554,13 @@ export default function CardDetailPage() {
             </div>
           )}
 
-          {/* Game specific card info */}
-          {card.game_slug === 'pokemon' ? (
-            <PokemonCardInfo
-              attrs={attrs}
-              rulesText={rulesText}
-              cardType={card.card_type}
-            />
-          ) : (
-            rulesText && (
-              <div className="rounded-xl p-5 mb-5 border"
-                style={{ backgroundColor: '#35353f', borderColor: '#42424e' }}>
-                <p className="whitespace-pre-line leading-relaxed text-base" style={{ color: '#EDF2F6' }}>
-                  {rulesText}
-                </p>
-              </div>
-            )
+          {/* Game-specific card info */}
+          {card.game_slug === 'mtg'              && <MTGCardInfo card={card} flipped={flipped} />}
+          {card.game_slug === 'pokemon'          && <PokemonCardInfo attrs={attrs} rulesText={card.rules_text} cardType={card.card_type} />}
+          {card.game_slug === 'middle-earth-ccg' && <MECCGCardInfo card={card} />}
+          {card.game_slug === 'yugioh'           && <YuGiOhCardInfo card={card} />}
+          {!['mtg','pokemon','middle-earth-ccg','yugioh'].includes(card.game_slug) && (
+            <GenericCardInfo card={card} />
           )}
 
           {/* Flavor text */}
@@ -435,20 +570,6 @@ export default function CardDetailPage() {
               <p className="italic text-base leading-relaxed" style={{ color: '#8e8e9e' }}>
                 "{selectedPrinting.flavor_text}"
               </p>
-            </div>
-          )}
-
-          {keywords.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-5">
-              {keywords.map(kw => (
-                <span
-                  key={kw}
-                  className="text-sm px-3 py-1 rounded-full border"
-                  style={{ backgroundColor: '#35353f', borderColor: '#42424e', color: '#8e8e9e' }}
-                >
-                  {kw}
-                </span>
-              ))}
             </div>
           )}
 
@@ -482,52 +603,21 @@ export default function CardDetailPage() {
             </div>
           )}
 
-          {/* Action buttons — collection, deck, wishlist */}
+          {/* Action buttons */}
           {user && selectedPrinting && (
             <div className="flex flex-wrap items-center gap-2 mt-4">
-              {/* Foil toggle */}
-              <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={isFoil}
-                  onChange={e => setIsFoil(e.target.checked)}
-                  className="accent-yellow-400 w-3.5 h-3.5"
-                />
-                <span className="text-xs font-medium" style={{ color: isFoil ? '#facc15' : '#8e8e9e' }}>
-                  ✦ Foil
-                </span>
-              </label>
-
               {/* Collection */}
-              {collectionItem ? (
-                <div className="flex items-center gap-1 px-2 py-1 rounded"
-                  style={{ backgroundColor: '#35353f', border: `1px solid ${isFoil ? '#facc15' : '#6A7EFC'}` }}>
-                  <span className="text-xs font-medium" style={{ color: isFoil ? '#facc15' : '#6A7EFC' }}>×{collectionItem.quantity}</span>
-                  <button
-                    onClick={handleRemoveFromCollection}
-                    disabled={collectionLoading}
-                    className="text-xs px-1.5 rounded disabled:opacity-50 leading-none"
-                    style={{ color: '#FF5656' }}
-                    title="Remove one"
-                  >−</button>
-                  <button
-                    onClick={handleAddToCollection}
-                    disabled={collectionLoading}
-                    className="text-xs px-1.5 rounded disabled:opacity-50 leading-none"
-                    style={{ color: isFoil ? '#facc15' : '#6A7EFC' }}
-                    title="Add another"
-                  >+</button>
-                </div>
-              ) : (
-                <button
-                  onClick={handleAddToCollection}
-                  disabled={collectionLoading}
-                  className="text-xs px-3 py-1.5 rounded font-medium disabled:opacity-50"
-                  style={{ backgroundColor: '#35353f', border: `1px solid ${isFoil ? '#facc15' : '#6A7EFC'}`, color: isFoil ? '#facc15' : '#6A7EFC' }}
-                >
-                  {collectionLoading ? '…' : `+ Collection${isFoil ? ' (Foil)' : ''}`}
-                </button>
-              )}
+              <button
+                onClick={() => setModalOpen(true)}
+                className="text-xs px-3 py-1.5 rounded font-medium"
+                style={{
+                  backgroundColor: totalOwnedForPrinting > 0 ? '#1a2a4a' : '#35353f',
+                  border: `1px solid ${totalOwnedForPrinting > 0 ? '#6A7EFC' : '#42424e'}`,
+                  color: totalOwnedForPrinting > 0 ? '#6A7EFC' : '#8e8e9e',
+                }}
+              >
+                {totalOwnedForPrinting > 0 ? `⊟ Collection ×${totalOwnedForPrinting}` : '⊞ Collection'}
+              </button>
 
               {/* Deck */}
               <AddToDeckButton card={card} authFetch={authFetch} />
@@ -551,19 +641,7 @@ export default function CardDetailPage() {
         </div>{/* end card info */}
       </div>{/* end top section */}
 
-      {/* Format Legality */}
-      {Object.keys(legalities).length > 0 && (
-        <div className="mb-12">
-          <h3 className="text-2xl font-bold mb-4" style={{ color: '#EDF2F6' }}>Format Legality</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {Object.entries(legalities).map(([format, status]) => (
-              <LegalityBadge key={format} format={format} status={status} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* All Printings — all games */}
+      {/* All Printings */}
       {card.printings?.length > 1 && (
         <div>
           <h3 className="text-2xl font-bold mb-4" style={{ color: '#EDF2F6' }}>
@@ -603,6 +681,15 @@ export default function CardDetailPage() {
                     style={{ color: RARITY_COLORS[normalizeRarity(printing.rarity)] || '#8e8e9e' }}>
                     {printing.rarity}
                   </p>
+                  {user && (() => {
+                    const printingItems = cardCollectionItems.filter(i => i.printing_id === printing.id)
+                    const count = printingItems.reduce((s, i) => s + i.quantity, 0)
+                    const allFoil = printingItems.length > 0 && printingItems.every(i => i.finish === 'foil')
+                    return count > 0 ? (
+                      <p className={`text-xs font-semibold mt-0.5${allFoil ? ' foil-rainbow' : ''}`}
+                        style={allFoil ? {} : { color: '#6A7EFC' }}>×{count} owned</p>
+                    ) : null
+                  })()}
                 </div>
               </div>
             ))}
@@ -610,6 +697,15 @@ export default function CardDetailPage() {
         </div>
       )}
 
+      {/* Collection modal */}
+      {modalOpen && selectedPrinting && (
+        <CollectionModal
+          printing={selectedPrinting}
+          cardCollectionItems={cardCollectionItems}
+          onClose={() => setModalOpen(false)}
+          onSave={modalSaveOps}
+        />
+      )}
     </div>
   )
 }

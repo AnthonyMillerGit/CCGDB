@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+.foil-rainbow {
+  background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #c77dff, #ff6b6b);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: foil-shift 3s linear infinite;
+}
+
+@keyframes foil-shift {
+  to { background-position: 200% center; }
+}
+
+.card-rules-html p { margin-bottom: 0.5rem; }
+.card-rules-html p:last-child { margin-bottom: 0; }
+.card-rules-html b, .card-rules-html strong { font-weight: 600; }
+.card-rules-html i, .card-rules-html em { font-style: italic; }
+.card-rules-html ul { list-style: disc; padding-left: 1.25rem; }
+.card-rules-html li { margin-bottom: 0.25rem; }
+
 :root {
   --bg-primary: #26262e;
   --bg-secondary: #35353f;
