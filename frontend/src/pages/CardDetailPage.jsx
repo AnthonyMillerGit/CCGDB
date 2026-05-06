@@ -1,10 +1,16 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
-import MTGCardInfo     from '../components/card-templates/MTGCardInfo'
-import PokemonCardInfo from '../components/card-templates/PokemonCardInfo'
-import MECCGCardInfo   from '../components/card-templates/MECCGCardInfo'
-import YuGiOhCardInfo  from '../components/card-templates/YuGiOhCardInfo'
-import GenericCardInfo from '../components/card-templates/GenericCardInfo'
+import MTGCardInfo           from '../components/card-templates/MTGCardInfo'
+import PokemonCardInfo       from '../components/card-templates/PokemonCardInfo'
+import MECCGCardInfo         from '../components/card-templates/MECCGCardInfo'
+import YuGiOhCardInfo        from '../components/card-templates/YuGiOhCardInfo'
+import WeissSchwarzCardInfo  from '../components/card-templates/WeissSchwarzCardInfo'
+import SeventhSeaCardInfo    from '../components/card-templates/SeventhSeaCardInfo'
+import VTESCardInfo          from '../components/card-templates/VTESCardInfo'
+import WoWTCGCardInfo        from '../components/card-templates/WoWTCGCardInfo'
+import NarutoMythosCardInfo  from '../components/card-templates/NarutoMythosCardInfo'
+import SorceryCardInfo       from '../components/card-templates/SorceryCardInfo'
+import GenericCardInfo       from '../components/card-templates/GenericCardInfo'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
 import { RARITY_COLORS, normalizeRarity } from '../theme'
@@ -212,7 +218,7 @@ function CollectionModal({ printing, cardCollectionItems, onClose, onSave }) {
 
 // ── Deck button ───────────────────────────────────────────────────────────────
 
-function AddToDeckButton({ card, authFetch }) {
+function AddToDeckButton({ card, authFetch, fullWidth }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [gameDecks, setGameDecks] = useState(null)
   const [deckSuccess, setDeckSuccess] = useState('')
@@ -269,13 +275,13 @@ function AddToDeckButton({ card, authFetch }) {
   }
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div className={`relative${fullWidth ? ' w-full' : ''}`} ref={menuRef}>
       <button
         onClick={openMenu}
-        className="text-xs px-3 py-1.5 rounded font-medium"
+        className={`${fullWidth ? 'w-full text-sm font-semibold px-4 py-2.5' : 'text-xs px-3 py-1.5 font-medium'} rounded-lg`}
         style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6' }}
       >
-        ⊞ Deck ▾
+        Add To Deck ▾
       </button>
 
       {menuOpen && (
@@ -525,6 +531,42 @@ export default function CardDetailPage() {
               <span style={{ color: '#8e8e9e' }}>No image</span>
             </div>
           )}
+
+          {/* Action buttons — under the card image */}
+          {user && selectedPrinting && (
+            <div className="w-full max-w-xs sm:max-w-sm md:w-80 lg:w-96 flex flex-col gap-2">
+              <button
+                onClick={() => setModalOpen(true)}
+                className="w-full text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors duration-200"
+                style={{
+                  backgroundColor: totalOwnedForPrinting > 0 ? '#1a2a4a' : '#35353f',
+                  border: `1px solid ${totalOwnedForPrinting > 0 ? '#6A7EFC' : '#42424e'}`,
+                  color: totalOwnedForPrinting > 0 ? '#6A7EFC' : '#8e8e9e',
+                }}
+              >
+                {totalOwnedForPrinting > 0
+                  ? `In Collection ×${totalOwnedForPrinting}`
+                  : 'Add Card To Collection'}
+              </button>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <AddToDeckButton card={card} authFetch={authFetch} fullWidth />
+                </div>
+                <button
+                  onClick={handleToggleWishlist}
+                  disabled={wishlistLoading}
+                  className="flex-1 text-sm font-semibold px-4 py-2.5 rounded-lg disabled:opacity-50 transition-colors duration-200"
+                  style={{
+                    backgroundColor: wishlisted ? '#3a1a2a' : '#35353f',
+                    border: `1px solid ${wishlisted ? '#FF5656' : '#42424e'}`,
+                    color: wishlisted ? '#FF5656' : '#8e8e9e',
+                  }}
+                >
+                  {wishlisted ? '♥ In Wishlist' : 'Add To Wishlist'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Card info */}
@@ -559,7 +601,15 @@ export default function CardDetailPage() {
           {card.game_slug === 'pokemon'          && <PokemonCardInfo attrs={attrs} rulesText={card.rules_text} cardType={card.card_type} />}
           {card.game_slug === 'middle-earth-ccg' && <MECCGCardInfo card={card} />}
           {card.game_slug === 'yugioh'           && <YuGiOhCardInfo card={card} />}
-          {!['mtg','pokemon','middle-earth-ccg','yugioh'].includes(card.game_slug) && (
+          {card.game_slug === 'weissschwarz'     && <WeissSchwarzCardInfo card={card} />}
+          {card.game_slug === 'seventhsea'                      && <SeventhSeaCardInfo card={card} />}
+          {card.game_slug === 'vampire-the-eternal-struggle-ccg' && <VTESCardInfo card={card} />}
+          {card.game_slug === 'world-of-warcraft-tcg'           && <WoWTCGCardInfo card={card} />}
+          {card.game_slug === 'naruto-mythos-tcg'              && <NarutoMythosCardInfo card={card} />}
+          {card.game_slug === 'sorcery'                        && <SorceryCardInfo card={card} />}
+          {!['mtg','pokemon','middle-earth-ccg','yugioh','weissschwarz','seventhsea',
+             'vampire-the-eternal-struggle-ccg','world-of-warcraft-tcg','naruto-mythos-tcg',
+             'sorcery'].includes(card.game_slug) && (
             <GenericCardInfo card={card} />
           )}
 
@@ -603,40 +653,6 @@ export default function CardDetailPage() {
             </div>
           )}
 
-          {/* Action buttons */}
-          {user && selectedPrinting && (
-            <div className="flex flex-wrap items-center gap-2 mt-4">
-              {/* Collection */}
-              <button
-                onClick={() => setModalOpen(true)}
-                className="text-xs px-3 py-1.5 rounded font-medium"
-                style={{
-                  backgroundColor: totalOwnedForPrinting > 0 ? '#1a2a4a' : '#35353f',
-                  border: `1px solid ${totalOwnedForPrinting > 0 ? '#6A7EFC' : '#42424e'}`,
-                  color: totalOwnedForPrinting > 0 ? '#6A7EFC' : '#8e8e9e',
-                }}
-              >
-                {totalOwnedForPrinting > 0 ? `⊟ Collection ×${totalOwnedForPrinting}` : '⊞ Collection'}
-              </button>
-
-              {/* Deck */}
-              <AddToDeckButton card={card} authFetch={authFetch} />
-
-              {/* Wishlist */}
-              <button
-                onClick={handleToggleWishlist}
-                disabled={wishlistLoading}
-                className="text-xs px-3 py-1.5 rounded font-medium disabled:opacity-50"
-                style={{
-                  backgroundColor: wishlisted ? '#3a1a2a' : '#35353f',
-                  border: `1px solid ${wishlisted ? '#FF5656' : '#42424e'}`,
-                  color: wishlisted ? '#FF5656' : '#8e8e9e',
-                }}
-              >
-                {wishlisted ? '♥ Wishlist' : '♡ Wishlist'}
-              </button>
-            </div>
-          )}
 
         </div>{/* end card info */}
       </div>{/* end top section */}

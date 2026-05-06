@@ -125,6 +125,10 @@ export default function SetsPage() {
 
   const showGrouped = activeTab === 'all' && availableTabs.length > 1
 
+  // Publisher grouping — when a game has sets from multiple publishers
+  const publishers = [...new Set(sets.map(s => s.publisher).filter(Boolean))]
+  const showPublisherGroups = publishers.length > 1
+
   const gameInfo = GAME_INFO[slug]
 
   return (
@@ -254,6 +258,42 @@ export default function SetsPage() {
                       onClick={() => navigate(`/sets/${set.id}`)}
                     />
                   ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : showPublisherGroups ? (
+        /* Publisher-grouped view */
+        <div className="flex flex-col gap-6">
+          {publishers.map(pub => {
+            const pubSets = filteredSets.filter(s => s.publisher === pub)
+            if (!pubSets.length) return null
+            return (
+              <div key={pub}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#8e8e9e' }}>
+                  {pub}
+                </p>
+                <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#42424e' }}>
+                  {pubSets.map((set, index) => (
+                    <SetRow
+                      key={set.id}
+                      set={set}
+                      isLast={index === pubSets.length - 1}
+                      onClick={() => navigate(`/sets/${set.id}`)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+          {/* Sets with no publisher */}
+          {filteredSets.filter(s => !s.publisher).length > 0 && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#8e8e9e' }}>Other</p>
+              <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#42424e' }}>
+                {filteredSets.filter(s => !s.publisher).map((set, index, arr) => (
+                  <SetRow key={set.id} set={set} isLast={index === arr.length - 1} onClick={() => navigate(`/sets/${set.id}`)} />
+                ))}
               </div>
             </div>
           )}

@@ -25,6 +25,7 @@ type SetSummary struct {
 	TotalCards  *int    `json:"total_cards"`
 	IconURL     *string `json:"icon_url"`
 	SetType     *string `json:"set_type"`
+	Publisher   *string `json:"publisher"`
 }
 
 type RecentSet struct {
