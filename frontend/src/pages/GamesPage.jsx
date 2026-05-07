@@ -99,8 +99,8 @@ export default function GamesPage() {
             {recentSets.map(set => (
               <div
                 key={set.set_id}
-                className="flex-shrink-0 flex items-center gap-3 px-3 py-2.5 rounded-xl"
-                style={{ backgroundColor: '#35353f', border: '1px solid #42424e', width: '220px' }}
+                className="flex-shrink-0 flex items-center gap-3 px-3 py-2.5 rounded-xl w-40 sm:w-[220px]"
+                style={{ backgroundColor: '#35353f', border: '1px solid #42424e' }}
               >
                 {set.card_back_image ? (
                   <img src={set.card_back_image} alt={set.game_name} className="shrink-0 rounded object-cover"
