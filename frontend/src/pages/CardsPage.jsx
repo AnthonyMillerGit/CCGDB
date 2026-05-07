@@ -16,6 +16,7 @@ export default function CardsPage() {
   const [owned, setOwned]       = useState({})   // printing_id → quantity
   const [addingSet, setAddingSet] = useState(false)
   const [sort, setSort]         = useState('number_asc')
+  const [search, setSearch]     = useState('')
   const [rarityFilter, setRarityFilter] = useState([])
   const [rarityOpen, setRarityOpen]     = useState(false)
   const rarityRef = useRef(null)
@@ -77,7 +78,10 @@ export default function CardsPage() {
   }, [cards])
 
   const sortedCards = useMemo(() => {
-    let filtered = rarityFilter.length > 0 ? cards.filter(c => rarityFilter.includes(c.rarity)) : cards
+    const q = search.trim().toLowerCase()
+    let filtered = cards
+    if (q)                     filtered = filtered.filter(c => c.name.toLowerCase().includes(q))
+    if (rarityFilter.length > 0) filtered = filtered.filter(c => rarityFilter.includes(c.rarity))
     return [...filtered].sort((a, b) => {
       switch (sort) {
         case 'name_asc':    return a.name.localeCompare(b.name)
@@ -262,6 +266,24 @@ export default function CardsPage() {
 
       {/* ── Toolbar ──────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 mb-4 flex-wrap">
+        {/* Search */}
+        <div className="relative flex items-center">
+          <span className="absolute left-2.5 text-sm pointer-events-none" style={{ color: '#8e8e9e' }}>⌕</span>
+          <input
+            type="text"
+            placeholder="Search cards…"
+            value={search}
+            onChange={e => { setSearch(e.target.value); setPage(1) }}
+            className="text-sm pl-7 pr-8 py-1.5 rounded"
+            style={{ backgroundColor: '#35353f', border: `1px solid ${search ? '#6A7EFC' : '#42424e'}`, color: '#EDF2F6', width: 180, outline: 'none' }}
+          />
+          {search && (
+            <button onClick={() => { setSearch(''); setPage(1) }}
+              className="absolute right-2 text-sm hover:opacity-80"
+              style={{ color: '#8e8e9e' }}>×</button>
+          )}
+        </div>
+
         {/* Sort */}
         <div className="flex items-center gap-1.5">
           <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>Sort By</span>

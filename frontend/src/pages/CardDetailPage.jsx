@@ -10,6 +10,21 @@ import VTESCardInfo          from '../components/card-templates/VTESCardInfo'
 import WoWTCGCardInfo        from '../components/card-templates/WoWTCGCardInfo'
 import NarutoMythosCardInfo  from '../components/card-templates/NarutoMythosCardInfo'
 import SorceryCardInfo       from '../components/card-templates/SorceryCardInfo'
+import SWUCardInfo           from '../components/card-templates/SWUCardInfo'
+import SWCCGCardInfo         from '../components/card-templates/SWCCGCardInfo'
+import StarTrek1ECardInfo    from '../components/card-templates/StarTrek1ECardInfo'
+import StarTrek2ECardInfo    from '../components/card-templates/StarTrek2ECardInfo'
+import LorcanaCardInfo       from '../components/card-templates/LorcanaCardInfo'
+import DigimonCardInfo       from '../components/card-templates/DigimonCardInfo'
+import OnePieceCardInfo      from '../components/card-templates/OnePieceCardInfo'
+import FFTCGCardInfo         from '../components/card-templates/FFTCGCardInfo'
+import FaBCardInfo           from '../components/card-templates/FaBCardInfo'
+import DBSFusionCardInfo     from '../components/card-templates/DBSFusionCardInfo'
+import GrandArchiveCardInfo  from '../components/card-templates/GrandArchiveCardInfo'
+import MetaZooCardInfo       from '../components/card-templates/MetaZooCardInfo'
+import RiftboundCardInfo     from '../components/card-templates/RiftboundCardInfo'
+import GundamCardInfo        from '../components/card-templates/GundamCardInfo'
+import UnionArenaCardInfo    from '../components/card-templates/UnionArenaCardInfo'
 import GenericCardInfo       from '../components/card-templates/GenericCardInfo'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
@@ -535,19 +550,36 @@ export default function CardDetailPage() {
           {/* Action buttons — under the card image */}
           {user && selectedPrinting && (
             <div className="w-full max-w-xs sm:max-w-sm md:w-80 lg:w-96 flex flex-col gap-2">
-              <button
-                onClick={() => setModalOpen(true)}
-                className="w-full text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors duration-200"
-                style={{
-                  backgroundColor: totalOwnedForPrinting > 0 ? '#1a2a4a' : '#35353f',
-                  border: `1px solid ${totalOwnedForPrinting > 0 ? '#6A7EFC' : '#42424e'}`,
-                  color: totalOwnedForPrinting > 0 ? '#6A7EFC' : '#8e8e9e',
-                }}
-              >
-                {totalOwnedForPrinting > 0
-                  ? `In Collection ×${totalOwnedForPrinting}`
-                  : 'Add Card To Collection'}
-              </button>
+              {totalOwnedForPrinting > 0 ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg flex-wrap"
+                    style={{ backgroundColor: '#1a2a4a', border: '1px solid #6A7EFC33' }}>
+                    <span className="text-sm font-bold" style={{ color: '#6A7EFC' }}>✓</span>
+                    {ownedForPrinting.map(item => (
+                      <span key={item.finish}
+                        className={`text-sm font-semibold${item.finish === 'foil' ? ' foil-rainbow' : ''}`}
+                        style={item.finish === 'foil' ? {} : { color: '#6A7EFC' }}>
+                        ×{item.quantity} {item.finish}
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setModalOpen(true)}
+                    className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200 hover:opacity-80"
+                    style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6', whiteSpace: 'nowrap' }}
+                  >
+                    + Add More
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setModalOpen(true)}
+                  className="w-full text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors duration-200 hover:opacity-80"
+                  style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#8e8e9e' }}
+                >
+                  Add to Collection
+                </button>
+              )}
               <div className="flex gap-2">
                 <div className="flex-1">
                   <AddToDeckButton card={card} authFetch={authFetch} fullWidth />
@@ -607,9 +639,26 @@ export default function CardDetailPage() {
           {card.game_slug === 'world-of-warcraft-tcg'           && <WoWTCGCardInfo card={card} />}
           {card.game_slug === 'naruto-mythos-tcg'              && <NarutoMythosCardInfo card={card} />}
           {card.game_slug === 'sorcery'                        && <SorceryCardInfo card={card} />}
+          {card.game_slug === 'swu'                            && <SWUCardInfo card={card} flipped={flipped} />}
+          {card.game_slug === 'starwars_decipher'              && <SWCCGCardInfo card={card} />}
+          {card.game_slug === 'startrek_1e'          && <StarTrek1ECardInfo card={card} />}
+          {card.game_slug === 'startrek_2e'          && <StarTrek2ECardInfo card={card} />}
+          {card.game_slug === 'lorcana'              && <LorcanaCardInfo card={card} />}
+          {card.game_slug === 'digimon'              && <DigimonCardInfo card={card} />}
+          {card.game_slug === 'onepiece'             && <OnePieceCardInfo card={card} />}
+          {card.game_slug === 'fftcg'                && <FFTCGCardInfo card={card} />}
+          {card.game_slug === 'fab'                  && <FaBCardInfo card={card} />}
+          {card.game_slug === 'dragon-ball-fusion'   && <DBSFusionCardInfo card={card} />}
+          {card.game_slug === 'grand-archive'        && <GrandArchiveCardInfo card={card} />}
+          {card.game_slug === 'metazoo'              && <MetaZooCardInfo card={card} />}
+          {card.game_slug === 'riftbound'            && <RiftboundCardInfo card={card} />}
+          {card.game_slug === 'gundam'               && <GundamCardInfo card={card} />}
+          {card.game_slug === 'union-arena'          && <UnionArenaCardInfo card={card} />}
           {!['mtg','pokemon','middle-earth-ccg','yugioh','weissschwarz','seventhsea',
              'vampire-the-eternal-struggle-ccg','world-of-warcraft-tcg','naruto-mythos-tcg',
-             'sorcery'].includes(card.game_slug) && (
+             'sorcery','swu','starwars_decipher','startrek_1e','startrek_2e',
+             'lorcana','digimon','onepiece','fftcg','fab','dragon-ball-fusion',
+             'grand-archive','metazoo','riftbound','gundam','union-arena'].includes(card.game_slug) && (
             <GenericCardInfo card={card} />
           )}
 
