@@ -528,7 +528,7 @@ export default function CardsPage() {
                     style={{ backgroundColor: '#6A7EFC', color: '#26262e' }}>×{quantity}</div>
                 )}
                 <div className="cursor-pointer transition-all duration-200"
-                  onClick={() => !isBulkActive && navigate(`/cards/${card.id}`)}
+                  onClick={() => !isBulkActive && navigate(`/cards/${card.id}?printing=${card.printing_id}`)}
                   onMouseEnter={e => !isBulkActive && handleMouseEnter(e, card)}
                   onMouseLeave={e => !isBulkActive && handleMouseLeave(e)}>
                   {card.image_url
@@ -573,7 +573,7 @@ export default function CardsPage() {
             const rarityColor = RARITY_COLORS[normalizeRarity(card.rarity)] || '#8e8e9e'
             return (
               <div key={card.id}
-                onClick={() => !isBulkActive && navigate(`/cards/${card.id}`)}
+                onClick={() => !isBulkActive && navigate(`/cards/${card.id}?printing=${card.printing_id}`)}
                 className={`rounded border px-3 py-2 flex items-center justify-between gap-2 transition-colors ${!isBulkActive ? 'cursor-pointer hover:border-[#6A7EFC]' : ''}`}
                 style={{ backgroundColor: bulkQty > 0 ? '#1a2a4a' : '#2a2a34', borderColor: bulkQty > 0 ? '#6A7EFC' : '#42424e' }}>
                 <div className="flex items-center gap-2 min-w-0">
