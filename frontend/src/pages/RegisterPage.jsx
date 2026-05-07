@@ -30,36 +30,36 @@ export default function RegisterPage() {
       <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--accent)' }}>Create Account</h2>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
-          <label className="block text-sm mb-1 text-gray-400">Username</label>
+          <label className="block text-sm mb-1" style={{ color: "var(--text-muted)" }}>Username</label>
           <input
             type="text"
             value={username}
             onChange={e => setUsername(e.target.value)}
             required
-            className="w-full px-3 py-2 rounded text-white"
+            className="w-full px-3 py-2 rounded outline-none"
             style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
           />
         </div>
         <div>
-          <label className="block text-sm mb-1 text-gray-400">Email</label>
+          <label className="block text-sm mb-1" style={{ color: "var(--text-muted)" }}>Email</label>
           <input
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 rounded text-white"
+            className="w-full px-3 py-2 rounded outline-none"
             style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
           />
         </div>
         <div>
-          <label className="block text-sm mb-1 text-gray-400">Password</label>
+          <label className="block text-sm mb-1" style={{ color: "var(--text-muted)" }}>Password</label>
           <input
             type="password"
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
             minLength={8}
-            className="w-full px-3 py-2 rounded text-white"
+            className="w-full px-3 py-2 rounded outline-none"
             style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
           />
         </div>
@@ -73,7 +73,7 @@ export default function RegisterPage() {
           {loading ? 'Creating account…' : 'Create Account'}
         </button>
       </form>
-      <p className="mt-4 text-sm text-gray-400">
+      <p className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
         Already have an account?{' '}
         <Link to="/login" style={{ color: 'var(--accent)' }}>Sign in</Link>
       </p>

@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
     return (
       <div className="max-w-md mx-auto mt-16 text-center">
         <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--accent)' }}>Check your email</h2>
-        <p className="text-gray-400 mb-6">
+        <p className="mb-6">
           If <strong style={{ color: 'var(--text-primary)' }}>{email}</strong> is registered, you'll receive a password reset link shortly.
         </p>
         <Link to="/login" style={{ color: 'var(--accent)' }} className="text-sm">← Back to login</Link>
@@ -34,16 +34,16 @@ export default function ForgotPasswordPage() {
   return (
     <div className="max-w-md mx-auto mt-16">
       <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--accent)' }}>Forgot password</h2>
-      <p className="text-gray-400 text-sm mb-6">Enter your email and we'll send you a reset link.</p>
+      <p className="text-sm mb-6">Enter your email and we'll send you a reset link.</p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
-          <label className="block text-sm mb-1 text-gray-400">Email</label>
+          <label className="block text-sm mb-1" style={{ color: "var(--text-muted)" }}>Email</label>
           <input
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 rounded text-white"
+            className="w-full px-3 py-2 rounded outline-none"
             style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
           />
         </div>

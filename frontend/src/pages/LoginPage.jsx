@@ -39,7 +39,7 @@ export default function LoginPage() {
     }
   }
 
-  const inputStyle = { backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }
+  const inputStyle = { backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }
 
   return (
     <div className="max-w-md mx-auto mt-16">
@@ -75,31 +75,31 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {mode === 'register' && (
           <div>
-            <label className="block text-sm mb-1 text-gray-400">Username</label>
+            <label className="block text-sm mb-1" style={{ color: "var(--text-muted)" }}>Username</label>
             <input
               type="text"
               value={username}
               onChange={e => setUsername(e.target.value)}
               required
-              className="w-full px-3 py-2 rounded text-white"
+              className="w-full px-3 py-2 rounded outline-none"
               style={inputStyle}
             />
           </div>
         )}
         <div>
-          <label className="block text-sm mb-1 text-gray-400">Email</label>
+          <label className="block text-sm mb-1" style={{ color: "var(--text-muted)" }}>Email</label>
           <input
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 rounded text-white"
+            className="w-full px-3 py-2 rounded outline-none"
             style={inputStyle}
           />
         </div>
         <div>
           <div className="flex justify-between items-baseline mb-1">
-            <label className="block text-sm text-gray-400">Password</label>
+            <label className="block text-sm" style={{ color: 'var(--text-muted)' }}>Password</label>
             {mode === 'login' && (
               <Link to="/forgot-password" className="text-xs" style={{ color: 'var(--accent)' }}>
                 Forgot password?
@@ -112,7 +112,7 @@ export default function LoginPage() {
             onChange={e => setPassword(e.target.value)}
             required
             minLength={mode === 'register' ? 8 : undefined}
-            className="w-full px-3 py-2 rounded text-white"
+            className="w-full px-3 py-2 rounded outline-none"
             style={inputStyle}
           />
         </div>
