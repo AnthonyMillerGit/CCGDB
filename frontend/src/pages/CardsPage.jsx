@@ -305,16 +305,16 @@ export default function CardsPage() {
       {/* ── Set header ──────────────────────────────────────────────────── */}
       {setInfo && (
         <div className="mb-8">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
             <div>
               <p className="text-sm font-medium mb-1 cursor-pointer hover:opacity-80"
                 style={{ color: '#6A7EFC' }} onClick={() => navigate(`/games/${setInfo.game_slug}`)}>
                 {setInfo.game_name}
               </p>
-              <h2 className="text-3xl font-bold mb-1" style={{ color: '#EDF2F6' }}>{setInfo.name}</h2>
+              <h2 className="text-3xl font-bold mb-1 break-words" style={{ color: '#EDF2F6' }}>{setInfo.name}</h2>
             </div>
-            {/* View toggle — top right */}
-            <div className="flex rounded overflow-hidden border shrink-0 mt-1" style={{ borderColor: '#42424e' }}>
+            {/* View toggle */}
+            <div className="flex rounded overflow-hidden border self-start shrink-0 sm:mt-1" style={{ borderColor: '#42424e' }}>
               <button onClick={() => setParam({ view: null, per: null, page: 1 })}
                 className="text-xs px-3 py-1.5 transition-colors"
                 style={{ backgroundColor: viewMode === 'card' ? '#6A7EFC' : '#35353f', color: viewMode === 'card' ? '#fff' : '#8e8e9e' }}>
@@ -349,7 +349,7 @@ export default function CardsPage() {
                   Add Multiple To… ▾
                 </button>
                 {bulkOpen && (
-                  <div className="absolute z-20 mt-1 rounded-lg shadow-xl min-w-[160px]"
+                  <div className="absolute z-20 mt-1 rounded-lg shadow-xl min-w-[160px] right-0 sm:right-auto sm:left-0"
                     style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e' }}>
                     {[['collection','Collection'],['deck','Deck'],['wishlist','Wishlist']].map(([key, label]) => (
                       <button key={key} onClick={() => selectBulkTarget(key)}
@@ -384,15 +384,15 @@ export default function CardsPage() {
       {/* ── Toolbar ──────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         {/* Search */}
-        <div className="relative flex items-center">
+        <div className="relative flex items-center w-full sm:w-auto">
           <span className="absolute left-2.5 text-sm pointer-events-none" style={{ color: '#8e8e9e' }}>⌕</span>
           <input
             type="text"
             placeholder="Search cards…"
             value={search}
             onChange={e => setParam({ q: e.target.value, page: 1 })}
-            className="text-sm pl-7 pr-8 py-1.5 rounded"
-            style={{ backgroundColor: '#35353f', border: `1px solid ${search ? '#6A7EFC' : '#42424e'}`, color: '#EDF2F6', width: 180, outline: 'none' }}
+            className="text-sm pl-7 pr-8 py-1.5 rounded w-full sm:w-44"
+            style={{ backgroundColor: '#35353f', border: `1px solid ${search ? '#6A7EFC' : '#42424e'}`, color: '#EDF2F6', outline: 'none' }}
           />
           {search && (
             <button onClick={() => setParam({ q: '', page: 1 })}

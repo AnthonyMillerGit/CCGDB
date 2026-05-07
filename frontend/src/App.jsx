@@ -71,7 +71,7 @@ function UserMenu({ user }) {
         >
           {user.username.slice(0, 1).toUpperCase()}
         </span>
-        {user.username}
+        <span className="hidden sm:inline">{user.username}</span>
         <span className="text-xs" style={{ color: '#8e8e9e' }}>{open ? '▲' : '▼'}</span>
       </button>
 

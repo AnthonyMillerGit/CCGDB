@@ -515,7 +515,7 @@ export default function CardDetailPage() {
       </button>
 
       {/* Top section */}
-      <div className="flex flex-col md:flex-row gap-10 mb-12">
+      <div className="flex flex-col md:flex-row gap-6 md:gap-10 mb-12">
 
         {/* Card image */}
         <div className="flex-shrink-0 flex flex-col items-center gap-4 w-full md:w-auto">
@@ -608,7 +608,7 @@ export default function CardDetailPage() {
             {card.game}
           </Link>
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mt-2 mb-2" style={{ color: '#EDF2F6' }}>{card.name}</h2>
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold leading-tight mt-2 mb-2 break-words" style={{ color: '#EDF2F6' }}>{card.name}</h2>
 
           <p className="text-xl mb-4" style={{ color: '#8e8e9e' }}>{card.card_type}</p>
 
