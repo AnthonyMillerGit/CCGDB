@@ -42,34 +42,36 @@ export function normalizeRarity(raw) {
        'td', 'n', 'virtual card', 't'].includes(r)) return 'common'
 
   // Uncommon
-  if (['u', 'uc', 'uncommon', 'bronze', 'silver', 'higher normal'].includes(r)) return 'uncommon'
+  if (['u', 'uc', 'uncommon', 'bronze', 'silver', 'higher normal',
+       'exceptional'].includes(r)) return 'uncommon'
 
   // Rare
   if (['r', 're', 'rr', 'rare', 'double rare', 'rare holo', 'holofoil rare',
        'rare holo ex', 'rare holo v', 'fr', 'short print',
-       'duel terminal normal parallel rare', 'duel terminal rare parallel rare'].includes(r)) return 'rare'
+       'duel terminal normal parallel rare', 'duel terminal rare parallel rare',
+       'elite'].includes(r)) return 'rare'
 
   // Super Rare
   if (['sr', 'super rare', 'super_rare', 'very rare', 'ssp', 'special rare', 'sp',
        'rrr', 'trr', 'legend', 'legendary', 'rare ultra', 'rare rainbow',
        "collector's rare", 'cr', 'illustration rare', 'gold', 'gold rare',
-       'elite', 'v', 'vp', 'l', 'mythic'].includes(r)) return 'super'
+       'v', 'vp', 'l', 'mythic'].includes(r)) return 'super'
 
   // Ultra Rare
   if (['ur', 'ultra rare', 'secret rare', 'sec', 'prismatic secret rare',
        'platinum secret rare', 'ultimate rare', 'quarter century secret rare',
        'starlight rare', 'special illustration rare', 'ffr', 'premium gold rare',
-       'ofr', 'rare secret', 'r+'].includes(r)) return 'ultra'
+       'ofr', 'rare secret', 'r+', 'unique'].includes(r)) return 'ultra'
 
-  // Promo / Special
-  if (['p', 'pr', 'promo', 'm', 'premium', 'hero', 'unique', 'exceptional',
+  // Promo / Special — rarest tier (chase cards, avatars, etc.)
+  if (['p', 'pr', 'promo', 'm', 'premium', 'hero', 'avatar',
        'special', 'h'].includes(r)) return 'promo'
 
   return null
 }
 
 // Rarity sort order — 0 = most rare, higher = more common
-const RARITY_RANK = { ultra: 0, promo: 1, super: 2, rare: 3, uncommon: 4, common: 5, fixed: 6 }
+const RARITY_RANK = { promo: 0, ultra: 1, super: 2, rare: 3, uncommon: 4, common: 5, fixed: 6 }
 export function rarityRank(raw) {
   const tier = normalizeRarity(raw)
   return tier !== null ? (RARITY_RANK[tier] ?? 7) : 8
