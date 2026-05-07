@@ -152,7 +152,7 @@ function CombatRow({ attack, parry, boarding }) {
   if (!atkName && !parryArr.length && !boarding) return null
   return (
     <div className="flex flex-wrap items-center gap-4 mb-4 px-4 py-2 rounded-lg"
-      style={{ backgroundColor: '#f0e6d3', border: '1px solid #38384a' }}>
+      style={{ backgroundColor: '#f5f0e8', border: '1px solid #38384a' }}>
       <span className="text-xs uppercase tracking-widest font-semibold" style={{ color: '#7a6248' }}>Combat</span>
       {boarding && (
         <div className="flex items-center gap-1.5">

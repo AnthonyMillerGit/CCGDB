@@ -222,8 +222,8 @@ function GameCard({ game, isFavorite, showStar, onClick, onToggleFavorite }) {
       <div
         className="w-full rounded-xl overflow-hidden border transition-all duration-200"
         style={{
-          borderColor: hovered ? '#0097a7' : (isFavorite ? '#2a5a58' : '#d4c4a8'),
-          boxShadow: hovered ? '0 0 16px rgba(0, 151, 167, 0.25)' : 'none',
+          borderColor: hovered ? '#6b2d8f' : (isFavorite ? '#0097a7' : '#d4c4a8'),
+          boxShadow: hovered ? '0 0 16px rgba(107, 45, 143, 0.3)' : 'none',
           backgroundColor: '#faf6ee',
         }}
       >

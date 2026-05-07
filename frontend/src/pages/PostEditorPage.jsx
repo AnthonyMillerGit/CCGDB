@@ -32,7 +32,7 @@ function MenuBar({ editor }) {
       className="px-2 py-1 rounded text-xs font-medium transition-colors"
       style={{
         backgroundColor: active ? '#0097a7' : '#d4c4a8',
-        color: active ? '#f0e6d3' : '#1c1008',
+        color: active ? '#f5f0e8' : '#1c1008',
       }}
     >
       {label}
@@ -350,7 +350,7 @@ export default function PostEditorPage() {
           </button>
           <button type="button" onClick={() => handleSave(true)} disabled={saving}
             className="px-5 py-2 rounded text-sm font-semibold disabled:opacity-50"
-            style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}>
+            style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}>
             {saving ? 'Publishing…' : 'Publish'}
           </button>
         </div>

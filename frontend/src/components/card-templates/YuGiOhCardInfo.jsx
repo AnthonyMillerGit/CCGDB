@@ -78,7 +78,7 @@ function LinkArrows({ markers }) {
           if (row === 1 && col === 1) {
             return (
               <div key="center" className="rounded-sm flex items-center justify-center"
-                style={{ width: 20, height: 20, backgroundColor: '#f0e6d3', border: '1px solid #d4c4a8', fontSize: '10px', color: '#7a6248' }}>
+                style={{ width: 20, height: 20, backgroundColor: '#f5f0e8', border: '1px solid #d4c4a8', fontSize: '10px', color: '#7a6248' }}>
                 ⬡
               </div>
             )

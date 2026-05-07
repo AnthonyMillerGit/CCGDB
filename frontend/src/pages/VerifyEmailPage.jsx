@@ -39,7 +39,7 @@ export default function VerifyEmailPage() {
         <Link
           to="/profile"
           className="px-4 py-2 rounded font-semibold text-sm"
-          style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}
+          style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
         >
           Go to Profile
         </Link>

@@ -457,7 +457,7 @@ function MyWishlistTab({ authFetch }) {
             <button
               onClick={() => handleAddToCollection(item)}
               className="absolute top-1.5 left-1.5 w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center"
-              style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}
+              style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
               title="Add to collection"
             >
               +
@@ -625,7 +625,7 @@ function MyDecksTab({ authFetch }) {
             <button
               onClick={openForm}
               className="px-4 py-2 rounded text-sm font-semibold"
-              style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}
+              style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
             >
               + New Deck
             </button>
@@ -659,7 +659,7 @@ function MyDecksTab({ authFetch }) {
           <div className="flex gap-2">
             <button type="submit" disabled={creating}
               className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
-              style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}>
+              style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}>
               {creating ? 'Creating…' : 'Create'}
             </button>
             <button type="button" onClick={() => setShowForm(false)}
@@ -709,7 +709,7 @@ function MyDecksTab({ authFetch }) {
           <div className="flex gap-2">
             <button type="submit" disabled={importing || !importFile}
               className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
-              style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}>
+              style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}>
               {importing ? 'Importing…' : 'Import'}
             </button>
             <button type="button" onClick={() => setShowImportForm(false)}
@@ -933,7 +933,7 @@ export default function ProfilePage() {
           <div className="relative flex-shrink-0" ref={colorPickerRef}>
             <div
               className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold cursor-pointer select-none"
-              style={{ backgroundColor: fullUser?.avatar_color || '#0097a7', color: '#f0e6d3' }}
+              style={{ backgroundColor: fullUser?.avatar_color || '#0097a7', color: '#f5f0e8' }}
               onClick={() => setShowColorPicker(o => !o)}
               title="Change avatar color"
             >

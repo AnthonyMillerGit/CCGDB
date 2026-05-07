@@ -48,7 +48,7 @@ export default function BlogPage() {
           <Link
             to="/admin/posts/new"
             className="px-4 py-2 rounded text-sm font-semibold"
-            style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}
+            style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
           >
             + New Post
           </Link>

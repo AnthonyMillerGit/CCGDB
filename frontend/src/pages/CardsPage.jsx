@@ -271,7 +271,8 @@ export default function CardsPage() {
   // ── Image grid hover ──────────────────────────────────────────────────────
   const handleMouseEnter = (e, card) => {
     if (!card.image_url || isTouchDevice) return
-    e.currentTarget.style.borderColor = '#0097a7'
+    e.currentTarget.style.borderColor = '#6b2d8f'
+    e.currentTarget.style.boxShadow = '0 0 14px rgba(107, 45, 143, 0.28)'
     e.currentTarget.style.transform = 'scale(1.05)'
     const rect = e.currentTarget.getBoundingClientRect()
     setTooltipPos({
@@ -282,6 +283,7 @@ export default function CardsPage() {
   }
   const handleMouseLeave = e => {
     e.currentTarget.style.borderColor = '#d4c4a8'
+    e.currentTarget.style.boxShadow = 'none'
     e.currentTarget.style.transform = 'scale(1)'
     setHoveredCard(null)
   }
@@ -525,7 +527,7 @@ export default function CardsPage() {
                 style={{ backgroundColor: '#faf6ee', borderColor: bulkQty > 0 ? '#0097a7' : '#d4c4a8' }}>
                 {isOwned && (
                   <div className="absolute top-1.5 right-1.5 z-10 text-xs font-bold px-1.5 py-0.5 rounded"
-                    style={{ backgroundColor: '#0097a7', color: '#f0e6d3' }}>×{quantity}</div>
+                    style={{ backgroundColor: '#0097a7', color: '#f5f0e8' }}>×{quantity}</div>
                 )}
                 <div className="cursor-pointer transition-all duration-200"
                   onClick={() => !isBulkActive && navigate(`/cards/${card.id}?printing=${card.printing_id}`)}

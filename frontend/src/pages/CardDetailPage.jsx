@@ -103,7 +103,7 @@ function CollectionModal({ printing, cardCollectionItems, onClose, onSave }) {
     >
       <div
         className="w-full max-w-sm rounded-2xl p-6 shadow-2xl"
-        style={{ backgroundColor: '#f0e6d3', border: '1px solid #d4c4a8' }}
+        style={{ backgroundColor: '#f5f0e8', border: '1px solid #d4c4a8' }}
       >
         <div className="flex items-start justify-between mb-5">
           <div>
@@ -350,7 +350,7 @@ function AddToDeckButton({ card, authFetch, fullWidth }) {
                     onClick={handleCreateDeck}
                     disabled={creating || !newDeckName.trim()}
                     className="px-2 py-1 rounded text-xs font-semibold disabled:opacity-50"
-                    style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}
+                    style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
                   >
                     {creating ? '…' : 'Create'}
                   </button>
@@ -532,7 +532,7 @@ export default function CardDetailPage() {
                 <button
                   onClick={() => setFlipped(!flipped)}
                   className="text-sm font-medium px-4 py-2 rounded-lg transition-all duration-200 w-full"
-                  style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}
+                  style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
                   onMouseEnter={e => e.currentTarget.style.backgroundColor = '#06b6b4'}
                   onMouseLeave={e => e.currentTarget.style.backgroundColor = '#0097a7'}
                 >

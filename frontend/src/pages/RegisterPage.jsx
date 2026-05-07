@@ -68,7 +68,7 @@ export default function RegisterPage() {
           type="submit"
           disabled={loading}
           className="py-2 rounded font-semibold disabled:opacity-50"
-          style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}
+          style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
         >
           {loading ? 'Creating account…' : 'Create Account'}
         </button>

@@ -8,7 +8,7 @@ import { API_URL } from '../config'
 function DeckCardRow({ card, onIncrease, onDecrease }) {
   return (
     <div className="flex items-center gap-2 px-3 py-1.5"
-      style={{ borderBottom: '1px solid #f0e6d3' }}>
+      style={{ borderBottom: '1px solid #f5f0e8' }}>
       {card.image_url
         ? <img src={card.image_url} alt={card.card_name} className="w-7 rounded flex-shrink-0" />
         : <div className="w-7 h-10 rounded flex-shrink-0" style={{ backgroundColor: '#d4c4a8' }} />
@@ -52,7 +52,7 @@ function SearchCard({ card, deckQty, onAdd, onMouseEnter, onMouseLeave }) {
     >
       {deckQty > 0 && (
         <div className="absolute top-1.5 right-1.5 z-10 text-xs font-bold px-1.5 py-0.5 rounded"
-          style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}>
+          style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}>
           ×{deckQty}
         </div>
       )}
@@ -301,7 +301,7 @@ export default function DeckBuilderPage() {
                 Object.entries(grouped).sort().map(([type, cards]) => (
                   <div key={type}>
                     <p className="text-xs font-semibold px-3 py-1.5 sticky top-0 flex items-center justify-between"
-                      style={{ backgroundColor: '#f0e6d3', color: '#7a6248' }}>
+                      style={{ backgroundColor: '#f5f0e8', color: '#7a6248' }}>
                       <span>{type}</span>
                       <span style={{ color: '#d4c4a8' }}>{cards.reduce((s, c) => s + c.quantity, 0)}</span>
                     </p>

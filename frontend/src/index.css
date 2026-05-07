@@ -21,7 +21,7 @@
 .card-rules-html li { margin-bottom: 0.25rem; }
 
 :root {
-  --bg-primary:    #f0e6d3;
+  --bg-primary:    #f5f0e8;
   --bg-secondary:  #faf6ee;
   --accent-teal:   #0097a7;
   --accent-maroon: #8b1a3a;
@@ -32,6 +32,6 @@
 }
 
 html, body {
-  background-color: #f0e6d3;
+  background-color: #f5f0e8;
   color: #1c1008;
 }

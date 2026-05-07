@@ -57,14 +57,14 @@ export default function LandingPage() {
           <button
             onClick={() => navigate('/games')}
             className="px-6 py-3 rounded-lg font-semibold text-base transition-opacity hover:opacity-90"
-            style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}
+            style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
           >
             Browse Games
           </button>
 <button
             onClick={() => goToRandomCard(navigate)}
             className="px-6 py-3 rounded-lg font-semibold text-base transition-opacity hover:opacity-90"
-            style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}
+            style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
           >
             🎲 Random Card
           </button>

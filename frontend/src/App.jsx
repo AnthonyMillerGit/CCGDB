@@ -67,7 +67,7 @@ function UserMenu({ user }) {
       >
         <span
           className="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: '#0097a7', color: '#f0e6d3' }}
+          style={{ backgroundColor: '#0097a7', color: '#f5f0e8' }}
         >
           {user.username.slice(0, 1).toUpperCase()}
         </span>
@@ -181,7 +181,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#f0e6d3', color: '#1c1008' }}>
+        <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#f5f0e8', color: '#1c1008' }}>
           <Header />
           <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
             <Routes>

@@ -12,7 +12,7 @@ function postStatus(post) {
 const STATUS_STYLE = {
   published: { bg: '#1a1e40', color: '#0097a7', border: '#0097a7', label: 'Published' },
   scheduled:  { bg: '#2e2a0a', color: '#f4c542', border: '#f4c542', label: 'Scheduled' },
-  draft:      { bg: '#f0e6d3', color: '#7a6248', border: '#9e836a', label: 'Draft' },
+  draft:      { bg: '#f5f0e8', color: '#7a6248', border: '#9e836a', label: 'Draft' },
 }
 
 export default function AdminPostsPage() {
@@ -143,7 +143,7 @@ export default function AdminPostsPage() {
         <Link
           to="/admin/posts/new"
           className="px-4 py-2 rounded text-sm font-semibold"
-          style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}
+          style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
         >
           + New Post
         </Link>
