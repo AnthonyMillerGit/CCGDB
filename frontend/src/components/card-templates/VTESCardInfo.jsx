@@ -59,7 +59,7 @@ const TYPE_COLORS = {
   'Conviction':       { bg: '#251a10', border: '#bf360c', text: '#ffab91' },
   'Power':            { bg: '#1a251a', border: '#388e3c', text: '#c8e6c9' },
 }
-const DEFAULT_TYPE = { bg: '#2a2a34', border: '#42424e', text: '#EDF2F6' }
+const DEFAULT_TYPE = { bg: '#eee4d4', border: '#d4c4a8', text: '#1c1008' }
 
 // ── Clan colors (sect-based approximations) ────────────────────────────────────
 const CLAN_SECTS = {
@@ -83,7 +83,7 @@ function getClanSect(clan) {
 function DiscChip({ disc }) {
   const isSuperior = disc === disc.toUpperCase() && disc.length > 1
   const key   = disc.toLowerCase()
-  const info  = DISC_INFO[key] || { name: disc, color: '#8e8e9e' }
+  const info  = DISC_INFO[key] || { name: disc, color: '#7a6248' }
   return (
     <div className="flex flex-col items-center px-3 py-1.5 rounded-lg"
       style={{
@@ -106,9 +106,9 @@ function StatBox({ label, value, color }) {
   if (value == null) return null
   return (
     <div className="flex flex-col items-center px-4 py-2 rounded-lg border"
-      style={{ backgroundColor: '#2a2a34', borderColor: '#42424e', minWidth: '60px' }}>
-      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#8e8e9e' }}>{label}</span>
-      <span className="text-xl font-bold" style={{ color: color || '#EDF2F6' }}>{value}</span>
+      style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8', minWidth: '60px' }}>
+      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>{label}</span>
+      <span className="text-xl font-bold" style={{ color: color || '#1c1008' }}>{value}</span>
     </div>
   )
 }
@@ -140,11 +140,11 @@ function ClanBadge({ clan }) {
     Laibon:      { bg: '#102010', border: '#408030', text: '#80c060' },
     Imbued:      { bg: '#102030', border: '#2060a0', text: '#60a0e0' },
   }
-  const s = (sect && sectColors[sect]) || { bg: '#2a2a34', border: '#42424e', text: '#aaa' }
+  const s = (sect && sectColors[sect]) || { bg: '#eee4d4', border: '#d4c4a8', text: '#aaa' }
   return (
     <div className="flex flex-col items-center px-4 py-2 rounded-lg border"
       style={{ backgroundColor: s.bg, borderColor: s.border }}>
-      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#8e8e9e' }}>
+      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>
         {sect || 'Clan'}
       </span>
       <span className="text-sm font-bold" style={{ color: s.text }}>{clan}</span>
@@ -169,7 +169,7 @@ export default function VTESCardInfo({ card }) {
         <TypeBadges types={types} />
         {attrs.combo && (
           <span className="text-xs px-2 py-0.5 rounded"
-            style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e', color: '#8e8e9e' }}>
+            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#7a6248' }}>
             Combo
           </span>
         )}
@@ -181,7 +181,7 @@ export default function VTESCardInfo({ card }) {
         )}
         {attrs.first_set && (
           <span className="text-xs px-2 py-0.5 rounded"
-            style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e', color: '#666' }}>
+            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#666' }}>
             {attrs.first_set}
           </span>
         )}
@@ -192,7 +192,7 @@ export default function VTESCardInfo({ card }) {
         <div className="flex flex-wrap gap-3 mb-5">
           {clans.map(cl => <ClanBadge key={cl} clan={cl} />)}
           <StatBox label="Capacity" value={attrs.capacity} color="#e74c3c" />
-          {attrs.group && <StatBox label="Group" value={attrs.group} color="#8e8e9e" />}
+          {attrs.group && <StatBox label="Group" value={attrs.group} color="#7a6248" />}
         </div>
       )}
 
@@ -209,7 +209,7 @@ export default function VTESCardInfo({ card }) {
       {/* Disciplines */}
       {disciplines.length > 0 && (
         <div className="mb-5">
-          <p className="text-xs uppercase tracking-widest mb-2" style={{ color: '#8e8e9e' }}>Disciplines</p>
+          <p className="text-xs uppercase tracking-widest mb-2" style={{ color: '#7a6248' }}>Disciplines</p>
           <div className="flex flex-wrap gap-2">
             {disciplines.map((d, i) => <DiscChip key={i} disc={d} />)}
           </div>
@@ -219,8 +219,8 @@ export default function VTESCardInfo({ card }) {
       {/* Rules text */}
       {card.rules_text && (
         <div className="rounded-xl p-5 mb-4 border"
-          style={{ backgroundColor: '#35353f', borderColor: '#42424e' }}>
-          <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#EDF2F6' }}>
+          style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8' }}>
+          <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>
             {card.rules_text}
           </p>
         </div>

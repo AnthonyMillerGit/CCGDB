@@ -1,17 +1,17 @@
 // App-wide color palette
 export const COLORS = {
-  accent:      '#6A7EFC',
-  danger:      '#FF5656',
-  warning:     '#f4c542',
-  textPrimary: '#EDF2F6',
-  textMuted:   '#8e8e9e',
-  surface:     '#35353f',
-  border:      '#42424e',
+  accent:      '#0097a7',
+  danger:      '#8b1a3a',
+  warning:     '#b86a00',
+  textPrimary: '#1c1008',
+  textMuted:   '#7a6248',
+  surface:     '#faf6ee',
+  border:      '#d4c4a8',
 }
 
 // Per-game accent colors (keyed by game slug)
 export const GAME_COLORS = {
-  mtg:          '#6A7EFC',
+  mtg:          '#0097a7',
   pokemon:      '#FFCC00',
   yugioh:       '#8844FF',
   startrek_1e:  '#4B9CD3',
@@ -21,13 +21,13 @@ export const GAME_COLORS = {
 
 // Loot-tier rarity colors (grey → white → green → blue → purple → orange → red)
 export const RARITY_COLORS = {
-  fixed:    '#666e7a',
-  common:   '#C8C8C8',
-  uncommon: '#1eff00',
-  rare:     '#0070dd',
-  super:    '#a335ee',
-  ultra:    '#ff8000',
-  promo:    '#ff4444',
+  fixed:    '#9e836a',
+  common:   '#6e5840',
+  uncommon: '#2e7d32',
+  rare:     '#0277bd',
+  super:    '#6b2d8f',
+  ultra:    '#b86a00',
+  promo:    '#8b1a3a',
 }
 
 // Normalizes any rarity string from the DB to one of the 6 tiers above

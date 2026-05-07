@@ -6,7 +6,7 @@ const GROUP_STYLES = {
   'Akatsuki':      { text: '#ef9a9a', bg: '#2e0d0d', border: '#b71c1c' },
   'Independent':   { text: '#90caf9', bg: '#0d1b2e', border: '#1565c0' },
 }
-const DEFAULT_GROUP = { text: '#8e8e9e', bg: '#2a2a34', border: '#42424e' }
+const DEFAULT_GROUP = { text: '#7a6248', bg: '#eee4d4', border: '#d4c4a8' }
 
 // ── Rarity colors ──────────────────────────────────────────────────────────────
 const RARITY_STYLES = {
@@ -28,7 +28,7 @@ const EFFECT_STYLES = {
   'AMBUSH':  { bg: '#2e0d0d', border: '#b71c1c', text: '#ef9a9a' },
   'SCORE':   { bg: '#0d2a1a', border: '#2e7d32', text: '#a5d6a7' },
 }
-const DEFAULT_EFFECT = { bg: '#2a2a34', border: '#42424e', text: '#EDF2F6' }
+const DEFAULT_EFFECT = { bg: '#eee4d4', border: '#d4c4a8', text: '#1c1008' }
 
 // ── Timing symbol cleanup ─────────────────────────────────────────────────────
 function cleanTiming(t) {
@@ -40,9 +40,9 @@ function StatBox({ label, value, color }) {
   if (value == null) return null
   return (
     <div className="flex flex-col items-center px-3 py-2 rounded-lg border"
-      style={{ backgroundColor: '#2a2a34', borderColor: '#42424e', minWidth: '52px' }}>
-      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#8e8e9e' }}>{label}</span>
-      <span className="text-xl font-bold" style={{ color: color || '#EDF2F6' }}>{value}</span>
+      style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8', minWidth: '52px' }}>
+      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>{label}</span>
+      <span className="text-xl font-bold" style={{ color: color || '#1c1008' }}>{value}</span>
     </div>
   )
 }
@@ -60,7 +60,7 @@ function EffectChip({ type }) {
 function KeywordChip({ kw }) {
   return (
     <span className="text-xs px-2 py-0.5 rounded"
-      style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e', color: '#b0bec5' }}>
+      style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#b0bec5' }}>
       {kw}
     </span>
   )
@@ -71,8 +71,8 @@ function RulesText({ text }) {
   if (!text) return null
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)
   return (
-    <div className="rounded-xl p-5 mb-4 border" style={{ backgroundColor: '#35353f', borderColor: '#42424e' }}>
-      <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#EDF2F6' }}>
+    <div className="rounded-xl p-5 mb-4 border" style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8' }}>
+      <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>
         {parts.map((part, i) => {
           if (part.startsWith('**') && part.endsWith('**'))
             return <strong key={i}>{part.slice(2, -2)}</strong>
@@ -108,9 +108,9 @@ export default function NarutoMythosCardInfo({ card }) {
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded"
           style={{
-            backgroundColor: isCharacter ? '#0d1b2e' : isMission ? '#1a2510' : '#2a2a34',
-            border: `1px solid ${isCharacter ? '#1565c0' : isMission ? '#2e7d32' : '#42424e'}`,
-            color: isCharacter ? '#90caf9' : isMission ? '#a5d6a7' : '#EDF2F6',
+            backgroundColor: isCharacter ? '#0d1b2e' : isMission ? '#1a2510' : '#eee4d4',
+            border: `1px solid ${isCharacter ? '#1565c0' : isMission ? '#2e7d32' : '#d4c4a8'}`,
+            color: isCharacter ? '#90caf9' : isMission ? '#a5d6a7' : '#1c1008',
           }}>
           {cardType}
         </span>
@@ -122,7 +122,7 @@ export default function NarutoMythosCardInfo({ card }) {
         )}
         {attrs.version && (
           <span className="text-xs px-2 py-0.5 rounded italic"
-            style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e', color: '#aaa' }}>
+            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#aaa' }}>
             {attrs.version}
           </span>
         )}
@@ -156,8 +156,8 @@ export default function NarutoMythosCardInfo({ card }) {
         )}
         {timingLabels.length > 0 && (
           <div className="flex flex-col justify-center px-3 py-2 rounded-lg border"
-            style={{ backgroundColor: '#2a2a34', borderColor: '#42424e' }}>
-            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#8e8e9e' }}>Timing</span>
+            style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8' }}>
+            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>Timing</span>
             <span className="text-sm font-semibold" style={{ color: isContinuous ? '#ffe082' : '#90caf9' }}>
               {isContinuous ? 'Continuous' : isOnPlay ? 'On Play' : timingLabels[0]}
             </span>

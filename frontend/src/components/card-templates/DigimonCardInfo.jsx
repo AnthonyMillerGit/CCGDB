@@ -5,23 +5,23 @@ const COLOR_STYLES = {
   Yellow: { bg: '#2e1a00', border: '#f9a825', text: '#ffe082' },
   Green:  { bg: '#002e12', border: '#2e7d32', text: '#a5d6a7' },
   Black:  { bg: '#121212', border: '#424242', text: '#bdbdbd' },
-  White:  { bg: '#2a2a34', border: '#9e9e9e', text: '#f5f5f5' },
+  White:  { bg: '#eee4d4', border: '#9e9e9e', text: '#f5f5f5' },
   Purple: { bg: '#1a0a2e', border: '#6a1b9a', text: '#ce93d8' },
 }
-const DEFAULT_COLOR = { bg: '#22222a', border: '#42424e', text: '#aaa' }
+const DEFAULT_COLOR = { bg: '#22222a', border: '#d4c4a8', text: '#aaa' }
 
-function StatChip({ label, value, color = '#EDF2F6' }) {
+function StatChip({ label, value, color = '#1c1008' }) {
   if (value == null || value === '') return null
   return (
     <div className="flex flex-col items-center px-3 py-1.5 rounded-lg min-w-[52px]"
-      style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e' }}>
-      <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>{label}</span>
+      style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8' }}>
+      <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>{label}</span>
       <span className="text-2xl font-extrabold leading-none mt-0.5" style={{ color }}>{value}</span>
     </div>
   )
 }
 
-function Chip({ label, bg = '#22222a', border = '#32323c', text = '#8e8e9e' }) {
+function Chip({ label, bg = '#22222a', border = '#faf6ee', text = '#7a6248' }) {
   return (
     <span className="text-xs px-2 py-0.5 rounded uppercase tracking-wide"
       style={{ backgroundColor: bg, border: `1px solid ${border}`, color: text }}>
@@ -30,17 +30,17 @@ function Chip({ label, bg = '#22222a', border = '#32323c', text = '#8e8e9e' }) {
   )
 }
 
-function TextBlock({ label, text, labelColor = '#8e8e9e' }) {
+function TextBlock({ label, text, labelColor = '#7a6248' }) {
   if (!text) return null
   return (
-    <div className="rounded-lg border mb-3" style={{ borderColor: '#3a3a44', backgroundColor: '#28282f' }}>
+    <div className="rounded-lg border mb-3" style={{ borderColor: '#faf6ee', backgroundColor: '#28282f' }}>
       {label && (
         <div className="px-3 pt-2.5 pb-1">
           <span className="text-xs font-bold uppercase tracking-wider" style={{ color: labelColor }}>{label}</span>
         </div>
       )}
       <div className={label ? 'px-3 pb-3' : 'p-4'}>
-        <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#EDF2F6' }}>{text}</p>
+        <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>{text}</p>
       </div>
     </div>
   )
@@ -85,7 +85,7 @@ export default function DigimonCardInfo({ card }) {
         {/* Card type */}
         {cardType && (
           <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded"
-            style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e', color: '#EDF2F6' }}>
+            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#1c1008' }}>
             {cardType}
           </span>
         )}
@@ -100,12 +100,12 @@ export default function DigimonCardInfo({ card }) {
 
         {/* Form / Stage */}
         {(attrs.form || attrs.stage) && (
-          <Chip label={attrs.form || attrs.stage} bg="#1a1a24" border="#42424e" text="#ce93d8" />
+          <Chip label={attrs.form || attrs.stage} bg="#1a1a24" border="#d4c4a8" text="#ce93d8" />
         )}
 
         {/* Digi-types */}
         {digiTypes.map(t => (
-          <Chip key={t} label={t} bg="#22222a" border="#32323c" text="#8e8e9e" />
+          <Chip key={t} label={t} bg="#22222a" border="#faf6ee" text="#7a6248" />
         ))}
 
         {/* Attribute */}
@@ -117,7 +117,7 @@ export default function DigimonCardInfo({ card }) {
 
       {/* ── Stats row ─────────────────────────────────────────────────────── */}
       {showStats && (
-        <div className="flex flex-wrap gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid #32323c' }}>
+        <div className="flex flex-wrap gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid #faf6ee' }}>
           <StatChip label="Play Cost" value={attrs.play_cost}      color="#ffe082" />
           <StatChip label="Evo Cost"  value={attrs.evolution_cost} color="#80cbc4" />
           <StatChip label="DP"        value={attrs.dp != null ? (attrs.dp / 1000 + 'K') : null} color="#ef5350" />
@@ -126,7 +126,7 @@ export default function DigimonCardInfo({ card }) {
 
       {/* ── Tamer cost ────────────────────────────────────────────────────── */}
       {isTamer && attrs.play_cost != null && (
-        <div className="flex flex-wrap gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid #32323c' }}>
+        <div className="flex flex-wrap gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid #faf6ee' }}>
           <StatChip label="Play Cost" value={attrs.play_cost} color="#ffe082" />
         </div>
       )}

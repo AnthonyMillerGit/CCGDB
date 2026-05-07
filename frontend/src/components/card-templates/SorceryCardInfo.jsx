@@ -5,7 +5,7 @@ const ELEMENT_STYLES = {
   Fire:  { bg: '#2e0d00', border: '#bf360c', text: '#ffab91', dot: '#ef6c00' },
   Water: { bg: '#001829', border: '#01579b', text: '#81d4fa', dot: '#29b6f6' },
 }
-const DEFAULT_ELEMENT = { bg: '#2a2a34', border: '#42424e', text: '#aaa', dot: '#666' }
+const DEFAULT_ELEMENT = { bg: '#eee4d4', border: '#d4c4a8', text: '#aaa', dot: '#666' }
 
 // ── Threshold icons (small coloured pips) ────────────────────────────────────
 function ThresholdPips({ thresholds }) {
@@ -33,8 +33,8 @@ function StatChip({ label, value, color }) {
   if (value == null) return null
   return (
     <div className="flex flex-col items-center px-3 py-1.5 rounded-lg"
-      style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e' }}>
-      <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>{label}</span>
+      style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8' }}>
+      <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>{label}</span>
       <span className="text-2xl font-extrabold leading-none mt-0.5" style={{ color }}>{value}</span>
     </div>
   )
@@ -82,13 +82,13 @@ export default function SorceryCardInfo({ card }) {
         <div className="flex flex-wrap items-center gap-2 mb-4">
           {cardType && (
             <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded"
-              style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e', color: '#EDF2F6' }}>
+              style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#1c1008' }}>
               {cardType}
             </span>
           )}
           {subTypes.map(s => (
             <span key={s} className="text-xs px-2 py-0.5 rounded"
-              style={{ backgroundColor: '#22222a', border: '1px solid #32323c', color: '#aaa' }}>
+              style={{ backgroundColor: '#22222a', border: '1px solid #faf6ee', color: '#aaa' }}>
               {s}
             </span>
           ))}
@@ -105,7 +105,7 @@ export default function SorceryCardInfo({ card }) {
       {/* ── Stats row ────────────────────────────────────────────────────── */}
       {(cost != null || hasCombat || life != null) && (
         <div className="flex flex-wrap items-end gap-3 mb-5 pb-4"
-          style={{ borderBottom: '1px solid #32323c' }}>
+          style={{ borderBottom: '1px solid #faf6ee' }}>
           {cost != null && (
             <StatChip label="Cost" value={cost} color="#ffe082" />
           )}
@@ -121,7 +121,7 @@ export default function SorceryCardInfo({ card }) {
           {/* Threshold pips inline with stats */}
           {hasThresholds && (
             <div className="flex flex-col gap-1 ml-1">
-              <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>Threshold</span>
+              <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Threshold</span>
               <ThresholdPips thresholds={thresholds} />
             </div>
           )}
@@ -131,22 +131,22 @@ export default function SorceryCardInfo({ card }) {
       {/* ── Thresholds standalone (when no stats row) ────────────────────── */}
       {!cost && !hasCombat && life == null && hasThresholds && (
         <div className="flex items-center gap-3 mb-4">
-          <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>Threshold</span>
+          <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Threshold</span>
           <ThresholdPips thresholds={thresholds} />
         </div>
       )}
 
       {/* ── typeText descriptor ──────────────────────────────────────────── */}
       {typeText && (
-        <div className="rounded-lg p-4 mb-3 border" style={{ backgroundColor: '#28282f', borderColor: '#3a3a44' }}>
-          <p className="text-sm font-bold leading-relaxed" style={{ color: '#EDF2F6' }}>{typeText}</p>
+        <div className="rounded-lg p-4 mb-3 border" style={{ backgroundColor: '#28282f', borderColor: '#faf6ee' }}>
+          <p className="text-sm font-bold leading-relaxed" style={{ color: '#1c1008' }}>{typeText}</p>
         </div>
       )}
 
       {/* ── Rules text ───────────────────────────────────────────────────── */}
       {rulesText && (
-        <div className="rounded-lg p-4 mb-4 border" style={{ backgroundColor: '#28282f', borderColor: '#3a3a44' }}>
-          <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#EDF2F6' }}>{rulesText}</p>
+        <div className="rounded-lg p-4 mb-4 border" style={{ backgroundColor: '#28282f', borderColor: '#faf6ee' }}>
+          <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>{rulesText}</p>
         </div>
       )}
 

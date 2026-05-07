@@ -5,7 +5,7 @@ const FACTION_STYLES = {
   Neutral:  { text: '#ffe082', bg: '#2a2510', border: '#f57f17' },
   Both:     { text: '#ce93d8', bg: '#1a102a', border: '#6a1b9a' },
 }
-const DEFAULT_FACTION = { text: '#8e8e9e', bg: '#2a2a34', border: '#42424e' }
+const DEFAULT_FACTION = { text: '#7a6248', bg: '#eee4d4', border: '#d4c4a8' }
 
 // ── Card type colors ──────────────────────────────────────────────────────────
 const TYPE_STYLES = {
@@ -19,7 +19,7 @@ const TYPE_STYLES = {
   Location:      { bg: '#0d2a25', border: '#00796b', text: '#80cbc4' },
   Achievement:   { bg: '#25200d', border: '#f9a825', text: '#fff176' },
 }
-const DEFAULT_TYPE = { bg: '#2a2a34', border: '#42424e', text: '#EDF2F6' }
+const DEFAULT_TYPE = { bg: '#eee4d4', border: '#d4c4a8', text: '#1c1008' }
 
 // ── Rarity colors ─────────────────────────────────────────────────────────────
 const RARITY_STYLES = {
@@ -61,9 +61,9 @@ function StatBox({ label, value, color }) {
   if (value == null) return null
   return (
     <div className="flex flex-col items-center px-3 py-2 rounded-lg border"
-      style={{ backgroundColor: '#2a2a34', borderColor: '#42424e', minWidth: '52px' }}>
-      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#8e8e9e' }}>{label}</span>
-      <span className="text-xl font-bold" style={{ color: color || '#EDF2F6' }}>{value}</span>
+      style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8', minWidth: '52px' }}>
+      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>{label}</span>
+      <span className="text-xl font-bold" style={{ color: color || '#1c1008' }}>{value}</span>
     </div>
   )
 }
@@ -84,7 +84,7 @@ function SubtypeChips({ subtypes }) {
     <div className="flex flex-wrap gap-2 mb-4">
       {subtypes.map((s, i) => (
         <span key={i} className="text-xs px-2 py-0.5 rounded"
-          style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e', color: '#aaa' }}>
+          style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#aaa' }}>
           {s}
         </span>
       ))}
@@ -102,7 +102,7 @@ export default function WoWTCGCardInfo({ card }) {
   const isHero   = type === 'Hero' || type === 'Master Hero'
   const isAlly   = type === 'Ally' || type === 'Ability Ally'
   const isEquip  = type === 'Equipment'
-  const dmgColor = DMGTYPE_COLORS[attrs.dmgtype] || '#EDF2F6'
+  const dmgColor = DMGTYPE_COLORS[attrs.dmgtype] || '#1c1008'
   const classes  = attrs.classes || (attrs.hero_class ? [attrs.hero_class] : [])
   const hasHTML  = card.rules_text && /<[a-z][\s\S]*>/i.test(card.rules_text)
 
@@ -139,7 +139,7 @@ export default function WoWTCGCardInfo({ card }) {
         <div className="flex flex-wrap items-center gap-2 mb-4">
           {attrs.race && (
             <span className="text-xs px-3 py-1 rounded"
-              style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e', color: '#EDF2F6' }}>
+              style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#1c1008' }}>
               {attrs.race}
             </span>
           )}
@@ -167,8 +167,8 @@ export default function WoWTCGCardInfo({ card }) {
           )}
           {attrs.dmgtype && (
             <div className="flex flex-col justify-center px-3 py-2 rounded-lg border"
-              style={{ backgroundColor: '#2a2a34', borderColor: '#42424e' }}>
-              <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#8e8e9e' }}>Damage</span>
+              style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8' }}>
+              <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>Damage</span>
               <span className="text-sm font-bold" style={{ color: dmgColor }}>{attrs.dmgtype}</span>
             </div>
           )}
@@ -181,7 +181,7 @@ export default function WoWTCGCardInfo({ card }) {
       {/* Class restrictions (non-hero ability/equipment) */}
       {!isHero && !isAlly && attrs.classes?.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 mb-4">
-          <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>Classes:</span>
+          <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Classes:</span>
           {attrs.classes.map(cl => <ClassChip key={cl} cls={cl} />)}
         </div>
       )}
@@ -189,13 +189,13 @@ export default function WoWTCGCardInfo({ card }) {
       {/* Rules text — HTML or plain */}
       {card.rules_text && (
         <div className="rounded-xl p-5 mb-4 border"
-          style={{ backgroundColor: '#35353f', borderColor: '#42424e' }}>
+          style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8' }}>
           {hasHTML ? (
             <div className="card-rules-html text-sm leading-relaxed"
-              style={{ color: '#EDF2F6' }}
+              style={{ color: '#1c1008' }}
               dangerouslySetInnerHTML={{ __html: card.rules_text }} />
           ) : (
-            <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#EDF2F6' }}>
+            <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>
               {card.rules_text}
             </p>
           )}

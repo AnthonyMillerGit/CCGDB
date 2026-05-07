@@ -19,7 +19,7 @@ const PROPERTY_STYLES = {
   Ins:  { bg: '#002e2e', border: '#006064', text: '#80deea', label: 'Insurrection' },
   Nem:  { bg: '#1a1a2e', border: '#37474f', text: '#b0bec5', label: 'Nemesis' },
 }
-const DEFAULT_PROP = { bg: '#2a2a34', border: '#42424e', text: '#aaa' }
+const DEFAULT_PROP = { bg: '#eee4d4', border: '#d4c4a8', text: '#aaa' }
 
 // ── Affiliation codes → display ────────────────────────────────────────────────
 const AFFIL_MAP = {
@@ -29,7 +29,7 @@ const AFFIL_MAP = {
   CAR:  { label: 'Cardassian',  bg: '#2a1a00', border: '#795548', text: '#d7ccc8' },
   DOM:  { label: 'Dominion',    bg: '#1a0a2e', border: '#6a1b9a', text: '#ce93d8' },
   FER:  { label: 'Ferengi',     bg: '#2a1500', border: '#e65100', text: '#ffcc80' },
-  NON:  { label: 'Non-Aligned', bg: '#22222a', border: '#42424e', text: '#9e9e9e' },
+  NON:  { label: 'Non-Aligned', bg: '#22222a', border: '#d4c4a8', text: '#9e9e9e' },
   BAJ:  { label: 'Bajoran',     bg: '#0d1e2e', border: '#0277bd', text: '#b3e5fc' },
   BO:   { label: 'Borg',        bg: '#0a1a0a', border: '#388e3c', text: '#c8e6c9' },
   KAZ:  { label: 'Kazon',       bg: '#1a1205', border: '#827717', text: '#f9a825' },
@@ -78,18 +78,18 @@ function isFreetextAffil(affil) {
 }
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
-function StatChip({ label, value, color = '#EDF2F6' }) {
+function StatChip({ label, value, color = '#1c1008' }) {
   if (value == null || value === '' || value === 'null') return null
   return (
     <div className="flex flex-col items-center px-3 py-1.5 rounded-lg min-w-[52px]"
-      style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e' }}>
-      <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>{label}</span>
+      style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8' }}>
+      <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>{label}</span>
       <span className="text-2xl font-extrabold leading-none mt-0.5" style={{ color }}>{value}</span>
     </div>
   )
 }
 
-function Chip({ label, bg = '#22222a', border = '#32323c', text = '#8e8e9e', title }) {
+function Chip({ label, bg = '#22222a', border = '#faf6ee', text = '#7a6248', title }) {
   return (
     <span className="text-xs px-2 py-0.5 rounded uppercase tracking-wide"
       title={title}
@@ -99,17 +99,17 @@ function Chip({ label, bg = '#22222a', border = '#32323c', text = '#8e8e9e', tit
   )
 }
 
-function TextBlock({ label, text, labelColor = '#8e8e9e' }) {
+function TextBlock({ label, text, labelColor = '#7a6248' }) {
   if (!text) return null
   return (
-    <div className="rounded-lg border mb-3" style={{ borderColor: '#3a3a44', backgroundColor: '#28282f' }}>
+    <div className="rounded-lg border mb-3" style={{ borderColor: '#faf6ee', backgroundColor: '#28282f' }}>
       {label && (
         <div className="px-3 pt-2.5 pb-1">
           <span className="text-xs font-bold uppercase tracking-wider" style={{ color: labelColor }}>{label}</span>
         </div>
       )}
       <div className={label ? 'px-3 pb-3' : 'p-4'}>
-        <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#EDF2F6' }}>{text}</p>
+        <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>{text}</p>
       </div>
     </div>
   )
@@ -157,14 +157,14 @@ export default function StarTrek1ECardInfo({ card }) {
         {/* Card type */}
         {cardType && (
           <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded"
-            style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e', color: '#EDF2F6' }}>
+            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#1c1008' }}>
             {uniqueness && uniqueness !== 'Universal' && '◆ '}{cardType}
           </span>
         )}
 
         {/* Affiliation(s) */}
         {affils.length > 0 && !isFreetextAffil(affiliation) && affils.map(a => {
-          const style = AFFIL_MAP[a] || { bg: '#22222a', border: '#42424e', text: '#aaa' }
+          const style = AFFIL_MAP[a] || { bg: '#22222a', border: '#d4c4a8', text: '#aaa' }
           return (
             <span key={a} className="text-xs font-semibold px-2.5 py-1 rounded"
               style={{ backgroundColor: style.bg, border: `1px solid ${style.border}`, color: style.text }}>
@@ -184,7 +184,7 @@ export default function StarTrek1ECardInfo({ card }) {
         {/* Classification (SCIENCE, OFFICER, Constitution Class, etc.) */}
         {classification && (
           <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded"
-            style={{ backgroundColor: '#1a1a24', border: '1px solid #42424e', color: '#ffe082' }}>
+            style={{ backgroundColor: '#1a1a24', border: '1px solid #d4c4a8', color: '#ffe082' }}>
             {classification}
           </span>
         )}
@@ -204,13 +204,13 @@ export default function StarTrek1ECardInfo({ card }) {
 
       {/* Free-text mission affiliation requirement */}
       {isFreetextAffil(affiliation) && (
-        <p className="text-xs mb-4" style={{ color: '#8e8e9e' }}>{affiliation}</p>
+        <p className="text-xs mb-4" style={{ color: '#7a6248' }}>{affiliation}</p>
       )}
 
       {/* ── Ship staffing ────────────────────────────────────────────────── */}
       {staffIcons.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 mb-4">
-          <span className="text-xs" style={{ color: '#8e8e9e' }}>Staffing:</span>
+          <span className="text-xs" style={{ color: '#7a6248' }}>Staffing:</span>
           {staffIcons.map((icon, i) => (
             <Chip key={i} label={icon} bg="#1a2535" border="#1565c0" text="#90caf9"
               title={ICON_LABELS[icon] || icon} />
@@ -220,7 +220,7 @@ export default function StarTrek1ECardInfo({ card }) {
 
       {/* ── Stats row ───────────────────────────────────────────────────── */}
       {showStats && (
-        <div className="flex flex-wrap gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid #32323c' }}>
+        <div className="flex flex-wrap gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid #faf6ee' }}>
           <StatChip label={stat1Label} value={attrs.integrity_range}   color="#90caf9" />
           <StatChip label={stat2Label} value={attrs.cunning_weapons}   color="#ef5350" />
           <StatChip label={stat3Label} value={attrs.strength_shields}  color="#66bb6a" />
@@ -229,21 +229,21 @@ export default function StarTrek1ECardInfo({ card }) {
 
       {/* ── Mission stats ────────────────────────────────────────────────── */}
       {isMission && (attrs.points || attrs.span || attrs.quadrant || attrs.region) && (
-        <div className="flex flex-wrap gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid #32323c' }}>
+        <div className="flex flex-wrap gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid #faf6ee' }}>
           <StatChip label="Points" value={attrs.points} color="#ffe082" />
           <StatChip label="Span"   value={attrs.span}   color="#80cbc4" />
           {attrs.quadrant && (
             <div className="flex flex-col justify-center px-3 py-1.5 rounded-lg"
-              style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e' }}>
-              <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>Quadrant</span>
-              <span className="text-sm font-semibold mt-0.5" style={{ color: '#EDF2F6' }}>{attrs.quadrant}</span>
+              style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8' }}>
+              <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Quadrant</span>
+              <span className="text-sm font-semibold mt-0.5" style={{ color: '#1c1008' }}>{attrs.quadrant}</span>
             </div>
           )}
           {attrs.region && (
             <div className="flex flex-col justify-center px-3 py-1.5 rounded-lg"
-              style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e' }}>
-              <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>Region</span>
-              <span className="text-sm font-semibold mt-0.5" style={{ color: '#EDF2F6' }}>{attrs.region}</span>
+              style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8' }}>
+              <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Region</span>
+              <span className="text-sm font-semibold mt-0.5" style={{ color: '#1c1008' }}>{attrs.region}</span>
             </div>
           )}
         </div>
@@ -254,7 +254,7 @@ export default function StarTrek1ECardInfo({ card }) {
         <div className="flex flex-wrap gap-1.5 mb-4">
           {characteristics.map(c => (
             <span key={c} className="text-xs px-2 py-0.5 rounded uppercase tracking-wide"
-              style={{ backgroundColor: '#22222a', border: '1px solid #32323c', color: '#8e8e9e' }}>
+              style={{ backgroundColor: '#22222a', border: '1px solid #faf6ee', color: '#7a6248' }}>
               {c}
             </span>
           ))}
@@ -263,18 +263,18 @@ export default function StarTrek1ECardInfo({ card }) {
 
       {/* ── Persona ──────────────────────────────────────────────────────── */}
       {attrs.persona && (
-        <p className="text-xs mb-3" style={{ color: '#8e8e9e' }}>
+        <p className="text-xs mb-3" style={{ color: '#7a6248' }}>
           <span className="font-semibold uppercase tracking-wide">Persona: </span>
-          <span style={{ color: '#EDF2F6' }}>{attrs.persona}</span>
+          <span style={{ color: '#1c1008' }}>{attrs.persona}</span>
         </p>
       )}
 
       {/* ── Requires ─────────────────────────────────────────────────────── */}
       {attrs.requires && (
         <div className="rounded-lg border mb-3 px-3 py-2"
-          style={{ borderColor: '#3a3a44', backgroundColor: '#28282f' }}>
-          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#8e8e9e' }}>Requires </span>
-          <span className="text-xs" style={{ color: '#EDF2F6' }}>{attrs.requires}</span>
+          style={{ borderColor: '#faf6ee', backgroundColor: '#28282f' }}>
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#7a6248' }}>Requires </span>
+          <span className="text-xs" style={{ color: '#1c1008' }}>{attrs.requires}</span>
         </div>
       )}
 

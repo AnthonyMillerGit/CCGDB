@@ -24,8 +24,8 @@ function ManaCost({ cost }) {
 function LegalityBadge({ format, status }) {
   const styles = {
     legal:      { backgroundColor: '#1a3a2a', borderColor: '#2d6a4f', color: '#6bcb77' },
-    not_legal:  { backgroundColor: '#35353f', borderColor: '#42424e', color: '#8e8e9e' },
-    banned:     { backgroundColor: '#3a1a1a', borderColor: '#6a2d2d', color: '#FF5656' },
+    not_legal:  { backgroundColor: '#faf6ee', borderColor: '#d4c4a8', color: '#7a6248' },
+    banned:     { backgroundColor: '#3a1a1a', borderColor: '#6a2d2d', color: '#8b1a3a' },
     restricted: { backgroundColor: '#3a3a1a', borderColor: '#6a6a2d', color: '#f4c542' },
   }
   const labels = { legal: 'Legal', not_legal: 'Not Legal', banned: 'Banned', restricted: 'Restricted' }
@@ -59,13 +59,13 @@ export default function MTGCardInfo({ card, flipped }) {
         {manaCost && <ManaCost cost={manaCost} />}
         {power && toughness && (
           <span className="font-bold text-xl px-3 py-1 rounded border"
-            style={{ color: '#EDF2F6', borderColor: '#42424e', backgroundColor: '#35353f' }}>
+            style={{ color: '#1c1008', borderColor: '#d4c4a8', backgroundColor: '#faf6ee' }}>
             {power}/{toughness}
           </span>
         )}
         {loyalty && (
           <span className="font-bold text-xl px-3 py-1 rounded border"
-            style={{ color: '#EDF2F6', borderColor: '#42424e', backgroundColor: '#35353f' }}>
+            style={{ color: '#1c1008', borderColor: '#d4c4a8', backgroundColor: '#faf6ee' }}>
             Loyalty: {loyalty}
           </span>
         )}
@@ -74,8 +74,8 @@ export default function MTGCardInfo({ card, flipped }) {
       {/* Rules text */}
       {rulesText && (
         <div className="rounded-xl p-5 mb-5 border"
-          style={{ backgroundColor: '#35353f', borderColor: '#42424e' }}>
-          <p className="whitespace-pre-line leading-relaxed text-base" style={{ color: '#EDF2F6' }}>
+          style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8' }}>
+          <p className="whitespace-pre-line leading-relaxed text-base" style={{ color: '#1c1008' }}>
             {rulesText}
           </p>
         </div>
@@ -86,7 +86,7 @@ export default function MTGCardInfo({ card, flipped }) {
         <div className="flex flex-wrap gap-2 mb-5">
           {keywords.map(kw => (
             <span key={kw} className="text-sm px-3 py-1 rounded-full border"
-              style={{ backgroundColor: '#35353f', borderColor: '#42424e', color: '#8e8e9e' }}>
+              style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8', color: '#7a6248' }}>
               {kw}
             </span>
           ))}
@@ -96,7 +96,7 @@ export default function MTGCardInfo({ card, flipped }) {
       {/* Format legality */}
       {Object.keys(legalities).length > 0 && (
         <div className="mt-8">
-          <h3 className="text-lg font-bold mb-3" style={{ color: '#EDF2F6' }}>Format Legality</h3>
+          <h3 className="text-lg font-bold mb-3" style={{ color: '#1c1008' }}>Format Legality</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {Object.entries(legalities).map(([format, status]) => (
               <LegalityBadge key={format} format={format} status={status} />

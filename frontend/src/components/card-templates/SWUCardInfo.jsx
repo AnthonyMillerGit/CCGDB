@@ -7,7 +7,7 @@ const ASPECT_STYLES = {
   Cunning:    { bg: '#2a2000', border: '#f9a825', text: '#fff176' },
   Vigilance:  { bg: '#1a1a2e', border: '#4527a0', text: '#ce93d8' },
 }
-const DEFAULT_ASPECT = { bg: '#2a2a34', border: '#42424e', text: '#aaa' }
+const DEFAULT_ASPECT = { bg: '#eee4d4', border: '#d4c4a8', text: '#aaa' }
 
 // ── Arena badge ───────────────────────────────────────────────────────────────
 const ARENA_STYLES = {
@@ -20,25 +20,25 @@ function StatChip({ label, value, color }) {
   if (value == null || value === '' || value === 'null') return null
   return (
     <div className="flex flex-col items-center px-3 py-1.5 rounded-lg min-w-[52px]"
-      style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e' }}>
-      <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>{label}</span>
+      style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8' }}>
+      <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>{label}</span>
       <span className="text-2xl font-extrabold leading-none mt-0.5" style={{ color }}>{value}</span>
     </div>
   )
 }
 
 // ── Section block (rules text, back text, epic action) ───────────────────────
-function TextBlock({ label, text, labelColor = '#8e8e9e' }) {
+function TextBlock({ label, text, labelColor = '#7a6248' }) {
   if (!text) return null
   return (
-    <div className="rounded-lg border mb-3" style={{ borderColor: '#3a3a44', backgroundColor: '#28282f' }}>
+    <div className="rounded-lg border mb-3" style={{ borderColor: '#faf6ee', backgroundColor: '#28282f' }}>
       {label && (
         <div className="px-3 pt-2.5 pb-1">
           <span className="text-xs font-bold uppercase tracking-wider" style={{ color: labelColor }}>{label}</span>
         </div>
       )}
       <div className={label ? 'px-3 pb-3' : 'p-4'}>
-        <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#EDF2F6' }}>{text}</p>
+        <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>{text}</p>
       </div>
     </div>
   )
@@ -75,12 +75,12 @@ export default function SWUCardInfo({ card, flipped }) {
       <div className="flex flex-wrap items-center gap-2 mb-4">
         {cardType && (
           <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded"
-            style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e', color: '#EDF2F6' }}>
+            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#1c1008' }}>
             {isUnique && '◆ '}{cardType}
           </span>
         )}
         {arenas.map(arena => {
-          const style = ARENA_STYLES[arena] || { bg: '#2a2a34', border: '#42424e', text: '#aaa' }
+          const style = ARENA_STYLES[arena] || { bg: '#eee4d4', border: '#d4c4a8', text: '#aaa' }
           return (
             <span key={arena} className="text-xs font-semibold px-2.5 py-1 rounded"
               style={{ backgroundColor: style.bg, border: `1px solid ${style.border}`, color: style.text }}>
@@ -110,7 +110,7 @@ export default function SWUCardInfo({ card, flipped }) {
         <div className="flex flex-wrap gap-1.5 mb-4">
           {traits.map(trait => (
             <span key={trait} className="text-xs px-2 py-0.5 rounded uppercase tracking-wide"
-              style={{ backgroundColor: '#22222a', border: '1px solid #32323c', color: '#8e8e9e' }}>
+              style={{ backgroundColor: '#22222a', border: '1px solid #faf6ee', color: '#7a6248' }}>
               {trait}
             </span>
           ))}
@@ -119,7 +119,7 @@ export default function SWUCardInfo({ card, flipped }) {
 
       {/* ── Stats row ────────────────────────────────────────────────────── */}
       {!isBase && (cost != null || power != null || hp != null) && (
-        <div className="flex flex-wrap gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid #32323c' }}>
+        <div className="flex flex-wrap gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid #faf6ee' }}>
           <StatChip label="Cost"  value={cost}  color="#ffe082" />
           {!isLeader && <StatChip label="Power" value={power} color="#ef5350" />}
           {!isLeader && <StatChip label="HP"    value={hp}    color="#66bb6a" />}

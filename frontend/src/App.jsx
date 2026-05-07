@@ -29,7 +29,7 @@ function NavLink({ to, children }) {
     <Link
       to={to}
       className="text-sm font-medium transition-colors"
-      style={{ color: active ? '#6A7EFC' : '#8e8e9e' }}
+      style={{ color: active ? '#0097a7' : '#7a6248' }}
     >
       {children}
     </Link>
@@ -63,27 +63,27 @@ function UserMenu({ user }) {
       <button
         onClick={() => setOpen(o => !o)}
         className="text-sm font-medium px-3 py-1.5 rounded flex items-center gap-2"
-        style={{ backgroundColor: '#42424e', border: '1px solid #555562', color: '#6A7EFC' }}
+        style={{ backgroundColor: '#f5f0e8', border: '1px solid #d4c4a8', color: '#1c1008' }}
       >
         <span
           className="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: '#6A7EFC', color: '#26262e' }}
+          style={{ backgroundColor: '#0097a7', color: '#f0e6d3' }}
         >
           {user.username.slice(0, 1).toUpperCase()}
         </span>
         <span className="hidden sm:inline">{user.username}</span>
-        <span className="text-xs" style={{ color: '#8e8e9e' }}>{open ? '▲' : '▼'}</span>
+        <span className="text-xs" style={{ color: '#7a6248' }}>{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
         <div
           className="absolute right-0 mt-1 w-44 rounded-lg overflow-hidden z-50"
-          style={{ backgroundColor: '#35353f', border: '1px solid #42424e', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
+          style={{ backgroundColor: '#ffffff', border: '1px solid #d4c4a8', boxShadow: '0 8px 24px rgba(28,16,8,0.12)' }}
         >
           {items.map(([label, to]) =>
             to === null ? (
               <div key={label} className="px-4 py-1.5 text-xs font-semibold uppercase"
-                style={{ color: '#555562', borderTop: '1px solid #42424e', marginTop: '4px', paddingTop: '8px' }}>
+                style={{ color: '#9e836a', borderTop: '1px solid #d4c4a8', marginTop: '4px', paddingTop: '8px' }}>
                 Admin
               </div>
             ) : (
@@ -92,8 +92,8 @@ function UserMenu({ user }) {
                 to={to}
                 onClick={() => setOpen(false)}
                 className="block px-4 py-2.5 text-sm transition-colors hover:bg-opacity-50"
-                style={{ color: '#EDF2F6', textDecoration: 'none', backgroundColor: 'transparent' }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#42424e'}
+                style={{ color: '#1c1008', textDecoration: 'none', backgroundColor: 'transparent' }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#d4c4a8'}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 {label}
@@ -111,12 +111,12 @@ function Header() {
   const { user } = useAuth()
   return (
     <header
-      className="border-b px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-6"
-      style={{ backgroundColor: '#35353f', borderColor: '#42424e' }}
+      className="px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-6"
+      style={{ backgroundColor: '#ffffff', borderBottom: '3px solid #0097a7' }}
     >
       <h1
-        className="text-xl sm:text-2xl font-bold cursor-pointer flex-shrink-0"
-        style={{ color: '#6A7EFC' }}
+        className="text-xl sm:text-2xl font-bold cursor-pointer flex-shrink-0 tracking-tight"
+        style={{ color: '#8b1a3a' }}
         onClick={() => navigate('/')}
       >
         CCGVault
@@ -127,7 +127,7 @@ function Header() {
         <button
           onClick={() => goToRandomCard(navigate)}
           className="text-sm font-medium transition-colors"
-          style={{ color: '#8e8e9e', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          style={{ color: '#7a6248', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
           🎲 Random
         </button>
@@ -140,7 +140,7 @@ function Header() {
           <Link
             to="/login"
             className="text-sm font-medium px-3 py-1.5 rounded"
-            style={{ backgroundColor: '#FF5656', color: '#26262e' }}
+            style={{ backgroundColor: '#8b1a3a', color: '#ffffff' }}
           >
             Login
           </Link>
@@ -154,7 +154,7 @@ function Footer() {
   return (
     <footer
       className="border-t mt-12 px-6 py-8 flex flex-col items-center gap-3"
-      style={{ borderColor: '#42424e', color: '#8e8e9e' }}
+      style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8', color: '#7a6248' }}
     >
       <p className="text-sm">© {new Date().getFullYear()} CCGVault — built by a collector, for collectors</p>
       <a
@@ -162,16 +162,16 @@ function Footer() {
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-2 text-sm px-4 py-2 rounded transition-opacity hover:opacity-80"
-        style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#6A7EFC' }}
+        style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#0097a7' }}
       >
         ☕ Buy me a coffee
       </a>
-      <p className="text-xs text-center max-w-2xl leading-relaxed" style={{ color: '#555562' }}>
+      <p className="text-xs text-center max-w-2xl leading-relaxed" style={{ color: '#9e836a' }}>
         CCGVault is an independent fan site and is not affiliated with, endorsed by, or sponsored by
         any card game publisher. All card names, images, and game content are the property of their
         respective owners. CCGVault is a non-commercial reference tool for collectors and players.
         For DMCA inquiries or takedown requests, contact{' '}
-        <a href="mailto:admin@ccgvault.io" style={{ color: '#8e8e9e' }}>admin@ccgvault.io</a>.
+        <a href="mailto:admin@ccgvault.io" style={{ color: '#7a6248' }}>admin@ccgvault.io</a>.
       </p>
     </footer>
   )
@@ -181,7 +181,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#26262e', color: '#EDF2F6' }}>
+        <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#f0e6d3', color: '#1c1008' }}>
           <Header />
           <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
             <Routes>

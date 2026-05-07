@@ -22,18 +22,18 @@ export default function ForgotPasswordPage() {
   if (submitted) {
     return (
       <div className="max-w-md mx-auto mt-16 text-center">
-        <h2 className="text-2xl font-bold mb-4" style={{ color: '#6A7EFC' }}>Check your email</h2>
+        <h2 className="text-2xl font-bold mb-4" style={{ color: '#0097a7' }}>Check your email</h2>
         <p className="text-gray-400 mb-6">
-          If <strong style={{ color: '#EDF2F6' }}>{email}</strong> is registered, you'll receive a password reset link shortly.
+          If <strong style={{ color: '#1c1008' }}>{email}</strong> is registered, you'll receive a password reset link shortly.
         </p>
-        <Link to="/login" style={{ color: '#6A7EFC' }} className="text-sm">← Back to login</Link>
+        <Link to="/login" style={{ color: '#0097a7' }} className="text-sm">← Back to login</Link>
       </div>
     )
   }
 
   return (
     <div className="max-w-md mx-auto mt-16">
-      <h2 className="text-2xl font-bold mb-2" style={{ color: '#6A7EFC' }}>Forgot password</h2>
+      <h2 className="text-2xl font-bold mb-2" style={{ color: '#0097a7' }}>Forgot password</h2>
       <p className="text-gray-400 text-sm mb-6">Enter your email and we'll send you a reset link.</p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
@@ -44,20 +44,20 @@ export default function ForgotPasswordPage() {
             onChange={e => setEmail(e.target.value)}
             required
             className="w-full px-3 py-2 rounded text-white"
-            style={{ backgroundColor: '#35353f', border: '1px solid #42424e' }}
+            style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}
           />
         </div>
         <button
           type="submit"
           disabled={loading}
           className="py-2 rounded font-semibold disabled:opacity-50"
-          style={{ backgroundColor: '#FF5656', color: '#26262e' }}
+          style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}
         >
           {loading ? 'Sending…' : 'Send Reset Link'}
         </button>
       </form>
       <p className="mt-4 text-sm">
-        <Link to="/login" style={{ color: '#6A7EFC' }}>← Back to login</Link>
+        <Link to="/login" style={{ color: '#0097a7' }}>← Back to login</Link>
       </p>
     </div>
   )

@@ -1,15 +1,15 @@
-function StatChip({ label, value, color = '#EDF2F6' }) {
+function StatChip({ label, value, color = '#1c1008' }) {
   if (value == null || value === '') return null
   return (
     <div className="flex flex-col items-center px-3 py-1.5 rounded-lg min-w-[52px]"
-      style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e' }}>
-      <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>{label}</span>
+      style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8' }}>
+      <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>{label}</span>
       <span className="text-2xl font-extrabold leading-none mt-0.5" style={{ color }}>{value}</span>
     </div>
   )
 }
 
-function Chip({ label, bg = '#22222a', border = '#32323c', text = '#8e8e9e' }) {
+function Chip({ label, bg = '#22222a', border = '#faf6ee', text = '#7a6248' }) {
   if (!label) return null
   return (
     <span className="text-xs px-2 py-0.5 rounded uppercase tracking-wide"
@@ -19,17 +19,17 @@ function Chip({ label, bg = '#22222a', border = '#32323c', text = '#8e8e9e' }) {
   )
 }
 
-function TextBlock({ label, text, labelColor = '#8e8e9e' }) {
+function TextBlock({ label, text, labelColor = '#7a6248' }) {
   if (!text) return null
   return (
-    <div className="rounded-lg border mb-3" style={{ borderColor: '#3a3a44', backgroundColor: '#28282f' }}>
+    <div className="rounded-lg border mb-3" style={{ borderColor: '#faf6ee', backgroundColor: '#28282f' }}>
       {label && (
         <div className="px-3 pt-2.5 pb-1">
           <span className="text-xs font-bold uppercase tracking-wider" style={{ color: labelColor }}>{label}</span>
         </div>
       )}
       <div className={label ? 'px-3 pb-3' : 'p-4'}>
-        <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#EDF2F6' }}>{text}</p>
+        <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>{text}</p>
       </div>
     </div>
   )
@@ -52,7 +52,7 @@ export default function UnionArenaCardInfo({ card }) {
         {/* Card type */}
         {cardType && (
           <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded"
-            style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e', color: '#EDF2F6' }}>
+            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#1c1008' }}>
             {cardType}
           </span>
         )}
@@ -74,7 +74,7 @@ export default function UnionArenaCardInfo({ card }) {
 
       {/* ── Stats row ─────────────────────────────────────────────────────── */}
       {showStats && (
-        <div className="flex flex-wrap gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid #32323c' }}>
+        <div className="flex flex-wrap gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid #faf6ee' }}>
           <StatChip label="AP" value={attrs.ap} color="#ffe082" />
           <StatChip label="BP" value={attrs.bp} color="#ef5350" />
         </div>

@@ -8,30 +8,30 @@ import { API_URL } from '../config'
 function DeckCardRow({ card, onIncrease, onDecrease }) {
   return (
     <div className="flex items-center gap-2 px-3 py-1.5"
-      style={{ borderBottom: '1px solid #26262e' }}>
+      style={{ borderBottom: '1px solid #f0e6d3' }}>
       {card.image_url
         ? <img src={card.image_url} alt={card.card_name} className="w-7 rounded flex-shrink-0" />
-        : <div className="w-7 h-10 rounded flex-shrink-0" style={{ backgroundColor: '#42424e' }} />
+        : <div className="w-7 h-10 rounded flex-shrink-0" style={{ backgroundColor: '#d4c4a8' }} />
       }
       <div className="flex-1 min-w-0">
         <Link to={`/cards/${card.card_id}`} target="_blank"
           className="text-xs font-medium truncate block hover:underline"
-          style={{ color: '#EDF2F6' }} title={card.card_name}>
+          style={{ color: '#1c1008' }} title={card.card_name}>
           {card.card_name}
         </Link>
       </div>
       <div className="flex items-center gap-1 flex-shrink-0">
         <button onClick={onDecrease}
           className="w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors"
-          style={{ backgroundColor: '#42424e', color: card.quantity === 1 ? '#FF5656' : '#EDF2F6' }}>
+          style={{ backgroundColor: '#d4c4a8', color: card.quantity === 1 ? '#8b1a3a' : '#1c1008' }}>
           −
         </button>
-        <span className="w-6 text-center text-xs font-bold" style={{ color: '#6A7EFC' }}>
+        <span className="w-6 text-center text-xs font-bold" style={{ color: '#0097a7' }}>
           {card.quantity}
         </span>
         <button onClick={onIncrease}
           className="w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors"
-          style={{ backgroundColor: '#42424e', color: '#EDF2F6' }}>
+          style={{ backgroundColor: '#d4c4a8', color: '#1c1008' }}>
           +
         </button>
       </div>
@@ -45,27 +45,27 @@ function SearchCard({ card, deckQty, onAdd, onMouseEnter, onMouseLeave }) {
   return (
     <div
       className="relative rounded-xl overflow-hidden cursor-pointer border transition-all duration-150"
-      style={{ backgroundColor: '#35353f', borderColor: deckQty > 0 ? '#6A7EFC' : '#42424e' }}
+      style={{ backgroundColor: '#faf6ee', borderColor: deckQty > 0 ? '#0097a7' : '#d4c4a8' }}
       onClick={onAdd}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
       {deckQty > 0 && (
         <div className="absolute top-1.5 right-1.5 z-10 text-xs font-bold px-1.5 py-0.5 rounded"
-          style={{ backgroundColor: '#FF5656', color: '#26262e' }}>
+          style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}>
           ×{deckQty}
         </div>
       )}
       {card.image_url
         ? <img src={card.image_url} alt={card.name} className="w-full" />
         : <div className="aspect-[2.5/3.5] flex items-center justify-center p-2"
-            style={{ backgroundColor: '#42424e' }}>
-            <span className="text-xs text-center" style={{ color: '#8e8e9e' }}>{card.name}</span>
+            style={{ backgroundColor: '#d4c4a8' }}>
+            <span className="text-xs text-center" style={{ color: '#7a6248' }}>{card.name}</span>
           </div>
       }
       <div className="px-2 py-1.5">
-        <p className="text-xs font-medium truncate" style={{ color: '#EDF2F6' }}>{card.name}</p>
-        <p className="text-xs truncate" style={{ color: '#8e8e9e' }}>{card.card_type}</p>
+        <p className="text-xs font-medium truncate" style={{ color: '#1c1008' }}>{card.name}</p>
+        <p className="text-xs truncate" style={{ color: '#7a6248' }}>{card.card_type}</p>
       </div>
     </div>
   )
@@ -198,12 +198,12 @@ export default function DeckBuilderPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <p style={{ color: '#8e8e9e' }}>Loading deck…</p>
+      <p style={{ color: '#7a6248' }}>Loading deck…</p>
     </div>
   )
   if (!deck) return (
     <div className="flex items-center justify-center h-64">
-      <p style={{ color: '#8e8e9e' }}>Deck not found.</p>
+      <p style={{ color: '#7a6248' }}>Deck not found.</p>
     </div>
   )
 
@@ -213,7 +213,7 @@ export default function DeckBuilderPage() {
       <div className="mb-6">
         <button onClick={() => navigate('/profile?tab=decks')}
           className="text-sm mb-3 flex items-center gap-1 hover:opacity-80 transition-opacity"
-          style={{ color: '#6A7EFC' }}>
+          style={{ color: '#0097a7' }}>
           ← My Decks
         </button>
 
@@ -227,29 +227,29 @@ export default function DeckBuilderPage() {
                 onBlur={saveName}
                 onKeyDown={e => { if (e.key === 'Enter') saveName(); if (e.key === 'Escape') setEditingName(false) }}
                 className="text-2xl font-bold bg-transparent border-b outline-none"
-                style={{ color: '#EDF2F6', borderColor: '#6A7EFC' }}
+                style={{ color: '#1c1008', borderColor: '#0097a7' }}
               />
             ) : (
               <h2
                 className="text-2xl font-bold cursor-pointer group flex items-center gap-2"
-                style={{ color: '#EDF2F6' }}
+                style={{ color: '#1c1008' }}
                 onClick={() => setEditingName(true)}
                 title="Click to rename"
               >
                 {deck.name}
                 <span className="text-sm font-normal opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{ color: '#8e8e9e' }}>
+                  style={{ color: '#7a6248' }}>
                   edit
                 </span>
               </h2>
             )}
             <div className="flex items-center gap-3 mt-1 flex-wrap">
-              <span className="text-sm font-medium" style={{ color: '#6A7EFC' }}>{deck.game_name}</span>
-              <span style={{ color: '#42424e' }}>·</span>
-              <span className="text-sm" style={{ color: '#8e8e9e' }}>
+              <span className="text-sm font-medium" style={{ color: '#0097a7' }}>{deck.game_name}</span>
+              <span style={{ color: '#d4c4a8' }}>·</span>
+              <span className="text-sm" style={{ color: '#7a6248' }}>
                 {uniqueCards} unique · {totalCards} total
               </span>
-              <span style={{ color: '#42424e' }}>·</span>
+              <span style={{ color: '#d4c4a8' }}>·</span>
               {editingFormat ? (
                 <input
                   autoFocus
@@ -259,15 +259,15 @@ export default function DeckBuilderPage() {
                   onKeyDown={e => { if (e.key === 'Enter') saveFormat(); if (e.key === 'Escape') setEditingFormat(false) }}
                   placeholder="e.g. Standard, Casual, Commander"
                   className="text-sm bg-transparent border-b outline-none"
-                  style={{ color: '#EDF2F6', borderColor: '#6A7EFC', minWidth: '180px' }}
+                  style={{ color: '#1c1008', borderColor: '#0097a7', minWidth: '180px' }}
                 />
               ) : (
                 <button
                   onClick={() => { setFormatInput(deck.format || ''); setEditingFormat(true) }}
                   className="text-xs hover:opacity-80 transition-opacity"
                   style={deck.format
-                    ? { backgroundColor: '#42424e', color: '#EDF2F6', padding: '2px 8px', borderRadius: '4px', border: '1px solid #555562' }
-                    : { color: '#555562' }
+                    ? { backgroundColor: '#d4c4a8', color: '#1c1008', padding: '2px 8px', borderRadius: '4px', border: '1px solid #9e836a' }
+                    : { color: '#9e836a' }
                   }
                 >
                   {deck.format || '+ format'}
@@ -283,27 +283,27 @@ export default function DeckBuilderPage() {
 
         {/* Left — deck list */}
         <div className="lg:w-72 flex-shrink-0">
-          <div className="rounded-xl overflow-hidden sticky top-4" style={{ border: '1px solid #42424e' }}>
+          <div className="rounded-xl overflow-hidden sticky top-4" style={{ border: '1px solid #d4c4a8' }}>
             <div className="px-3 py-2.5 flex items-center justify-between"
-              style={{ backgroundColor: '#35353f', borderBottom: '1px solid #42424e' }}>
-              <p className="text-sm font-semibold" style={{ color: '#EDF2F6' }}>Deck List</p>
+              style={{ backgroundColor: '#faf6ee', borderBottom: '1px solid #d4c4a8' }}>
+              <p className="text-sm font-semibold" style={{ color: '#1c1008' }}>Deck List</p>
               <span className="text-xs px-2 py-0.5 rounded-full"
-                style={{ backgroundColor: '#42424e', color: '#6A7EFC' }}>
+                style={{ backgroundColor: '#d4c4a8', color: '#0097a7' }}>
                 {totalCards}
               </span>
             </div>
-            <div className="overflow-y-auto" style={{ backgroundColor: '#1f1f25', maxHeight: 'calc(100vh - 220px)' }}>
+            <div className="overflow-y-auto" style={{ backgroundColor: '#e8ddc8', maxHeight: 'calc(100vh - 220px)' }}>
               {deck.cards.length === 0 ? (
-                <p className="text-xs text-center py-8 px-4" style={{ color: '#8e8e9e' }}>
+                <p className="text-xs text-center py-8 px-4" style={{ color: '#7a6248' }}>
                   Search for cards on the right to add them.
                 </p>
               ) : (
                 Object.entries(grouped).sort().map(([type, cards]) => (
                   <div key={type}>
                     <p className="text-xs font-semibold px-3 py-1.5 sticky top-0 flex items-center justify-between"
-                      style={{ backgroundColor: '#26262e', color: '#8e8e9e' }}>
+                      style={{ backgroundColor: '#f0e6d3', color: '#7a6248' }}>
                       <span>{type}</span>
-                      <span style={{ color: '#42424e' }}>{cards.reduce((s, c) => s + c.quantity, 0)}</span>
+                      <span style={{ color: '#d4c4a8' }}>{cards.reduce((s, c) => s + c.quantity, 0)}</span>
                     </p>
                     {cards.map(card => (
                       <DeckCardRow key={card.card_id} card={card}
@@ -322,9 +322,9 @@ export default function DeckBuilderPage() {
         <div className="flex-1 min-w-0">
           {/* Search input */}
           <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl mb-4"
-            style={{ backgroundColor: '#35353f', border: '1px solid #42424e' }}>
+            style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}>
             <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-              style={{ color: '#8e8e9e' }}>
+              style={{ color: '#7a6248' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -335,11 +335,11 @@ export default function DeckBuilderPage() {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="flex-1 bg-transparent outline-none text-sm"
-              style={{ color: '#EDF2F6' }}
+              style={{ color: '#1c1008' }}
             />
             {searchQuery && (
               <button onClick={() => { setSearchQuery(''); setSearchResults([]) }}
-                className="text-xs" style={{ color: '#8e8e9e' }}>
+                className="text-xs" style={{ color: '#7a6248' }}>
                 ✕
               </button>
             )}
@@ -348,17 +348,17 @@ export default function DeckBuilderPage() {
           {/* States */}
           {searchQuery.trim().length < 2 && (
             <div className="text-center py-16">
-              <p className="text-lg mb-1" style={{ color: '#8e8e9e' }}>Find cards to add</p>
-              <p className="text-sm" style={{ color: '#42424e' }}>
+              <p className="text-lg mb-1" style={{ color: '#7a6248' }}>Find cards to add</p>
+              <p className="text-sm" style={{ color: '#d4c4a8' }}>
                 Search by card name — results are scoped to {deck.game_name}
               </p>
             </div>
           )}
           {searching && (
-            <p className="text-sm text-center py-8" style={{ color: '#8e8e9e' }}>Searching…</p>
+            <p className="text-sm text-center py-8" style={{ color: '#7a6248' }}>Searching…</p>
           )}
           {!searching && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
-            <p className="text-sm text-center py-8" style={{ color: '#8e8e9e' }}>
+            <p className="text-sm text-center py-8" style={{ color: '#7a6248' }}>
               No cards found for "{searchQuery}"
             </p>
           )}
@@ -389,15 +389,15 @@ export default function DeckBuilderPage() {
             left: Math.max(8, Math.min(tooltipPos.x, window.innerWidth - 368)),
             top: Math.max(8, Math.min(tooltipPos.y, window.innerHeight - 508)),
             width: 360,
-            border: '2px solid #6A7EFC',
-            backgroundColor: '#35353f',
+            border: '2px solid #0097a7',
+            backgroundColor: '#faf6ee',
             boxShadow: '0 0 40px rgba(8, 217, 214, 0.3)',
           }}>
           <img src={hoveredCard.image_url} alt={hoveredCard.name} className="w-full" />
           <div className="p-2">
-            <p className="text-sm font-semibold" style={{ color: '#EDF2F6' }}>{hoveredCard.name}</p>
+            <p className="text-sm font-semibold" style={{ color: '#1c1008' }}>{hoveredCard.name}</p>
             {hoveredCard.card_type && (
-              <p className="text-xs" style={{ color: '#6A7EFC' }}>{hoveredCard.card_type}</p>
+              <p className="text-xs" style={{ color: '#0097a7' }}>{hoveredCard.card_type}</p>
             )}
           </div>
         </div>

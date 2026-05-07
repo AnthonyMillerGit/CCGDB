@@ -39,23 +39,23 @@ export default function LoginPage() {
     }
   }
 
-  const inputStyle = { backgroundColor: '#35353f', border: '1px solid #42424e' }
+  const inputStyle = { backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }
 
   return (
     <div className="max-w-md mx-auto mt-16">
       {searchParams.get('reset') === '1' && (
-        <div className="mb-4 px-4 py-3 rounded text-sm" style={{ backgroundColor: '#1a3a2a', border: '1px solid #2d6a4f', color: '#6A7EFC' }}>
+        <div className="mb-4 px-4 py-3 rounded text-sm" style={{ backgroundColor: '#1a3a2a', border: '1px solid #2d6a4f', color: '#0097a7' }}>
           Password updated successfully. Sign in with your new password.
         </div>
       )}
       {/* Tab toggle */}
-      <div className="flex mb-6 rounded-lg overflow-hidden" style={{ border: '1px solid #42424e' }}>
+      <div className="flex mb-6 rounded-lg overflow-hidden" style={{ border: '1px solid #d4c4a8' }}>
         <button
           onClick={() => switchMode('login')}
           className="flex-1 py-2 text-sm font-semibold transition-colors"
           style={{
-            backgroundColor: mode === 'login' ? '#6A7EFC' : '#35353f',
-            color: mode === 'login' ? '#26262e' : '#8e8e9e',
+            backgroundColor: mode === 'login' ? '#0097a7' : '#faf6ee',
+            color: mode === 'login' ? '#f0e6d3' : '#7a6248',
           }}
         >
           Sign In
@@ -64,8 +64,8 @@ export default function LoginPage() {
           onClick={() => switchMode('register')}
           className="flex-1 py-2 text-sm font-semibold transition-colors"
           style={{
-            backgroundColor: mode === 'register' ? '#6A7EFC' : '#35353f',
-            color: mode === 'register' ? '#26262e' : '#8e8e9e',
+            backgroundColor: mode === 'register' ? '#0097a7' : '#faf6ee',
+            color: mode === 'register' ? '#f0e6d3' : '#7a6248',
           }}
         >
           Create Account
@@ -101,7 +101,7 @@ export default function LoginPage() {
           <div className="flex justify-between items-baseline mb-1">
             <label className="block text-sm text-gray-400">Password</label>
             {mode === 'login' && (
-              <Link to="/forgot-password" className="text-xs" style={{ color: '#6A7EFC' }}>
+              <Link to="/forgot-password" className="text-xs" style={{ color: '#0097a7' }}>
                 Forgot password?
               </Link>
             )}
@@ -121,7 +121,7 @@ export default function LoginPage() {
           type="submit"
           disabled={loading}
           className="py-2 rounded font-semibold disabled:opacity-50"
-          style={{ backgroundColor: '#FF5656', color: '#26262e' }}
+          style={{ backgroundColor: '#8b1a3a', color: '#f0e6d3' }}
         >
           {loading
             ? (mode === 'login' ? 'Signing in…' : 'Creating account…')

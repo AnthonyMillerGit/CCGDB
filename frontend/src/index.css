@@ -21,11 +21,17 @@
 .card-rules-html li { margin-bottom: 0.25rem; }
 
 :root {
-  --bg-primary: #26262e;
-  --bg-secondary: #35353f;
-  --accent-teal: #6A7EFC;
-  --accent-pink: #FF5656;
-  --text-primary: #EDF2F6;
-  --text-muted: #8e8e9e;
-  --border: #42424e;
+  --bg-primary:    #f0e6d3;
+  --bg-secondary:  #faf6ee;
+  --accent-teal:   #0097a7;
+  --accent-maroon: #8b1a3a;
+  --accent-purple: #6b2d8f;
+  --text-primary:  #1c1008;
+  --text-muted:    #7a6248;
+  --border:        #d4c4a8;
+}
+
+html, body {
+  background-color: #f0e6d3;
+  color: #1c1008;
 }

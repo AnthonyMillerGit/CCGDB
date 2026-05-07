@@ -10,9 +10,9 @@ const AURA_STYLES = {
   Spirit:  { bg: '#2e1a2e', border: '#7b1fa2', text: '#e1bee7' },
   Metal:   { bg: '#1a1a24', border: '#546e7a', text: '#b0bec5' },
 }
-const DEFAULT_AURA = { bg: '#22222a', border: '#42424e', text: '#aaa' }
+const DEFAULT_AURA = { bg: '#22222a', border: '#d4c4a8', text: '#aaa' }
 
-function Chip({ label, bg = '#22222a', border = '#32323c', text = '#8e8e9e' }) {
+function Chip({ label, bg = '#22222a', border = '#faf6ee', text = '#7a6248' }) {
   return (
     <span className="text-xs px-2 py-0.5 rounded uppercase tracking-wide"
       style={{ backgroundColor: bg, border: `1px solid ${border}`, color: text }}>
@@ -21,13 +21,13 @@ function Chip({ label, bg = '#22222a', border = '#32323c', text = '#8e8e9e' }) {
   )
 }
 
-function InfoRow({ label, value, labelColor = '#8e8e9e' }) {
+function InfoRow({ label, value, labelColor = '#7a6248' }) {
   if (!value) return null
   return (
     <div className="flex gap-2 text-sm mb-1.5">
       <span className="text-xs font-bold uppercase tracking-wider w-32 shrink-0 pt-0.5"
         style={{ color: labelColor }}>{label}</span>
-      <span style={{ color: '#EDF2F6' }}>{value}</span>
+      <span style={{ color: '#1c1008' }}>{value}</span>
     </div>
   )
 }
@@ -35,8 +35,8 @@ function InfoRow({ label, value, labelColor = '#8e8e9e' }) {
 function TextBlock({ text }) {
   if (!text) return null
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: '#3a3a44', backgroundColor: '#28282f' }}>
-      <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#EDF2F6' }}>{text}</p>
+    <div className="rounded-lg border p-4" style={{ borderColor: '#faf6ee', backgroundColor: '#28282f' }}>
+      <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>{text}</p>
     </div>
   )
 }
@@ -71,14 +71,14 @@ export default function MetaZooCardInfo({ card }) {
         {/* Card type */}
         {typeBase && (
           <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded"
-            style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e', color: '#EDF2F6' }}>
+            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#1c1008' }}>
             {typeBase}
           </span>
         )}
 
         {/* Subtype */}
         {typeSubtype && (
-          <Chip label={typeSubtype} bg="#22222a" border="#32323c" text="#8e8e9e" />
+          <Chip label={typeSubtype} bg="#22222a" border="#faf6ee" text="#7a6248" />
         )}
 
         {/* Cost */}
@@ -99,10 +99,10 @@ export default function MetaZooCardInfo({ card }) {
       {/* ── Beastie stats ─────────────────────────────────────────────────── */}
       {(attrs.life_points || attrs.spellbook_limit) && (
         <div className="rounded-lg border mb-4 px-3 py-2.5 flex flex-wrap gap-x-6 gap-y-1"
-          style={{ borderColor: '#3a3a44', backgroundColor: '#28282f' }}>
+          style={{ borderColor: '#faf6ee', backgroundColor: '#28282f' }}>
           <InfoRow label="Life Points"     value={attrs.life_points}     labelColor="#66bb6a" />
           <InfoRow label="Attack"          value={attrs.attack}          labelColor="#ef5350" />
-          <InfoRow label="Spellbook Limit" value={attrs.spellbook_limit} labelColor="#8e8e9e" />
+          <InfoRow label="Spellbook Limit" value={attrs.spellbook_limit} labelColor="#7a6248" />
           <InfoRow label="Terra Bonuses"   value={attrs.terra_bonuses}   labelColor="#80cbc4" />
           <InfoRow label="Fourth Wall"     value={attrs.fourth_wall}     labelColor="#ce93d8" />
         </div>
