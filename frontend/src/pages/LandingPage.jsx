@@ -48,22 +48,22 @@ export default function LandingPage() {
     <div className="max-w-5xl mx-auto">
 
       {/* Hero */}
-      <div className="text-center py-20">
-        <h1 className="text-5xl font-bold mb-4" style={{ color: 'var(--accent)' }}>CCGVault</h1>
-        <p className="text-xl mb-2" style={{ color: 'var(--text-primary)' }}>
+      <div className="text-center py-10 sm:py-16 md:py-20">
+        <h1 className="text-3xl sm:text-5xl font-bold mb-3" style={{ color: 'var(--accent)' }}>CCGVault</h1>
+        <p className="text-base sm:text-xl mb-6" style={{ color: 'var(--text-primary)' }}>
           The collectible card game database for everyone.
         </p>
-        <div className="flex items-center justify-center gap-4 flex-wrap">
+        <div className="flex items-center justify-center gap-3 flex-wrap">
           <button
             onClick={() => navigate('/games')}
-            className="px-6 py-3 rounded-lg font-semibold text-base transition-opacity hover:opacity-90"
+            className="px-5 py-2.5 rounded-lg font-semibold text-sm sm:text-base transition-opacity hover:opacity-90"
             style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}
           >
             Browse Games
           </button>
-<button
+          <button
             onClick={() => goToRandomCard(navigate)}
-            className="px-6 py-3 rounded-lg font-semibold text-base transition-opacity hover:opacity-90"
+            className="px-5 py-2.5 rounded-lg font-semibold text-sm sm:text-base transition-opacity hover:opacity-90"
             style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}
           >
             🎲 Random Card
@@ -71,7 +71,7 @@ export default function LandingPage() {
           {!user && (
             <Link
               to="/login"
-              className="px-6 py-3 rounded-lg font-semibold text-base"
+              className="px-5 py-2.5 rounded-lg font-semibold text-sm sm:text-base"
               style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
             >
               Sign Up Free
@@ -80,29 +80,29 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Stats bar */}
+      {/* Stats + card fan */}
       {stats && (
         <div
-          className="flex flex-col md:flex-row items-center gap-4 px-8 py-8 rounded-xl mb-16"
+          className="flex flex-col md:flex-row items-center gap-6 px-5 sm:px-8 py-6 sm:py-8 rounded-xl mb-10 sm:mb-16"
           style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
         >
-          {/* Stats + description — 50% */}
+          {/* Stats + description */}
           <div className="flex flex-col items-center md:items-start gap-4 w-full md:w-1/2">
-            <div className="flex items-center gap-12">
-              <div className="text-center md:text-left">
-                <p className="text-6xl font-bold" style={{ color: 'var(--accent)' }}>{stats.games}</p>
-                <p className="text-lg mt-1" style={{ color: 'var(--text-primary)' }}>Games</p>
+            <div className="flex items-center justify-center md:justify-start gap-6 sm:gap-10 w-full">
+              <div className="text-center">
+                <p className="text-3xl sm:text-5xl font-bold" style={{ color: 'var(--accent)' }}>{stats.games}</p>
+                <p className="text-sm sm:text-base mt-0.5" style={{ color: 'var(--text-muted)' }}>Games</p>
               </div>
-              <div className="text-center md:text-left">
-                <p className="text-6xl font-bold" style={{ color: 'var(--accent)' }}>{stats.sets?.toLocaleString()}</p>
-                <p className="text-lg mt-1" style={{ color: 'var(--text-primary)' }}>Sets</p>
+              <div className="text-center">
+                <p className="text-3xl sm:text-5xl font-bold" style={{ color: 'var(--accent)' }}>{stats.sets?.toLocaleString()}</p>
+                <p className="text-sm sm:text-base mt-0.5" style={{ color: 'var(--text-muted)' }}>Sets</p>
               </div>
-              <div className="text-center md:text-left">
-                <p className="text-6xl font-bold" style={{ color: 'var(--accent)' }}>{stats.cards?.toLocaleString()}</p>
-                <p className="text-lg mt-1" style={{ color: 'var(--text-primary)' }}>Cards</p>
+              <div className="text-center">
+                <p className="text-3xl sm:text-5xl font-bold" style={{ color: 'var(--accent)' }}>{stats.cards?.toLocaleString()}</p>
+                <p className="text-sm sm:text-base mt-0.5" style={{ color: 'var(--text-muted)' }}>Cards</p>
               </div>
             </div>
-            <p className="text-base text-center md:text-left" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-sm sm:text-base text-center md:text-left leading-relaxed" style={{ color: 'var(--text-muted)' }}>
               CCGVault is a collector's companion — track your collection, build decks,
               and explore card games in one place. Whether you're rediscovering a game
               from the 90s or diving into something new, we've got the cards.
@@ -110,9 +110,9 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Card fan — 50% */}
+          {/* Card fan — hidden on mobile, shown md+ */}
           {fanCards.length > 0 && (
-            <div className="relative w-full md:w-1/2" style={{ height: 340 }}>
+            <div className="relative hidden md:block w-full md:w-1/2" style={{ height: 300 }}>
               {fanCards.map((card, i) => {
                 const f = FAN_CARDS[i] || FAN_CARDS[0]
                 return (
@@ -122,7 +122,7 @@ export default function LandingPage() {
                     alt={card.name}
                     className="absolute rounded-lg shadow-xl"
                     style={{
-                      width: 180,
+                      width: 160,
                       top: '50%',
                       left: '62%',
                       transform: `translate(calc(-50% + ${f.x}px), calc(-50% + ${f.y}px)) rotate(${f.rotate}deg)`,
