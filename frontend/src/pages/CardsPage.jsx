@@ -49,7 +49,7 @@ export default function CardsPage() {
   const [tooltipPos, setTooltipPos]   = useState({ x: 0, y: 0 })
   const [owned, setOwned]       = useState({})   // printing_id → quantity
   const [addingSet, setAddingSet] = useState(false)
-  const [sort, setSort]         = useState('number_asc')
+  const [sort, setSort]         = useState('name_asc')
   const [search, setSearch]     = useState('')
   const [rarityFilter, setRarityFilter] = useState([])
   const [rarityOpen, setRarityOpen]     = useState(false)
