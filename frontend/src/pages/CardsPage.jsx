@@ -82,13 +82,11 @@ export default function CardsPage() {
   // view + bulk-add state
   // viewMode is in URL; 'card' | 'list'
   const [bulkTarget, setBulkTarget]   = useState(null)     // null | 'collection' | 'deck' | 'wishlist'
-  const [bulkOpen, setBulkOpen]       = useState(false)
   const [bulkQtys, setBulkQtys]       = useState({})       // printing_id → qty delta
   const [bulkDecks, setBulkDecks]     = useState(null)     // deck list for game
   const [bulkDeckId, setBulkDeckId]   = useState(null)
   const [bulkSaving, setBulkSaving]   = useState(false)
   const [bulkMsg, setBulkMsg]         = useState('')
-  const bulkRef = useRef(null)
 
   const navigate = useNavigate()
   const { user, authFetch } = useAuth()
@@ -101,12 +99,11 @@ export default function CardsPage() {
     return () => document.removeEventListener('mousedown', h)
   }, [rarityOpen])
 
+  // Default bulk target to collection when logged in
   useEffect(() => {
-    if (!bulkOpen) return
-    const h = e => { if (bulkRef.current && !bulkRef.current.contains(e.target)) setBulkOpen(false) }
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
-  }, [bulkOpen])
+    setBulkTarget(user ? 'collection' : null)
+    setBulkQtys({})
+  }, [user])
 
   // ── Data fetching ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -188,7 +185,6 @@ export default function CardsPage() {
 
   // ── Bulk target selection ─────────────────────────────────────────────────
   async function selectBulkTarget(target) {
-    setBulkOpen(false)
     setBulkQtys({})
     setBulkMsg('')
     setBulkTarget(target)
@@ -445,32 +441,15 @@ export default function CardsPage() {
 
         {/* Add Multiple To... */}
         {user && (
-          <div className="relative" ref={bulkRef}>
-            <button onClick={() => setBulkOpen(o => !o)}
-              className="text-sm px-3 py-1.5 rounded flex items-center gap-1.5"
-              style={{ backgroundColor: isBulkActive ? '#1a2a4a' : '#35353f', border: `1px solid ${isBulkActive ? '#6A7EFC' : '#42424e'}`, color: isBulkActive ? '#6A7EFC' : '#EDF2F6' }}>
-              Add Multiple To… ▾
-            </button>
-            {bulkOpen && (
-              <div className="absolute z-20 mt-1 rounded-lg shadow-xl min-w-[160px]"
-                style={{ backgroundColor: '#2a2a34', border: '1px solid #42424e' }}>
-                {[['collection','Collection'],['deck','Deck'],['wishlist','Wishlist']].map(([key, label]) => (
-                  <button key={key} onClick={() => selectBulkTarget(bulkTarget === key ? null : key)}
-                    className="w-full text-left px-4 py-2.5 text-sm hover:opacity-80 flex items-center justify-between"
-                    style={{ color: bulkTarget === key ? '#6A7EFC' : '#EDF2F6', borderBottom: '1px solid #3a3a44' }}>
-                    {label}
-                    {bulkTarget === key && <span className="text-xs">✓</span>}
-                  </button>
-                ))}
-                {isBulkActive && (
-                  <button onClick={() => { setBulkTarget(null); setBulkQtys({}); setBulkMsg('') }}
-                    className="w-full text-left px-4 py-2 text-xs hover:opacity-80"
-                    style={{ color: '#8e8e9e' }}>
-                    Cancel
-                  </button>
-                )}
-              </div>
-            )}
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>Add Multiple To…</span>
+            <select value={bulkTarget || 'collection'} onChange={e => selectBulkTarget(e.target.value)}
+              className="text-sm px-3 py-1.5 rounded"
+              style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6' }}>
+              <option value="collection">Collection</option>
+              <option value="deck">Deck</option>
+              <option value="wishlist">Wishlist</option>
+            </select>
           </div>
         )}
 
@@ -507,10 +486,12 @@ export default function CardsPage() {
             </button>
           )}
           {bulkMsg && <span className="text-sm" style={{ color: '#a5d6a7' }}>{bulkMsg}</span>}
-          <button onClick={() => { setBulkTarget(null); setBulkQtys({}); setBulkMsg('') }}
-            className="ml-auto text-xs hover:opacity-80" style={{ color: '#8e8e9e' }}>
-            Cancel
-          </button>
+          {bulkCount > 0 && (
+            <button onClick={() => { setBulkQtys({}); setBulkMsg('') }}
+              className="ml-auto text-xs hover:opacity-80" style={{ color: '#8e8e9e' }}>
+              Clear
+            </button>
+          )}
         </div>
       )}
 
@@ -529,9 +510,9 @@ export default function CardsPage() {
                     style={{ backgroundColor: '#6A7EFC', color: '#26262e' }}>×{quantity}</div>
                 )}
                 <div className="cursor-pointer transition-all duration-200"
-                  onClick={() => !isBulkActive && navigate(`/cards/${card.id}`)}
-                  onMouseEnter={e => !isBulkActive && handleMouseEnter(e, card)}
-                  onMouseLeave={e => !isBulkActive && handleMouseLeave(e)}>
+                  onClick={() => navigate(`/cards/${card.id}`)}
+                  onMouseEnter={e => handleMouseEnter(e, card)}
+                  onMouseLeave={e => handleMouseLeave(e)}>
                   {card.image_url
                     ? <img src={card.image_url} alt={card.name} className="w-full" />
                     : <div className="aspect-[2.5/3.5] flex items-center justify-center p-3"
@@ -574,8 +555,8 @@ export default function CardsPage() {
             const rarityColor = RARITY_COLORS[normalizeRarity(card.rarity)] || '#8e8e9e'
             return (
               <div key={card.id}
-                onClick={() => !isBulkActive && navigate(`/cards/${card.id}`)}
-                className={`rounded border px-3 py-2 flex items-center justify-between gap-2 transition-colors ${!isBulkActive ? 'cursor-pointer hover:border-[#6A7EFC]' : ''}`}
+                onClick={() => navigate(`/cards/${card.id}`)}
+                className="rounded border px-3 py-2 flex items-center justify-between gap-2 transition-colors cursor-pointer hover:border-[#6A7EFC]"
                 style={{ backgroundColor: bulkQty > 0 ? '#1a2a4a' : '#2a2a34', borderColor: bulkQty > 0 ? '#6A7EFC' : '#42424e' }}>
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-sm font-medium truncate" style={{ color: '#EDF2F6' }}>{card.name}</span>
