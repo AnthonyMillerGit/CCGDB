@@ -134,7 +134,7 @@ export default function SetsPage() {
   return (
     <div>
       <button
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/games')}
         className="text-sm mb-6 flex items-center gap-1 hover:opacity-80 transition-opacity"
         style={{ color: '#6A7EFC' }}
       >
