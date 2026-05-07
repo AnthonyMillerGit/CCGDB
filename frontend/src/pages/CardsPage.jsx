@@ -58,7 +58,8 @@ export default function CardsPage() {
   const search      = searchParams.get('q')       || ''
   const rarityFilter = searchParams.getAll('rarity')
   const page        = parseInt(searchParams.get('page') || '1', 10)
-  const pageSize    = parseInt(searchParams.get('per')  || '25', 10)
+  const _per        = searchParams.get('per')
+  const pageSize    = _per === null ? 25 : parseInt(_per, 10)
   const viewMode    = searchParams.get('view')    || 'card'
 
   function setParam(updates) {
@@ -415,7 +416,7 @@ export default function CardsPage() {
         {/* Cards Per Page */}
         <div className="flex items-center gap-1.5">
           <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>Cards Per Page</span>
-          <select value={pageSize} onChange={e => setParam({ per: Number(e.target.value) || null, page: 1 })}
+          <select value={pageSize} onChange={e => setParam({ per: e.target.value, page: 1 })}
             className="text-sm px-3 py-1.5 rounded"
             style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6' }}>
             <option value={25}>25</option>
