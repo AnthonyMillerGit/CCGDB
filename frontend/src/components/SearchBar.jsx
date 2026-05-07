@@ -58,7 +58,7 @@ export default function SearchBar() {
   }
 
   return (
-    <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md">
+    <div className="relative w-48 sm:w-64 md:w-80 lg:w-[420px]">
       <div className="relative">
         <input
           ref={inputRef}
@@ -89,14 +89,14 @@ export default function SearchBar() {
 
       {showSuggestions && suggestions.length > 0 && (
         <div
-          className="absolute top-full left-0 right-0 mt-1 rounded-lg overflow-hidden z-50 border max-h-80 overflow-y-auto"
-          style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)' }}
+          className="absolute top-full right-0 mt-1 rounded-lg overflow-hidden z-50 border max-h-96 overflow-y-auto"
+          style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)', minWidth: '420px', boxShadow: '0 8px 32px var(--shadow)' }}
         >
           {suggestions.map((card, i) => (
             <div
               key={`${card.id}-${card.game_slug}`}
               onClick={() => handleSelect(card)}
-              className="px-3 py-2 cursor-pointer flex items-center gap-3"
+              className="px-4 py-2.5 cursor-pointer flex items-center gap-3 border-b last:border-b-0"
               style={{
                 backgroundColor: i === activeIndex ? 'var(--border)' : 'transparent',
               }}
@@ -106,8 +106,8 @@ export default function SearchBar() {
               <div
                 className="rounded overflow-hidden flex-shrink-0"
                 style={{
-                  width: '36px',
-                  height: '50px',
+                  width: '40px',
+                  height: '56px',
                   backgroundColor: 'var(--bg-chip)',
                   border: '1px solid var(--border)',
                 }}
@@ -127,23 +127,24 @@ export default function SearchBar() {
 
               {/* Card info */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
                   {card.name}
                 </p>
                 <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
-                  {card.card_type || card.game}
+                  {[card.card_type, card.set_name].filter(Boolean).join(' · ')}
                 </p>
               </div>
 
               {/* Game badge */}
               <span
-                className="text-xs font-bold px-2 py-0.5 rounded flex-shrink-0"
+                className="text-xs font-bold px-2 py-1 rounded flex-shrink-0"
                 style={{
                   backgroundColor: 'var(--bg-chip)',
-                  color: GAME_COLORS[card.game_slug] || 'var(--text-muted)'
+                  color: GAME_COLORS[card.game_slug] || 'var(--text-muted)',
+                  border: '1px solid var(--border)',
                 }}
               >
-                {card.game_slug?.toUpperCase()}
+                {card.game}
               </span>
             </div>
           ))}
