@@ -6,6 +6,40 @@ import { RARITY_COLORS, normalizeRarity, rarityRank } from '../theme'
 
 const isTouchDevice = window.matchMedia('(hover: none)').matches
 
+// Known game attribute fields that are worth sorting by, in preferred display order
+const ATTR_SORT_FIELDS = [
+  { key: 'cmc',        label: 'CMC'         },
+  { key: 'cost',       label: 'Cost'        },
+  { key: 'level',      label: 'Level'       },
+  { key: 'hp',         label: 'HP'          },
+  { key: 'life',       label: 'Life'        },
+  { key: 'lore',       label: 'Lore'        },
+  { key: 'power',      label: 'Power'       },
+  { key: 'attack',     label: 'Attack'      },
+  { key: 'atk',        label: 'ATK'         },
+  { key: 'defence',    label: 'Defence'     },
+  { key: 'def',        label: 'DEF'         },
+  { key: 'defense',    label: 'Defense'     },
+  { key: 'strength',   label: 'Strength'    },
+  { key: 'willpower',  label: 'Willpower'   },
+  { key: 'pitch',      label: 'Pitch'       },
+  { key: 'playCost',   label: 'Play Cost'   },
+  { key: 'dp',         label: 'DP'          },
+  { key: 'comboPower', label: 'Combo Power' },
+  { key: 'ap',         label: 'AP'          },
+  { key: 'bp',         label: 'BP'          },
+  { key: 'energyCost', label: 'Energy Cost' },
+  { key: 'might',      label: 'Might'       },
+  { key: 'lp',         label: 'Life Points' },
+]
+
+function attrNum(card, key) {
+  const raw = card.attributes?.[key]
+  if (raw == null || raw === '' || raw === '-') return null
+  const n = parseFloat(String(raw).replace(/[^0-9.-]/g, ''))
+  return isNaN(n) ? null : n
+}
+
 export default function CardsPage() {
   const { setId } = useParams()
   const [cards, setCards]       = useState([])
@@ -77,23 +111,38 @@ export default function CardsPage() {
     return [...seen].sort((a, b) => rarityRank(a) - rarityRank(b))
   }, [cards])
 
+  const hasCardType = useMemo(() => cards.some(c => c.card_type), [cards])
+
+  const availableAttrSorts = useMemo(() => {
+    if (!cards.length) return []
+    return ATTR_SORT_FIELDS.filter(f => cards.some(c => attrNum(c, f.key) != null))
+  }, [cards])
+
   const sortedCards = useMemo(() => {
     const q = search.trim().toLowerCase()
     let filtered = cards
     if (q)                     filtered = filtered.filter(c => c.name.toLowerCase().includes(q))
     if (rarityFilter.length > 0) filtered = filtered.filter(c => rarityFilter.includes(c.rarity))
     return [...filtered].sort((a, b) => {
-      switch (sort) {
-        case 'name_asc':    return a.name.localeCompare(b.name)
-        case 'name_desc':   return b.name.localeCompare(a.name)
-        case 'rarity_desc': return rarityRank(a.rarity) - rarityRank(b.rarity) || a.name.localeCompare(b.name)
-        case 'rarity_asc':  return rarityRank(b.rarity) - rarityRank(a.rarity) || a.name.localeCompare(b.name)
-        default: {
-          const na = parseInt(a.collector_number) || 0
-          const nb = parseInt(b.collector_number) || 0
-          return na !== nb ? na - nb : a.name.localeCompare(b.name)
-        }
+      if (sort === 'name_asc')    return a.name.localeCompare(b.name)
+      if (sort === 'name_desc')   return b.name.localeCompare(a.name)
+      if (sort === 'rarity_desc') return rarityRank(a.rarity) - rarityRank(b.rarity) || a.name.localeCompare(b.name)
+      if (sort === 'rarity_asc')  return rarityRank(b.rarity) - rarityRank(a.rarity) || a.name.localeCompare(b.name)
+      if (sort === 'type_asc')    return (a.card_type || '').localeCompare(b.card_type || '') || a.name.localeCompare(b.name)
+      if (sort === 'type_desc')   return (b.card_type || '').localeCompare(a.card_type || '') || a.name.localeCompare(b.name)
+      // Dynamic attribute sorts: "attr_<key>_asc" / "attr_<key>_desc"
+      const attrMatch = sort.match(/^attr_(.+)_(asc|desc)$/)
+      if (attrMatch) {
+        const [, key, dir] = attrMatch
+        const va = attrNum(a, key) ?? Infinity
+        const vb = attrNum(b, key) ?? Infinity
+        const cmp = va - vb
+        return dir === 'asc' ? (cmp || a.name.localeCompare(b.name)) : (-cmp || a.name.localeCompare(b.name))
       }
+      // Default: collector number
+      const na = parseInt(a.collector_number) || 0
+      const nb = parseInt(b.collector_number) || 0
+      return na !== nb ? na - nb : a.name.localeCompare(b.name)
     })
   }, [cards, sort, rarityFilter])
 
@@ -295,6 +344,13 @@ export default function CardsPage() {
             <option value="name_desc">Name Z→A</option>
             <option value="rarity_desc">Rarity: High→Low</option>
             <option value="rarity_asc">Rarity: Low→High</option>
+            {hasCardType && <option value="type_asc">Type A→Z</option>}
+            {availableAttrSorts.map(f => (
+              <optgroup key={f.key} label={f.label}>
+                <option value={`attr_${f.key}_asc`}>{f.label} ↑</option>
+                <option value={`attr_${f.key}_desc`}>{f.label} ↓</option>
+              </optgroup>
+            ))}
           </select>
         </div>
 

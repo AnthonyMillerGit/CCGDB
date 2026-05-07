@@ -33,7 +33,7 @@ func (a *App) getSetCards(w http.ResponseWriter, r *http.Request) {
 	}
 	rows, err := a.db.Query(r.Context(), `
 		SELECT DISTINCT ON (c.name)
-		       c.id, c.name, c.card_type, c.rules_text,
+		       c.id, c.name, c.card_type, c.rules_text, c.attributes,
 		       p.id AS printing_id, p.collector_number, p.rarity, p.image_url, p.artist
 		FROM cards c
 		JOIN printings p ON p.card_id = c.id
@@ -49,7 +49,7 @@ func (a *App) getSetCards(w http.ResponseWriter, r *http.Request) {
 	cards := []SetCard{}
 	for rows.Next() {
 		var c SetCard
-		if err := rows.Scan(&c.ID, &c.Name, &c.CardType, &c.RulesText,
+		if err := rows.Scan(&c.ID, &c.Name, &c.CardType, &c.RulesText, &c.Attributes,
 			&c.PrintingID, &c.CollectorNumber, &c.Rarity, &c.ImageURL, &c.Artist); err != nil {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return

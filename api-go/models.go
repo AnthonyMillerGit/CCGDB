@@ -48,15 +48,16 @@ type SetDetail struct {
 }
 
 type SetCard struct {
-	ID              int     `json:"id"`
-	Name            string  `json:"name"`
-	CardType        string  `json:"card_type"`
-	RulesText       *string `json:"rules_text"`
-	PrintingID      int     `json:"printing_id"`
-	CollectorNumber *string `json:"collector_number"`
-	Rarity          *string `json:"rarity"`
-	ImageURL        *string `json:"image_url"`
-	Artist          *string `json:"artist"`
+	ID              int             `json:"id"`
+	Name            string          `json:"name"`
+	CardType        string          `json:"card_type"`
+	RulesText       *string         `json:"rules_text"`
+	Attributes      json.RawMessage `json:"attributes"`
+	PrintingID      int             `json:"printing_id"`
+	CollectorNumber *string         `json:"collector_number"`
+	Rarity          *string         `json:"rarity"`
+	ImageURL        *string         `json:"image_url"`
+	Artist          *string         `json:"artist"`
 }
 
 // ── Cards ─────────────────────────────────────────────────────────────────────
