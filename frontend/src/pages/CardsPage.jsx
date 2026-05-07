@@ -305,11 +305,28 @@ export default function CardsPage() {
       {/* ── Set header ──────────────────────────────────────────────────── */}
       {setInfo && (
         <div className="mb-8">
-          <p className="text-sm font-medium mb-1 cursor-pointer hover:opacity-80"
-            style={{ color: '#6A7EFC' }} onClick={() => navigate(`/games/${setInfo.game_slug}`)}>
-            {setInfo.game_name}
-          </p>
-          <h2 className="text-3xl font-bold mb-1" style={{ color: '#EDF2F6' }}>{setInfo.name}</h2>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium mb-1 cursor-pointer hover:opacity-80"
+                style={{ color: '#6A7EFC' }} onClick={() => navigate(`/games/${setInfo.game_slug}`)}>
+                {setInfo.game_name}
+              </p>
+              <h2 className="text-3xl font-bold mb-1" style={{ color: '#EDF2F6' }}>{setInfo.name}</h2>
+            </div>
+            {/* View toggle — top right */}
+            <div className="flex rounded overflow-hidden border shrink-0 mt-1" style={{ borderColor: '#42424e' }}>
+              <button onClick={() => setParam({ view: null, per: null, page: 1 })}
+                className="text-xs px-3 py-1.5 transition-colors"
+                style={{ backgroundColor: viewMode === 'card' ? '#6A7EFC' : '#35353f', color: viewMode === 'card' ? '#fff' : '#8e8e9e' }}>
+                Image View
+              </button>
+              <button onClick={() => setParam({ view: 'list', per: 0, page: 1 })}
+                className="text-xs px-3 py-1.5 transition-colors"
+                style={{ backgroundColor: viewMode === 'list' ? '#6A7EFC' : '#35353f', color: viewMode === 'list' ? '#fff' : '#8e8e9e', borderLeft: '1px solid #42424e' }}>
+                Grid View
+              </button>
+            </div>
+          </div>
           <div className="flex items-center gap-3 mt-2 flex-wrap">
             <p style={{ color: '#8e8e9e' }}>
               {cards.length} cards
@@ -424,23 +441,6 @@ export default function CardsPage() {
             <option value={100}>100</option>
             <option value={0}>Show All</option>
           </select>
-        </div>
-
-        {/* View toggle */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>View As</span>
-          <div className="flex rounded overflow-hidden border" style={{ borderColor: '#42424e' }}>
-            <button onClick={() => setParam({ view: null, per: null, page: 1 })}
-              className="text-xs px-3 py-1.5 transition-colors"
-              style={{ backgroundColor: viewMode === 'card' ? '#6A7EFC' : '#35353f', color: viewMode === 'card' ? '#fff' : '#8e8e9e' }}>
-              Images
-            </button>
-            <button onClick={() => setParam({ view: 'list', per: 0, page: 1 })}
-              className="text-xs px-3 py-1.5 transition-colors"
-              style={{ backgroundColor: viewMode === 'list' ? '#6A7EFC' : '#35353f', color: viewMode === 'list' ? '#fff' : '#8e8e9e', borderLeft: '1px solid #42424e' }}>
-              Grid
-            </button>
-          </div>
         </div>
 
         {/* Add Multiple To... */}
