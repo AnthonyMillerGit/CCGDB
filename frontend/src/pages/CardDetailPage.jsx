@@ -551,8 +551,8 @@ export default function CardDetailPage() {
           {user && selectedPrinting && (
             <div className="w-full max-w-xs sm:max-w-sm md:w-80 lg:w-96 flex flex-col gap-2">
               {totalOwnedForPrinting > 0 ? (
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg flex-wrap"
+                <div className="flex items-start gap-2 flex-wrap">
+                  <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg flex-wrap min-w-0"
                     style={{ backgroundColor: '#1a2a4a', border: '1px solid #6A7EFC33' }}>
                     <span className="text-sm font-bold" style={{ color: '#6A7EFC' }}>✓</span>
                     {ownedForPrinting.map(item => (

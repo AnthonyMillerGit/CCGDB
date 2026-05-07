@@ -143,7 +143,7 @@ export default function SetsPage() {
 
       <div className="flex gap-6 items-start mb-2">
         <div className="flex-1">
-          <h1 className="text-4xl font-bold mb-3" style={{ color: '#EDF2F6' }}>{game?.name}</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-3 break-words" style={{ color: '#EDF2F6' }}>{game?.name}</h1>
 
           {gameInfo?.description && (
             <p className="text-base mb-4 leading-relaxed" style={{ color: '#8e8e9e' }}>
@@ -185,7 +185,7 @@ export default function SetsPage() {
 
       {/* Filter row — only show if more than one tab available */}
       {availableTabs.length > 1 && (
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-6 text-sm">
+        <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-6 gap-y-2 mb-6 text-sm">
           <span style={{ color: '#8e8e9e' }}>Show:</span>
           {availableTabs.map(tab => (
             <button
