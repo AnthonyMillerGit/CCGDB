@@ -161,7 +161,7 @@ export default function PostPage() {
     return () => insertedWrappers.forEach(w => w.remove())
   }, [post])
 
-  if (loading) return <p className="text-center py-20" style={{ color: '#7a6248' }}>Loading…</p>
+  if (loading) return <p className="text-center py-20" style={{ color: 'var(--text-muted)' }}>Loading…</p>
   if (!post) return null
 
   const html = renderBody(post.body)
@@ -170,12 +170,12 @@ export default function PostPage() {
     <div className="max-w-3xl mx-auto">
       {/* Back + edit */}
       <div className="flex items-center justify-between mb-8">
-        <Link to="/blog" className="text-sm" style={{ color: '#7a6248' }}>← Back to Blog</Link>
+        <Link to="/blog" className="text-sm" style={{ color: 'var(--text-muted)' }}>← Back to Blog</Link>
         {user?.is_admin && (
           <Link
             to={`/admin/posts/${post.slug}/edit`}
             className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: '#d4c4a8', color: '#0097a7' }}
+            style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)' }}
           >
             Edit Post
           </Link>
@@ -183,8 +183,8 @@ export default function PostPage() {
       </div>
 
       {/* Header */}
-      <h1 className="text-4xl font-bold mb-3" style={{ color: '#1c1008' }}>{post.title}</h1>
-      <div className="flex items-center gap-3 text-sm mb-8" style={{ color: '#7a6248' }}>
+      <h1 className="text-4xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>{post.title}</h1>
+      <div className="flex items-center gap-3 text-sm mb-8" style={{ color: 'var(--text-muted)' }}>
         <span>{post.author_name}</span>
         <span>·</span>
         <span>{new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
@@ -195,20 +195,20 @@ export default function PostPage() {
         ref={bodyRef}
         className="editor-content max-w-none mb-12"
         dangerouslySetInnerHTML={{ __html: html }}
-        style={{ color: '#1c1008' }}
+        style={{ color: 'var(--text-primary)' }}
       />
 
       {/* Tags */}
       {(post.game_tags?.length > 0 || post.card_tags?.length > 0) && (
-        <div className="pt-8 border-t" style={{ borderColor: '#d4c4a8' }}>
+        <div className="pt-8 border-t" style={{ borderColor: 'var(--border)' }}>
           {post.game_tags?.length > 0 && (
             <div className="mb-4">
-              <p className="text-xs font-semibold uppercase mb-2" style={{ color: '#7a6248' }}>Games</p>
+              <p className="text-xs font-semibold uppercase mb-2" style={{ color: 'var(--text-muted)' }}>Games</p>
               <div className="flex flex-wrap gap-2">
                 {post.game_tags.map(t => (
                   <Link key={t.game_id} to={`/games/${t.game_slug}`}
                     className="text-xs px-3 py-1 rounded-full"
-                    style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#0097a7' }}>
+                    style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--accent)' }}>
                     {t.game_name}
                   </Link>
                 ))}
@@ -217,12 +217,12 @@ export default function PostPage() {
           )}
           {post.card_tags?.length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase mb-2" style={{ color: '#7a6248' }}>Cards Mentioned</p>
+              <p className="text-xs font-semibold uppercase mb-2" style={{ color: 'var(--text-muted)' }}>Cards Mentioned</p>
               <div className="flex flex-wrap gap-2">
                 {post.card_tags.map(t => (
                   <Link key={t.card_id} to={`/cards/${t.card_id}`}
                     className="text-xs px-3 py-1 rounded-full"
-                    style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008' }}>
+                    style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
                     {t.card_name}
                   </Link>
                 ))}

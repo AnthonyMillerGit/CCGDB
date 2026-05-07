@@ -34,12 +34,12 @@ export default function VerifyEmailPage() {
   if (status === 'success') {
     return (
       <div className="max-w-md mx-auto mt-16 text-center">
-        <h2 className="text-2xl font-bold mb-4" style={{ color: '#0097a7' }}>Email verified!</h2>
+        <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--accent)' }}>Email verified!</h2>
         <p className="text-gray-400 mb-6">Your email address has been confirmed.</p>
         <Link
           to="/profile"
           className="px-4 py-2 rounded font-semibold text-sm"
-          style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
+          style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}
         >
           Go to Profile
         </Link>
@@ -51,7 +51,7 @@ export default function VerifyEmailPage() {
     <div className="max-w-md mx-auto mt-16 text-center">
       <h2 className="text-2xl font-bold mb-4 text-red-400">Verification failed</h2>
       <p className="text-gray-400 mb-6">{error}</p>
-      <Link to="/login" style={{ color: '#0097a7' }} className="text-sm">Back to login</Link>
+      <Link to="/login" style={{ color: 'var(--accent)' }} className="text-sm">Back to login</Link>
     </div>
   )
 }

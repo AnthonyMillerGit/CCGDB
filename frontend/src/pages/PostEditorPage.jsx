@@ -31,8 +31,8 @@ function MenuBar({ editor }) {
       title={label}
       className="px-2 py-1 rounded text-xs font-medium transition-colors"
       style={{
-        backgroundColor: active ? '#0097a7' : '#d4c4a8',
-        color: active ? '#f5f0e8' : '#1c1008',
+        backgroundColor: active ? 'var(--accent)' : 'var(--border)',
+        color: active ? 'var(--bg-page)' : 'var(--text-primary)',
       }}
     >
       {label}
@@ -41,24 +41,24 @@ function MenuBar({ editor }) {
 
   return (
     <div className="flex flex-wrap gap-1 p-2 rounded-t-lg border-b"
-      style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8' }}>
+      style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
       {btn(() => editor.chain().focus().toggleBold().run(), 'Bold', editor.isActive('bold'))}
       {btn(() => editor.chain().focus().toggleItalic().run(), 'Italic', editor.isActive('italic'))}
       {btn(() => editor.chain().focus().toggleStrike().run(), 'Strike', editor.isActive('strike'))}
-      <span style={{ borderLeft: '1px solid #d4c4a8', margin: '0 4px' }} />
+      <span style={{ borderLeft: '1px solid var(--border)', margin: '0 4px' }} />
       {btn(() => editor.chain().focus().toggleHeading({ level: 2 }).run(), 'H2', editor.isActive('heading', { level: 2 }))}
       {btn(() => editor.chain().focus().toggleHeading({ level: 3 }).run(), 'H3', editor.isActive('heading', { level: 3 }))}
-      <span style={{ borderLeft: '1px solid #d4c4a8', margin: '0 4px' }} />
+      <span style={{ borderLeft: '1px solid var(--border)', margin: '0 4px' }} />
       {btn(() => editor.chain().focus().toggleBulletList().run(), '• List', editor.isActive('bulletList'))}
       {btn(() => editor.chain().focus().toggleOrderedList().run(), '1. List', editor.isActive('orderedList'))}
-      <span style={{ borderLeft: '1px solid #d4c4a8', margin: '0 4px' }} />
+      <span style={{ borderLeft: '1px solid var(--border)', margin: '0 4px' }} />
       {btn(() => editor.chain().focus().toggleBlockquote().run(), 'Quote', editor.isActive('blockquote'))}
       {btn(() => editor.chain().focus().toggleCodeBlock().run(), 'Code', editor.isActive('codeBlock'))}
-      <span style={{ borderLeft: '1px solid #d4c4a8', margin: '0 4px' }} />
+      <span style={{ borderLeft: '1px solid var(--border)', margin: '0 4px' }} />
       {btn(insertLink, '🔗 Link', editor.isActive('link'))}
       {btn(insertImage, '🖼 Image', false)}
       {btn(() => editor.chain().focus().setHorizontalRule().run(), '— Rule', false)}
-      <span style={{ borderLeft: '1px solid #d4c4a8', margin: '0 4px' }} />
+      <span style={{ borderLeft: '1px solid var(--border)', margin: '0 4px' }} />
       {btn(() => editor.chain().focus().undo().run(), '↩ Undo', false)}
       {btn(() => editor.chain().focus().redo().run(), '↪ Redo', false)}
     </div>
@@ -85,15 +85,15 @@ function TagSearch({ label, searchUrl, selected, onAdd, onRemove, displayKey, id
 
   return (
     <div>
-      <p className="text-xs font-semibold uppercase mb-2" style={{ color: '#7a6248' }}>{label}</p>
+      <p className="text-xs font-semibold uppercase mb-2" style={{ color: 'var(--text-muted)' }}>{label}</p>
       <div className="flex flex-wrap gap-2 mb-2">
         {selected.map(item => (
           <span key={item[idKey]}
             className="flex items-center gap-1 text-xs px-2 py-1 rounded-full"
-            style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#0097a7' }}>
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--accent)' }}>
             {item[displayKey]}
             <button type="button" onClick={() => onRemove(item[idKey])}
-              className="ml-1 hover:opacity-70" style={{ color: '#8b1a3a' }}>×</button>
+              className="ml-1 hover:opacity-70" style={{ color: 'var(--accent-maroon)' }}>×</button>
           </span>
         ))}
       </div>
@@ -104,16 +104,16 @@ function TagSearch({ label, searchUrl, selected, onAdd, onRemove, displayKey, id
           onChange={e => setQuery(e.target.value)}
           placeholder={`Search ${label.toLowerCase()}…`}
           className="w-full px-3 py-1.5 rounded text-sm outline-none"
-          style={{ backgroundColor: '#e8ddc8', border: '1px solid #d4c4a8', color: '#1c1008' }}
+          style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
         />
         {results.length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-1 rounded shadow-lg z-10 py-1"
-            style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}>
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
             {results.map(item => (
               <button key={item[idKey] ?? item.id} type="button"
                 onClick={() => { onAdd(item); setQuery(''); setResults([]) }}
                 className="w-full text-left px-3 py-1.5 text-sm hover:bg-[#d4c4a8] transition-colors"
-                style={{ color: '#1c1008' }}>
+                style={{ color: 'var(--text-primary)' }}>
                 {item.name}
               </button>
             ))}
@@ -242,14 +242,14 @@ export default function PostEditorPage() {
     setSaving(false)
   }
 
-  const inputStyle = { backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008' }
+  const inputStyle = { backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <RouterLink to="/admin/posts" className="text-sm" style={{ color: '#7a6248' }}>← Posts</RouterLink>
-          <h1 className="text-2xl font-bold" style={{ color: '#1c1008' }}>
+          <RouterLink to="/admin/posts" className="text-sm" style={{ color: 'var(--text-muted)' }}>← Posts</RouterLink>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
             {isEdit ? 'Edit Post' : 'New Post'}
           </h1>
         </div>
@@ -257,7 +257,7 @@ export default function PostEditorPage() {
 
       {error && (
         <div className="mb-4 px-4 py-3 rounded text-sm"
-          style={{ backgroundColor: '#3a1a1a', border: '1px solid #6a2d2d', color: '#8b1a3a' }}>
+          style={{ backgroundColor: '#3a1a1a', border: '1px solid #6a2d2d', color: 'var(--accent-maroon)' }}>
           {error}
         </div>
       )}
@@ -293,16 +293,16 @@ export default function PostEditorPage() {
       </div>
 
       {/* Editor */}
-      <div className="rounded-lg overflow-hidden mb-6" style={{ border: '1px solid #d4c4a8' }}>
+      <div className="rounded-lg overflow-hidden mb-6" style={{ border: '1px solid var(--border)' }}>
         <MenuBar editor={editor} />
-        <div style={{ backgroundColor: '#e8ddc8' }}>
+        <div style={{ backgroundColor: 'var(--bg-chip)' }}>
           <EditorContent editor={editor} />
         </div>
       </div>
 
       {/* Tags */}
       <div className="p-4 rounded-lg mb-6 flex flex-col gap-4"
-        style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}>
+        style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
         <TagSearch
           label="Games"
           searchUrl={`${API_URL}/api/games?q=`}
@@ -326,7 +326,7 @@ export default function PostEditorPage() {
       {/* Publish date + actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <label className="text-sm" style={{ color: '#7a6248' }}>Publish date</label>
+          <label className="text-sm" style={{ color: 'var(--text-muted)' }}>Publish date</label>
           <input
             type="datetime-local"
             value={publishedAt}
@@ -339,18 +339,18 @@ export default function PostEditorPage() {
           {isEdit && publishedAt && new Date(publishedAt) <= new Date() && (
             <button type="button" onClick={handleUnpublish} disabled={saving}
               className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
-              style={{ backgroundColor: '#d4c4a8', color: '#8b1a3a', border: '1px solid #9e836a' }}>
+              style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent-maroon)', border: '1px solid #9e836a' }}>
               Unpublish
             </button>
           )}
           <button type="button" onClick={() => handleSave(false)} disabled={saving}
             className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
-            style={{ backgroundColor: '#d4c4a8', color: '#1c1008' }}>
+            style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)' }}>
             {saving ? 'Saving…' : 'Save Draft'}
           </button>
           <button type="button" onClick={() => handleSave(true)} disabled={saving}
             className="px-5 py-2 rounded text-sm font-semibold disabled:opacity-50"
-            style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}>
+            style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}>
             {saving ? 'Publishing…' : 'Publish'}
           </button>
         </div>

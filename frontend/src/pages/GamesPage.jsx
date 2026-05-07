@@ -52,7 +52,7 @@ export default function GamesPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <p style={{ color: '#7a6248' }} className="text-lg">Loading games...</p>
+      <p style={{ color: 'var(--text-muted)' }} className="text-lg">Loading games...</p>
     </div>
   )
 
@@ -67,8 +67,8 @@ export default function GamesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-3xl font-bold mb-1" style={{ color: '#1c1008' }}>Games</h2>
-          <p style={{ color: '#7a6248' }}>
+          <h2 className="text-3xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Games</h2>
+          <p style={{ color: 'var(--text-muted)' }}>
             {filtered.length} game{filtered.length !== 1 ? 's' : ''}
             {search && ` matching "${search}"`}
           </p>
@@ -80,19 +80,19 @@ export default function GamesPage() {
           onChange={e => setSearch(e.target.value)}
           className="rounded-lg px-4 py-2 text-sm outline-none w-full sm:w-64"
           style={{
-            backgroundColor: '#faf6ee',
-            border: '1px solid #d4c4a8',
-            color: '#1c1008',
+            backgroundColor: 'var(--bg-surface)',
+            border: '1px solid var(--border)',
+            color: 'var(--text-primary)',
           }}
-          onFocus={e => e.target.style.borderColor = '#0097a7'}
-          onBlur={e => e.target.style.borderColor = '#d4c4a8'}
+          onFocus={e => e.target.style.borderColor = 'var(--accent)'}
+          onBlur={e => e.target.style.borderColor = 'var(--border)'}
         />
       </div>
 
       {/* Recently released */}
       {recentSets.length > 0 && !search && (
         <div className="mb-10">
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#7a6248' }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>
             ✦ Recently Released
           </p>
           <div className="flex gap-3 overflow-x-auto pb-1">
@@ -100,14 +100,14 @@ export default function GamesPage() {
               <div
                 key={set.set_id}
                 className="flex-shrink-0 flex items-center gap-3 px-3 py-2.5 rounded-xl w-40 sm:w-[220px]"
-                style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}
+                style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
               >
                 {set.card_back_image ? (
                   <img src={set.card_back_image} alt={set.game_name} className="shrink-0 rounded object-cover"
                     style={{ width: 36, height: 50 }} />
                 ) : (
                   <div className="shrink-0 rounded flex items-center justify-center text-xs font-bold"
-                    style={{ width: 36, height: 50, backgroundColor: '#d4c4a8', color: '#7a6248' }}>
+                    style={{ width: 36, height: 50, backgroundColor: 'var(--bg-chip)', color: 'var(--text-muted)' }}>
                     {set.game_name.slice(0, 2).toUpperCase()}
                   </div>
                 )}
@@ -115,7 +115,7 @@ export default function GamesPage() {
                   <Link
                     to={`/sets/${set.set_id}`}
                     className="text-sm font-semibold leading-tight hover:underline block truncate"
-                    style={{ color: '#1c1008' }}
+                    style={{ color: 'var(--text-primary)' }}
                     onClick={e => e.stopPropagation()}
                   >
                     {set.set_name}
@@ -124,14 +124,14 @@ export default function GamesPage() {
                     <Link
                       to={`/games/${set.game_slug}`}
                       className="text-xs hover:underline truncate"
-                      style={{ color: '#0097a7' }}
+                      style={{ color: 'var(--accent)' }}
                       onClick={e => e.stopPropagation()}
                     >
                       {set.game_name}
                     </Link>
                   </div>
                   {set.release_date && (
-                    <p className="text-xs mt-0.5" style={{ color: '#7a6248' }}>{formatDate(set.release_date)}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{formatDate(set.release_date)}</p>
                   )}
                 </div>
               </div>
@@ -143,12 +143,12 @@ export default function GamesPage() {
       {/* Favorites row */}
       {user && favoriteGames.length > 0 && !search && (
         <div className="mb-10">
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#7a6248' }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>
             ★ Favorites
           </p>
           <div
             className="p-4 rounded-xl border"
-            style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8' }}
+            style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)' }}
           >
             <div className="flex gap-4 overflow-x-auto pb-1">
               {favoriteGames.map(game => (
@@ -183,7 +183,7 @@ export default function GamesPage() {
 
       {filtered.length === 0 && (
         <div className="flex items-center justify-center h-48">
-          <p style={{ color: '#7a6248' }}>No games found matching "{search}"</p>
+          <p style={{ color: 'var(--text-muted)' }}>No games found matching "{search}"</p>
         </div>
       )}
     </div>
@@ -209,7 +209,7 @@ function GameCard({ game, isFavorite, showStar, onClick, onToggleFavorite }) {
           style={{
             backgroundColor: isFavorite ? 'rgba(0, 151, 167, 0.15)' : 'rgba(28,16,8,0.25)',
             opacity: isFavorite ? 1 : (hovered ? 1 : 0),
-            color: isFavorite ? '#0097a7' : '#7a6248',
+            color: isFavorite ? 'var(--accent)' : 'var(--text-muted)',
             fontSize: '0.7rem',
           }}
           title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
@@ -222,9 +222,9 @@ function GameCard({ game, isFavorite, showStar, onClick, onToggleFavorite }) {
       <div
         className="w-full rounded-xl overflow-hidden border transition-all duration-200"
         style={{
-          borderColor: hovered ? '#6b2d8f' : (isFavorite ? '#0097a7' : '#d4c4a8'),
+          borderColor: hovered ? '#6b2d8f' : (isFavorite ? 'var(--accent)' : 'var(--border)'),
           boxShadow: hovered ? '0 0 16px rgba(107, 45, 143, 0.3)' : 'none',
-          backgroundColor: '#faf6ee',
+          backgroundColor: 'var(--bg-surface)',
         }}
       >
         {game.card_back_image ? (
@@ -236,17 +236,17 @@ function GameCard({ game, isFavorite, showStar, onClick, onToggleFavorite }) {
         ) : (
           <div
             className="w-full aspect-[2.5/3.5] flex flex-col items-center justify-center gap-2 p-2"
-            style={{ backgroundColor: '#faf6ee' }}
+            style={{ backgroundColor: 'var(--bg-surface)' }}
           >
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-lg"
-              style={{ backgroundColor: '#d4c4a8' }}
+              style={{ backgroundColor: 'var(--bg-chip)' }}
             >
               🃏
             </div>
             <span
               className="text-xs text-center leading-tight"
-              style={{ color: '#7a6248' }}
+              style={{ color: 'var(--text-muted)' }}
             >
               {game.name}
             </span>
@@ -257,7 +257,7 @@ function GameCard({ game, isFavorite, showStar, onClick, onToggleFavorite }) {
       {/* Name below card */}
       <p
         className="text-xs font-medium text-center mt-2 leading-tight px-1 transition-colors duration-200"
-        style={{ color: hovered ? '#0097a7' : '#1c1008' }}
+        style={{ color: hovered ? 'var(--accent)' : 'var(--text-primary)' }}
       >
         {game.name}
       </p>

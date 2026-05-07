@@ -282,7 +282,7 @@ export default function CardsPage() {
     setHoveredCard(card)
   }
   const handleMouseLeave = e => {
-    e.currentTarget.style.borderColor = '#d4c4a8'
+    e.currentTarget.style.borderColor = 'var(--border)'
     e.currentTarget.style.boxShadow = 'none'
     e.currentTarget.style.transform = 'scale(1)'
     setHoveredCard(null)
@@ -290,7 +290,7 @@ export default function CardsPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <p className="text-lg" style={{ color: '#7a6248' }}>Loading cards...</p>
+      <p className="text-lg" style={{ color: 'var(--text-muted)' }}>Loading cards...</p>
     </div>
   )
 
@@ -300,7 +300,7 @@ export default function CardsPage() {
   return (
     <div>
       <button onClick={() => navigate(-1)} className="text-sm mb-6 flex items-center gap-1 hover:opacity-80"
-        style={{ color: '#0097a7' }}>
+        style={{ color: 'var(--accent)' }}>
         ← Back to Sets
       </button>
 
@@ -310,27 +310,27 @@ export default function CardsPage() {
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
             <div>
               <p className="text-sm font-medium mb-1 cursor-pointer hover:opacity-80"
-                style={{ color: '#0097a7' }} onClick={() => navigate(`/games/${setInfo.game_slug}`)}>
+                style={{ color: 'var(--accent)' }} onClick={() => navigate(`/games/${setInfo.game_slug}`)}>
                 {setInfo.game_name}
               </p>
-              <h2 className="text-3xl font-bold mb-1 break-words" style={{ color: '#1c1008' }}>{setInfo.name}</h2>
+              <h2 className="text-3xl font-bold mb-1 break-words" style={{ color: 'var(--text-primary)' }}>{setInfo.name}</h2>
             </div>
             {/* View toggle */}
-            <div className="flex rounded overflow-hidden border self-start shrink-0 sm:mt-1" style={{ borderColor: '#d4c4a8' }}>
+            <div className="flex rounded overflow-hidden border self-start shrink-0 sm:mt-1" style={{ borderColor: 'var(--border)' }}>
               <button onClick={() => setParam({ view: null, per: null, page: 1 })}
                 className="text-xs px-3 py-1.5 transition-colors"
-                style={{ backgroundColor: viewMode === 'card' ? '#0097a7' : '#faf6ee', color: viewMode === 'card' ? '#fff' : '#7a6248' }}>
+                style={{ backgroundColor: viewMode === 'card' ? 'var(--accent)' : 'var(--bg-surface)', color: viewMode === 'card' ? '#fff' : 'var(--text-muted)' }}>
                 Image View
               </button>
               <button onClick={() => setParam({ view: 'list', per: 0, page: 1 })}
                 className="text-xs px-3 py-1.5 transition-colors"
-                style={{ backgroundColor: viewMode === 'list' ? '#0097a7' : '#faf6ee', color: viewMode === 'list' ? '#fff' : '#7a6248', borderLeft: '1px solid #d4c4a8' }}>
+                style={{ backgroundColor: viewMode === 'list' ? 'var(--accent)' : 'var(--bg-surface)', color: viewMode === 'list' ? '#fff' : 'var(--text-muted)', borderLeft: '1px solid var(--border)' }}>
                 Grid View
               </button>
             </div>
           </div>
           <div className="flex items-center gap-3 mt-2 flex-wrap">
-            <p style={{ color: '#7a6248' }}>
+            <p style={{ color: 'var(--text-muted)' }}>
               {cards.length} cards
               {setInfo.release_date && (
                 <span> · {new Date(setInfo.release_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
@@ -339,7 +339,7 @@ export default function CardsPage() {
             {user && (
               <button onClick={handleAddSet} disabled={addingSet}
                 className="text-sm px-3 py-1 rounded hover:opacity-80"
-                style={{ backgroundColor: '#faf6ee', border: '1px solid #0097a7', color: '#0097a7', opacity: addingSet ? 0.6 : 1 }}>
+                style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--accent)', color: 'var(--accent)', opacity: addingSet ? 0.6 : 1 }}>
                 {addingSet ? 'Adding…' : '+ Add Set to Collection'}
               </button>
             )}
@@ -347,16 +347,16 @@ export default function CardsPage() {
               <div className="relative" ref={bulkRef}>
                 <button onClick={() => setBulkOpen(o => !o)}
                   className="text-sm px-3 py-1 rounded flex items-center gap-1.5 hover:opacity-80"
-                  style={{ backgroundColor: isBulkActive ? '#dff0f4' : '#faf6ee', border: `1px solid ${isBulkActive ? '#0097a7' : '#d4c4a8'}`, color: isBulkActive ? '#0097a7' : '#1c1008' }}>
+                  style={{ backgroundColor: isBulkActive ? '#dff0f4' : 'var(--bg-surface)', border: `1px solid ${isBulkActive ? 'var(--accent)' : 'var(--border)'}`, color: isBulkActive ? 'var(--accent)' : 'var(--text-primary)' }}>
                   Add Multiple To… ▾
                 </button>
                 {bulkOpen && (
                   <div className="absolute z-20 mt-1 rounded-lg shadow-xl min-w-[160px] right-0 sm:right-auto sm:left-0"
-                    style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8' }}>
+                    style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}>
                     {[['collection','Collection'],['deck','Deck'],['wishlist','Wishlist']].map(([key, label]) => (
                       <button key={key} onClick={() => selectBulkTarget(key)}
                         className="w-full text-left px-4 py-2.5 text-sm hover:opacity-80 flex items-center justify-between"
-                        style={{ color: bulkTarget === key ? '#0097a7' : '#1c1008', borderBottom: '1px solid #faf6ee' }}>
+                        style={{ color: bulkTarget === key ? 'var(--accent)' : 'var(--text-primary)', borderBottom: '1px solid var(--border-panel)' }}>
                         {label}
                         {bulkTarget === key && <span className="text-xs">✓</span>}
                       </button>
@@ -364,7 +364,7 @@ export default function CardsPage() {
                     {isBulkActive && (
                       <button onClick={() => { setBulkOpen(false); setBulkTarget(null); setBulkQtys({}); setBulkMsg('') }}
                         className="w-full text-left px-4 py-2 text-xs hover:opacity-80"
-                        style={{ color: '#7a6248' }}>
+                        style={{ color: 'var(--text-muted)' }}>
                         Cancel
                       </button>
                     )}
@@ -375,7 +375,7 @@ export default function CardsPage() {
             {user && anyOwned && (
               <button onClick={() => navigate('/profile?tab=stats')}
                 className="text-sm px-3 py-1 rounded hover:opacity-80"
-                style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#7a6248' }}>
+                style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
                 My Collection Stats
               </button>
             )}
@@ -387,28 +387,28 @@ export default function CardsPage() {
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         {/* Search */}
         <div className="relative flex items-center w-full sm:w-auto">
-          <span className="absolute left-2.5 text-sm pointer-events-none" style={{ color: '#7a6248' }}>⌕</span>
+          <span className="absolute left-2.5 text-sm pointer-events-none" style={{ color: 'var(--text-muted)' }}>⌕</span>
           <input
             type="text"
             placeholder="Search cards…"
             value={search}
             onChange={e => setParam({ q: e.target.value, page: 1 })}
             className="text-sm pl-7 pr-8 py-1.5 rounded w-full sm:w-44"
-            style={{ backgroundColor: '#faf6ee', border: `1px solid ${search ? '#0097a7' : '#d4c4a8'}`, color: '#1c1008', outline: 'none' }}
+            style={{ backgroundColor: 'var(--bg-surface)', border: `1px solid ${search ? 'var(--accent)' : 'var(--border)'}`, color: 'var(--text-primary)', outline: 'none' }}
           />
           {search && (
             <button onClick={() => setParam({ q: '', page: 1 })}
               className="absolute right-2 text-sm hover:opacity-80"
-              style={{ color: '#7a6248' }}>×</button>
+              style={{ color: 'var(--text-muted)' }}>×</button>
           )}
         </div>
 
         {/* Sort */}
         <div className="flex items-center gap-1.5">
-          <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Sort By</span>
+          <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Sort By</span>
           <select value={sort} onChange={e => setParam({ sort: e.target.value, page: 1 })}
             className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008' }}>
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
             <option value="number_asc">Collector # ↑</option>
             <option value="name_asc">Name A→Z</option>
             <option value="name_desc">Name Z→A</option>
@@ -427,30 +427,30 @@ export default function CardsPage() {
         {/* Filter Rarity */}
         {allRarities.length > 0 && (
           <div className="flex items-center gap-1.5" ref={rarityRef}>
-            <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Filter Rarity</span>
+            <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Filter Rarity</span>
             <div className="relative">
               <button onClick={() => setRarityOpen(o => !o)}
                 className="text-sm px-3 py-1.5 rounded flex items-center gap-1.5"
-                style={{ backgroundColor: '#faf6ee', border: `1px solid ${rarityFilter.length > 0 ? '#0097a7' : '#d4c4a8'}`, color: rarityFilter.length > 0 ? '#0097a7' : '#1c1008' }}>
+                style={{ backgroundColor: 'var(--bg-surface)', border: `1px solid ${rarityFilter.length > 0 ? 'var(--accent)' : 'var(--border)'}`, color: rarityFilter.length > 0 ? 'var(--accent)' : 'var(--text-primary)' }}>
                 {rarityFilter.length > 0 ? `${rarityFilter.length} selected` : 'All'} ▾
               </button>
               {rarityOpen && (
                 <div className="absolute z-20 mt-1 rounded-lg shadow-xl min-w-[160px]"
-                  style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8' }}>
+                  style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}>
                   <div className="p-1">
                     {allRarities.map(r => (
                       <label key={r} className="flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer hover:opacity-80"
-                        style={{ backgroundColor: rarityFilter.includes(r) ? '#faf6ee' : 'transparent' }}>
+                        style={{ backgroundColor: rarityFilter.includes(r) ? 'var(--bg-surface)' : 'transparent' }}>
                         <input type="checkbox" checked={rarityFilter.includes(r)}
                           onChange={() => setParam({ rarity: rarityFilter.includes(r) ? rarityFilter.filter(x => x !== r) : [...rarityFilter, r], page: 1 })}
                           className="accent-[#0097a7]" />
-                        <span className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(r)] || '#7a6248' }}>{r}</span>
+                        <span className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(r)] || 'var(--text-muted)' }}>{r}</span>
                       </label>
                     ))}
                     {rarityFilter.length > 0 && (
                       <button onClick={() => setParam({ rarity: [], page: 1 })}
                         className="w-full text-xs px-3 py-1.5 mt-1 rounded text-left"
-                        style={{ color: '#7a6248', borderTop: '1px solid #d4c4a8' }}>
+                        style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)' }}>
                         Clear filter
                       </button>
                     )}
@@ -463,10 +463,10 @@ export default function CardsPage() {
 
         {/* Cards Per Page */}
         <div className="flex items-center gap-1.5">
-          <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Cards Per Page</span>
+          <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Cards Per Page</span>
           <select value={pageSize} onChange={e => setParam({ per: e.target.value, page: 1 })}
             className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008' }}>
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
             <option value={25}>25</option>
             <option value={50}>50</option>
             <option value={100}>100</option>
@@ -475,7 +475,7 @@ export default function CardsPage() {
         </div>
 
 
-        <span className="text-xs ml-auto" style={{ color: '#7a6248' }}>
+        <span className="text-xs ml-auto" style={{ color: 'var(--text-muted)' }}>
           {sortedCards.length} cards{totalPages > 1 && ` · page ${safePage} of ${totalPages}`}
         </span>
       </div>
@@ -484,32 +484,32 @@ export default function CardsPage() {
       {isBulkActive && (
         <div className="flex items-center gap-3 mb-4 px-4 py-3 rounded-lg flex-wrap"
           style={{ backgroundColor: '#dff0f4', border: '1px solid #0097a733' }}>
-          <span className="text-sm font-medium" style={{ color: '#0097a7' }}>
+          <span className="text-sm font-medium" style={{ color: 'var(--accent)' }}>
             Adding to {bulkTarget === 'collection' ? 'Collection' : bulkTarget === 'deck' ? 'Deck' : 'Wishlist'}
           </span>
           {bulkTarget === 'deck' && bulkDecks !== null && (
             <select value={bulkDeckId || ''} onChange={e => setBulkDeckId(Number(e.target.value))}
               className="text-sm px-2 py-1 rounded"
-              style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008' }}>
+              style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
               {bulkDecks.length === 0
                 ? <option disabled>No decks for this game</option>
                 : bulkDecks.map(d => <option key={d.id} value={d.id}>{d.name}</option>)
               }
             </select>
           )}
-          <span className="text-xs" style={{ color: '#7a6248' }}>
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
             {bulkCount > 0 ? `${bulkCount} card${bulkCount > 1 ? 's' : ''} selected` : 'Click + on cards below'}
           </span>
           {bulkCount > 0 && (
             <button onClick={handleBulkSave} disabled={bulkSaving}
               className="text-sm px-4 py-1.5 rounded font-semibold disabled:opacity-50"
-              style={{ backgroundColor: '#0097a7', color: '#fff' }}>
+              style={{ backgroundColor: 'var(--accent)', color: '#fff' }}>
               {bulkSaving ? 'Saving…' : `Save ${bulkCount} Card${bulkCount > 1 ? 's' : ''}`}
             </button>
           )}
           {bulkMsg && <span className="text-sm" style={{ color: '#a5d6a7' }}>{bulkMsg}</span>}
           <button onClick={() => { setBulkTarget(null); setBulkQtys({}); setBulkMsg('') }}
-            className="ml-auto text-xs hover:opacity-80" style={{ color: '#7a6248' }}>
+            className="ml-auto text-xs hover:opacity-80" style={{ color: 'var(--text-muted)' }}>
             Cancel
           </button>
         </div>
@@ -524,10 +524,10 @@ export default function CardsPage() {
             const bulkQty = bulkQtys[card.printing_id] || 0
             return (
               <div key={card.id} className="rounded-xl overflow-hidden border relative flex flex-col"
-                style={{ backgroundColor: '#faf6ee', borderColor: bulkQty > 0 ? '#0097a7' : '#d4c4a8' }}>
+                style={{ backgroundColor: 'var(--bg-surface)', borderColor: bulkQty > 0 ? 'var(--accent)' : 'var(--border)' }}>
                 {isOwned && (
                   <div className="absolute top-1.5 right-1.5 z-10 text-xs font-bold px-1.5 py-0.5 rounded"
-                    style={{ backgroundColor: '#0097a7', color: '#f5f0e8' }}>×{quantity}</div>
+                    style={{ backgroundColor: 'var(--accent)', color: 'var(--bg-page)' }}>×{quantity}</div>
                 )}
                 <div className="cursor-pointer transition-all duration-200"
                   onClick={() => !isBulkActive && navigate(`/cards/${card.id}?printing=${card.printing_id}`)}
@@ -536,27 +536,27 @@ export default function CardsPage() {
                   {card.image_url
                     ? <img src={card.image_url} alt={card.name} className="w-full" />
                     : <div className="aspect-[2.5/3.5] flex items-center justify-center p-3"
-                        style={{ backgroundColor: '#d4c4a8' }}>
-                        <span className="text-sm text-center" style={{ color: '#7a6248' }}>{card.name}</span>
+                        style={{ backgroundColor: 'var(--bg-chip)' }}>
+                        <span className="text-sm text-center" style={{ color: 'var(--text-muted)' }}>{card.name}</span>
                       </div>
                   }
                 </div>
                 <div className="p-2 flex items-end justify-between gap-1">
-                  <p className="text-xs font-medium leading-tight" style={{ color: '#1c1008' }}>{card.name}</p>
-                  <p className="text-xs capitalize shrink-0" style={{ color: RARITY_COLORS[normalizeRarity(card.rarity)] || '#7a6248' }}>{card.rarity}</p>
+                  <p className="text-xs font-medium leading-tight" style={{ color: 'var(--text-primary)' }}>{card.name}</p>
+                  <p className="text-xs capitalize shrink-0" style={{ color: RARITY_COLORS[normalizeRarity(card.rarity)] || 'var(--text-muted)' }}>{card.rarity}</p>
                 </div>
                 {isBulkActive && (
                   <div className="px-2 pb-2 flex items-center gap-1" onClick={e => e.stopPropagation()}>
                     <button onClick={() => adjustQty(card.printing_id, -1)}
                       className="w-7 h-7 rounded flex items-center justify-center text-sm font-bold"
-                      style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#1c1008' }}>−</button>
+                      style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>−</button>
                     <input type="number" min={0} value={bulkQty || ''} placeholder="0"
                       onChange={e => setQty(card.printing_id, e.target.value)}
                       className="w-full text-center text-sm rounded px-1 py-0.5"
-                      style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#1c1008' }} />
+                      style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
                     <button onClick={() => adjustQty(card.printing_id, 1)}
                       className="w-7 h-7 rounded flex items-center justify-center text-sm font-bold"
-                      style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#0097a7' }}>+</button>
+                      style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--accent)' }}>+</button>
                   </div>
                 )}
               </div>
@@ -572,17 +572,17 @@ export default function CardsPage() {
             const quantity    = owned[card.printing_id]
             const isOwned     = quantity > 0
             const bulkQty     = bulkQtys[card.printing_id] || 0
-            const rarityColor = RARITY_COLORS[normalizeRarity(card.rarity)] || '#7a6248'
+            const rarityColor = RARITY_COLORS[normalizeRarity(card.rarity)] || 'var(--text-muted)'
             return (
               <div key={card.id}
                 onClick={() => !isBulkActive && navigate(`/cards/${card.id}?printing=${card.printing_id}`)}
                 className={`rounded border px-3 py-2 flex items-center justify-between gap-2 transition-colors ${!isBulkActive ? 'cursor-pointer hover:border-[#0097a7]' : ''}`}
-                style={{ backgroundColor: bulkQty > 0 ? '#dff0f4' : '#eee4d4', borderColor: bulkQty > 0 ? '#0097a7' : '#d4c4a8' }}>
+                style={{ backgroundColor: bulkQty > 0 ? '#dff0f4' : 'var(--bg-chip)', borderColor: bulkQty > 0 ? 'var(--accent)' : 'var(--border)' }}>
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-sm font-medium truncate" style={{ color: '#1c1008' }}>{card.name}</span>
+                  <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{card.name}</span>
                   {isOwned && (
                     <span className="text-xs font-bold px-1 rounded shrink-0"
-                      style={{ backgroundColor: '#0097a722', color: '#0097a7' }}>×{quantity}</span>
+                      style={{ backgroundColor: '#0097a722', color: 'var(--accent)' }}>×{quantity}</span>
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -591,14 +591,14 @@ export default function CardsPage() {
                     <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
                       <button onClick={() => adjustQty(card.printing_id, -1)}
                         className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
-                        style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008' }}>−</button>
+                        style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>−</button>
                       <input type="number" min={0} value={bulkQty || ''} placeholder="0"
                         onChange={e => setQty(card.printing_id, e.target.value)}
                         className="w-10 text-center text-xs rounded px-1 py-0.5"
-                        style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008' }} />
+                        style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
                       <button onClick={() => adjustQty(card.printing_id, 1)}
                         className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
-                        style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#0097a7' }}>+</button>
+                        style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--accent)' }}>+</button>
                     </div>
                   )}
                 </div>
@@ -613,7 +613,7 @@ export default function CardsPage() {
         <div className="flex items-center justify-center gap-2 mt-8">
           <button onClick={() => setParam({ page: Math.max(1, page - 1) })} disabled={safePage === 1}
             className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: safePage === 1 ? '#9e836a' : '#1c1008', cursor: safePage === 1 ? 'not-allowed' : 'pointer' }}>
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: safePage === 1 ? '#9e836a' : 'var(--text-primary)', cursor: safePage === 1 ? 'not-allowed' : 'pointer' }}>
             ‹ Prev
           </button>
           {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -622,13 +622,13 @@ export default function CardsPage() {
             .map((p, i) => p === '…'
               ? <span key={`e-${i}`} className="text-sm px-1" style={{ color: '#9e836a' }}>…</span>
               : <button key={p} onClick={() => setParam({ page: p })} className="text-sm w-8 h-8 rounded"
-                  style={{ backgroundColor: p === safePage ? '#0097a7' : '#faf6ee', border: '1px solid #d4c4a8', color: p === safePage ? '#e8ddc8' : '#1c1008', fontWeight: p === safePage ? '600' : '400' }}>
+                  style={{ backgroundColor: p === safePage ? 'var(--accent)' : 'var(--bg-surface)', border: '1px solid var(--border)', color: p === safePage ? 'var(--text-panel)' : 'var(--text-primary)', fontWeight: p === safePage ? '600' : '400' }}>
                   {p}
                 </button>
             )}
           <button onClick={() => setParam({ page: Math.min(totalPages, page + 1) })} disabled={safePage === totalPages}
             className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: safePage === totalPages ? '#9e836a' : '#1c1008', cursor: safePage === totalPages ? 'not-allowed' : 'pointer' }}>
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: safePage === totalPages ? '#9e836a' : 'var(--text-primary)', cursor: safePage === totalPages ? 'not-allowed' : 'pointer' }}>
             Next ›
           </button>
         </div>

@@ -59,7 +59,7 @@ function SetRow({ set, isLast, onClick }) {
       onClick={onClick}
       className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 py-3 sm:px-5 sm:py-4 cursor-pointer transition-all duration-150 gap-1 sm:gap-0"
       style={{
-        backgroundColor: hovered ? '#d4c4a8' : '#faf6ee',
+        backgroundColor: hovered ? 'var(--border)' : 'var(--bg-surface)',
         borderBottom: isLast ? 'none' : '1px solid #d4c4a8',
       }}
       onMouseEnter={() => setHovered(true)}
@@ -69,15 +69,15 @@ function SetRow({ set, isLast, onClick }) {
         {set.icon_url && (
           <img src={set.icon_url} alt="" className="w-5 h-5 invert opacity-50" />
         )}
-        <span className="font-medium" style={{ color: '#1c1008' }}>{set.name}</span>
+        <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{set.name}</span>
       </div>
       <div className="flex items-center gap-3 sm:gap-6 shrink-0">
-        <span className="text-xs sm:text-sm" style={{ color: '#7a6248' }}>
+        <span className="text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>
           {formatDate(set.release_date)}
         </span>
         <span
           className="text-sm transition-colors duration-150 hidden sm:block"
-          style={{ color: hovered ? '#0097a7' : '#d4c4a8' }}
+          style={{ color: hovered ? 'var(--accent)' : 'var(--border)' }}
         >
           →
         </span>
@@ -110,7 +110,7 @@ export default function SetsPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <p className="text-lg" style={{ color: '#7a6248' }}>Loading sets...</p>
+      <p className="text-lg" style={{ color: 'var(--text-muted)' }}>Loading sets...</p>
     </div>
   )
 
@@ -136,17 +136,17 @@ export default function SetsPage() {
       <button
         onClick={() => navigate('/games')}
         className="text-sm mb-6 flex items-center gap-1 hover:opacity-80 transition-opacity"
-        style={{ color: '#0097a7' }}
+        style={{ color: 'var(--accent)' }}
       >
         ← Back to Games
       </button>
 
       <div className="flex gap-6 items-start mb-2">
         <div className="flex-1">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-3 break-words" style={{ color: '#1c1008' }}>{game?.name}</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-3 break-words" style={{ color: 'var(--text-primary)' }}>{game?.name}</h1>
 
           {gameInfo?.description && (
-            <p className="text-base mb-4 leading-relaxed" style={{ color: '#7a6248' }}>
+            <p className="text-base mb-4 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
               {gameInfo.description}
             </p>
           )}
@@ -160,7 +160,7 @@ export default function SetsPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm px-3 py-1.5 rounded-lg border transition-all duration-150 hover:opacity-80"
-                  style={{ color: '#0097a7', borderColor: '#0097a7', textDecoration: 'none' }}
+                  style={{ color: 'var(--accent)', borderColor: 'var(--accent)', textDecoration: 'none' }}
                 >
                   {link.label} ↗
                 </a>
@@ -179,21 +179,21 @@ export default function SetsPage() {
         )}
       </div>
 
-      <h2 className="text-xs font-semibold uppercase tracking-widest mb-2 mt-2" style={{ color: '#7a6248' }}>
+      <h2 className="text-xs font-semibold uppercase tracking-widest mb-2 mt-2" style={{ color: 'var(--text-muted)' }}>
         Sets — {filteredSets.length} total
       </h2>
 
       {/* Filter row — only show if more than one tab available */}
       {availableTabs.length > 1 && (
         <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-6 gap-y-2 mb-6 text-sm">
-          <span style={{ color: '#7a6248' }}>Show:</span>
+          <span style={{ color: 'var(--text-muted)' }}>Show:</span>
           {availableTabs.map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className="transition-all duration-150 hover:opacity-100"
               style={{
-                color: activeTab === tab.key ? '#0097a7' : '#7a6248',
+                color: activeTab === tab.key ? 'var(--accent)' : 'var(--text-muted)',
                 fontWeight: activeTab === tab.key ? '600' : '400',
                 textDecoration: activeTab === tab.key ? 'underline' : 'none',
                 textUnderlineOffset: '3px',
@@ -219,11 +219,11 @@ export default function SetsPage() {
               <div key={tab.key}>
                 <p
                   className="text-xs font-semibold uppercase tracking-widest mb-2"
-                  style={{ color: '#7a6248' }}
+                  style={{ color: 'var(--text-muted)' }}
                 >
                   {tab.label}
                 </p>
-                <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#d4c4a8' }}>
+                <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
                   {sets
                     .filter(s => s.set_type === tab.key)
                     .map((set, index, arr) => (
@@ -243,11 +243,11 @@ export default function SetsPage() {
             <div>
               <p
                 className="text-xs font-semibold uppercase tracking-widest mb-2"
-                style={{ color: '#7a6248' }}
+                style={{ color: 'var(--text-muted)' }}
               >
                 Other
               </p>
-              <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#d4c4a8' }}>
+              <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
                 {sets
                   .filter(s => !availableTabs.find(t => t.key !== 'all' && t.key === s.set_type))
                   .map((set, index, arr) => (
@@ -270,10 +270,10 @@ export default function SetsPage() {
             if (!pubSets.length) return null
             return (
               <div key={pub}>
-                <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#7a6248' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
                   {pub}
                 </p>
-                <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#d4c4a8' }}>
+                <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
                   {pubSets.map((set, index) => (
                     <SetRow
                       key={set.id}
@@ -289,8 +289,8 @@ export default function SetsPage() {
           {/* Sets with no publisher */}
           {filteredSets.filter(s => !s.publisher).length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#7a6248' }}>Other</p>
-              <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#d4c4a8' }}>
+              <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Other</p>
+              <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
                 {filteredSets.filter(s => !s.publisher).map((set, index, arr) => (
                   <SetRow key={set.id} set={set} isLast={index === arr.length - 1} onClick={() => navigate(`/sets/${set.id}`)} />
                 ))}
@@ -300,7 +300,7 @@ export default function SetsPage() {
         </div>
       ) : (
         /* Flat list — filtered view or games with no categories */
-        <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#d4c4a8' }}>
+        <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
           {filteredSets.map((set, index) => (
             <SetRow
               key={set.id}

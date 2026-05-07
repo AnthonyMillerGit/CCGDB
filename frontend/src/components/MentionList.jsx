@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 
 const TYPE_STYLES = {
-  game: { bg: '#1a3a2a', color: '#0097a7' },
+  game: { bg: '#1a3a2a', color: 'var(--accent)' },
   set:  { bg: '#1a1a3a', color: '#a78bfa' },
   card: { bg: '#2a1a3a', color: '#f472b6' },
 }
@@ -36,7 +36,7 @@ const MentionList = forwardRef(({ items, command }, ref) => {
 
   if (!items.length) {
     return (
-      <div className="px-3 py-2 text-sm" style={{ color: '#7a6248' }}>
+      <div className="px-3 py-2 text-sm" style={{ color: 'var(--text-muted)' }}>
         No results
       </div>
     )
@@ -53,8 +53,8 @@ const MentionList = forwardRef(({ items, command }, ref) => {
             onClick={() => selectItem(index)}
             className="w-full text-left px-3 py-2 flex items-center gap-2 transition-colors"
             style={{
-              backgroundColor: index === selectedIndex ? '#d4c4a8' : 'transparent',
-              color: '#1c1008',
+              backgroundColor: index === selectedIndex ? 'var(--border)' : 'transparent',
+              color: 'var(--text-primary)',
               borderBottom: index < items.length - 1 ? '1px solid #d4c4a8' : 'none',
             }}
           >
@@ -66,7 +66,7 @@ const MentionList = forwardRef(({ items, command }, ref) => {
             </span>
             <span className="truncate text-sm">{item.name}</span>
             {item.subtitle && (
-              <span className="text-xs flex-shrink-0 ml-auto" style={{ color: '#7a6248' }}>
+              <span className="text-xs flex-shrink-0 ml-auto" style={{ color: 'var(--text-muted)' }}>
                 {item.subtitle}
               </span>
             )}

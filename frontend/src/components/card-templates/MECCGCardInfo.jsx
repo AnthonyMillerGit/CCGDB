@@ -1,7 +1,7 @@
 const ALIGNMENT_STYLE = {
-  Hero:    { color: '#0097a7', backgroundColor: '#1a1a3a', borderColor: '#0097a744' },
+  Hero:    { color: 'var(--accent)', backgroundColor: '#1a1a3a', borderColor: '#0097a744' },
   Minion:  { color: '#8b1a3a', backgroundColor: '#3a1a1a', borderColor: '#8b1a3a44' },
-  Neutral: { color: '#7a6248', backgroundColor: '#faf6ee', borderColor: '#d4c4a8' },
+  Neutral: { color: 'var(--text-muted)', backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)' },
 }
 
 const MP_TYPE_LABEL = {
@@ -16,9 +16,9 @@ function StatBox({ label, value }) {
   if (!value || value === '-' || value === '') return null
   return (
     <div className="flex flex-col items-center px-4 py-2 rounded-lg border"
-      style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8', minWidth: '56px' }}>
-      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>{label}</span>
-      <span className="text-xl font-bold" style={{ color: '#1c1008' }}>{value}</span>
+      style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)', minWidth: '56px' }}>
+      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>{label}</span>
+      <span className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{value}</span>
     </div>
   )
 }
@@ -42,7 +42,7 @@ export default function MECCGCardInfo({ card }) {
             {alignment}
           </span>
           {attrs.unique && (
-            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#7a6248' }}>
+            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
               Unique
             </span>
           )}
@@ -58,8 +58,8 @@ export default function MECCGCardInfo({ card }) {
           <StatBox label="DI" value={attrs.directInfluence} />
           {attrs.marshallingPoints && (
             <div className="flex flex-col items-center px-4 py-2 rounded-lg border"
-              style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8', minWidth: '56px' }}>
-              <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>
+              style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)', minWidth: '56px' }}>
+              <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>
                 {MP_TYPE_LABEL[attrs.marshallingPointsType] || 'MPs'}
               </span>
               <span className="text-xl font-bold" style={{ color: '#f4c542' }}>{attrs.marshallingPoints}</span>
@@ -76,26 +76,26 @@ export default function MECCGCardInfo({ card }) {
         <div className="flex flex-wrap gap-x-6 gap-y-2 mb-5">
           {attrs.skills && (
             <div>
-              <span className="text-xs uppercase tracking-wide mr-2" style={{ color: '#7a6248' }}>Class</span>
-              <span className="text-sm font-medium" style={{ color: '#1c1008' }}>{attrs.skills}</span>
+              <span className="text-xs uppercase tracking-wide mr-2" style={{ color: 'var(--text-muted)' }}>Class</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{attrs.skills}</span>
             </div>
           )}
           {attrs.race && (
             <div>
-              <span className="text-xs uppercase tracking-wide mr-2" style={{ color: '#7a6248' }}>Race</span>
-              <span className="text-sm font-medium" style={{ color: '#1c1008' }}>{attrs.race}</span>
+              <span className="text-xs uppercase tracking-wide mr-2" style={{ color: 'var(--text-muted)' }}>Race</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{attrs.race}</span>
             </div>
           )}
           {attrs.homeSite && (
             <div>
-              <span className="text-xs uppercase tracking-wide mr-2" style={{ color: '#7a6248' }}>Home Site</span>
-              <span className="text-sm font-medium" style={{ color: '#0097a7' }}>{attrs.homeSite}</span>
+              <span className="text-xs uppercase tracking-wide mr-2" style={{ color: 'var(--text-muted)' }}>Home Site</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--accent)' }}>{attrs.homeSite}</span>
             </div>
           )}
           {attrs.subtype && (
             <div>
-              <span className="text-xs uppercase tracking-wide mr-2" style={{ color: '#7a6248' }}>Subtype</span>
-              <span className="text-sm font-medium" style={{ color: '#1c1008' }}>{attrs.subtype}</span>
+              <span className="text-xs uppercase tracking-wide mr-2" style={{ color: 'var(--text-muted)' }}>Subtype</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{attrs.subtype}</span>
             </div>
           )}
         </div>
@@ -104,7 +104,7 @@ export default function MECCGCardInfo({ card }) {
       {/* Rules text (HTML from card database) */}
       {card.rules_text && (
         <div className="rounded-xl p-5 mb-5 border card-rules-html"
-          style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8', color: '#1c1008', lineHeight: '1.6' }}>
+          style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)', color: 'var(--text-primary)', lineHeight: '1.6' }}>
           <div dangerouslySetInnerHTML={{ __html: card.rules_text }} />
         </div>
       )}

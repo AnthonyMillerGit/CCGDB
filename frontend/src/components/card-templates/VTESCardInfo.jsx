@@ -59,7 +59,7 @@ const TYPE_COLORS = {
   'Conviction':       { bg: '#251a10', border: '#bf360c', text: '#ffab91' },
   'Power':            { bg: '#1a251a', border: '#388e3c', text: '#c8e6c9' },
 }
-const DEFAULT_TYPE = { bg: '#eee4d4', border: '#d4c4a8', text: '#1c1008' }
+const DEFAULT_TYPE = { bg: 'var(--bg-chip)', border: 'var(--border)', text: '#1c1008' }
 
 // ── Clan colors (sect-based approximations) ────────────────────────────────────
 const CLAN_SECTS = {
@@ -83,7 +83,7 @@ function getClanSect(clan) {
 function DiscChip({ disc }) {
   const isSuperior = disc === disc.toUpperCase() && disc.length > 1
   const key   = disc.toLowerCase()
-  const info  = DISC_INFO[key] || { name: disc, color: '#7a6248' }
+  const info  = DISC_INFO[key] || { name: disc, color: 'var(--text-muted)' }
   return (
     <div className="flex flex-col items-center px-3 py-1.5 rounded-lg"
       style={{
@@ -106,8 +106,8 @@ function StatBox({ label, value, color }) {
   if (value == null) return null
   return (
     <div className="flex flex-col items-center px-4 py-2 rounded-lg border"
-      style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8', minWidth: '60px' }}>
-      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>{label}</span>
+      style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)', minWidth: '60px' }}>
+      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>{label}</span>
       <span className="text-xl font-bold" style={{ color: color || '#1c1008' }}>{value}</span>
     </div>
   )
@@ -140,11 +140,11 @@ function ClanBadge({ clan }) {
     Laibon:      { bg: '#102010', border: '#408030', text: '#80c060' },
     Imbued:      { bg: '#102030', border: '#2060a0', text: '#60a0e0' },
   }
-  const s = (sect && sectColors[sect]) || { bg: '#eee4d4', border: '#d4c4a8', text: '#aaa' }
+  const s = (sect && sectColors[sect]) || { bg: 'var(--bg-chip)', border: 'var(--border)', text: 'var(--text-muted)' }
   return (
     <div className="flex flex-col items-center px-4 py-2 rounded-lg border"
       style={{ backgroundColor: s.bg, borderColor: s.border }}>
-      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>
+      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>
         {sect || 'Clan'}
       </span>
       <span className="text-sm font-bold" style={{ color: s.text }}>{clan}</span>
@@ -169,7 +169,7 @@ export default function VTESCardInfo({ card }) {
         <TypeBadges types={types} />
         {attrs.combo && (
           <span className="text-xs px-2 py-0.5 rounded"
-            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#7a6248' }}>
+            style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
             Combo
           </span>
         )}
@@ -181,7 +181,7 @@ export default function VTESCardInfo({ card }) {
         )}
         {attrs.first_set && (
           <span className="text-xs px-2 py-0.5 rounded"
-            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#666' }}>
+            style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
             {attrs.first_set}
           </span>
         )}
@@ -209,7 +209,7 @@ export default function VTESCardInfo({ card }) {
       {/* Disciplines */}
       {disciplines.length > 0 && (
         <div className="mb-5">
-          <p className="text-xs uppercase tracking-widest mb-2" style={{ color: '#7a6248' }}>Disciplines</p>
+          <p className="text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Disciplines</p>
           <div className="flex flex-wrap gap-2">
             {disciplines.map((d, i) => <DiscChip key={i} disc={d} />)}
           </div>
@@ -219,8 +219,8 @@ export default function VTESCardInfo({ card }) {
       {/* Rules text */}
       {card.rules_text && (
         <div className="rounded-xl p-5 mb-4 border"
-          style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8' }}>
-          <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>
+          style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
+          <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: 'var(--text-primary)' }}>
             {card.rules_text}
           </p>
         </div>

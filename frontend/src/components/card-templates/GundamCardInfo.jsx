@@ -3,18 +3,18 @@ const COLOR_STYLES = {
   Red:    { bg: '#2e0d0d', border: '#b71c1c', text: '#ef9a9a' },
   Blue:   { bg: '#0d1829', border: '#1565c0', text: '#90caf9' },
   Green:  { bg: '#002e12', border: '#2e7d32', text: '#a5d6a7' },
-  White:  { bg: '#eee4d4', border: '#9e9e9e', text: '#f5f5f5' },
+  White:  { bg: 'var(--bg-chip)', border: '#9e9e9e', text: '#f5f5f5' },
   Yellow: { bg: '#2e1a00', border: '#f9a825', text: '#ffe082' },
   Purple: { bg: '#1a0a2e', border: '#6a1b9a', text: '#ce93d8' },
 }
-const DEFAULT_COLOR = { bg: '#22222a', border: '#d4c4a8', text: '#aaa' }
+const DEFAULT_COLOR = { bg: '#22222a', border: 'var(--border)', text: 'var(--text-muted)' }
 
 function StatChip({ label, value, color = '#1c1008' }) {
   if (value == null || value === '' || value === '-') return null
   return (
     <div className="flex flex-col items-center px-3 py-1.5 rounded-lg min-w-[52px]"
-      style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8' }}>
-      <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>{label}</span>
+      style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}>
+      <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{label}</span>
       <span className="text-2xl font-extrabold leading-none mt-0.5" style={{ color }}>{value}</span>
     </div>
   )
@@ -33,8 +33,8 @@ function Chip({ label, bg = '#22222a', border = '#faf6ee', text = '#7a6248' }) {
 function TextBlock({ text }) {
   if (!text) return null
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: '#faf6ee', backgroundColor: '#28282f' }}>
-      <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>{text}</p>
+    <div className="rounded-lg border p-4" style={{ borderColor: 'var(--border-panel)', backgroundColor: 'var(--bg-panel)' }}>
+      <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: 'var(--text-panel)' }}>{text}</p>
     </div>
   )
 }
@@ -65,7 +65,7 @@ export default function GundamCardInfo({ card }) {
         {/* Card type */}
         {cardType && (
           <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded"
-            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#1c1008' }}>
+            style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
             {cardType}
           </span>
         )}
@@ -97,7 +97,7 @@ export default function GundamCardInfo({ card }) {
 
       {/* ── Stats row ─────────────────────────────────────────────────────── */}
       {showStats && (
-        <div className="flex flex-wrap gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid #faf6ee' }}>
+        <div className="flex flex-wrap gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid #d4c4a8' }}>
           <StatChip label="AP" value={attrs.ap} color="#ef5350" />
           <StatChip label="HP" value={attrs.hp} color="#66bb6a" />
         </div>
@@ -106,9 +106,9 @@ export default function GundamCardInfo({ card }) {
       {/* ── Link requirement ──────────────────────────────────────────────── */}
       {attrs.link && attrs.link !== '-' && (
         <div className="rounded-lg border mb-3 px-3 py-2"
-          style={{ borderColor: '#faf6ee', backgroundColor: '#28282f' }}>
-          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#7a6248' }}>Link </span>
-          <span className="text-xs" style={{ color: '#1c1008' }}>{attrs.link}</span>
+          style={{ borderColor: 'var(--border-panel)', backgroundColor: 'var(--bg-panel)' }}>
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Link </span>
+          <span className="text-xs" style={{ color: 'var(--text-panel)' }}>{attrs.link}</span>
         </div>
       )}
 

@@ -47,7 +47,7 @@ const FRAME_TEXT_COLORS = {
   ritual_pendulum:   '#6A9ADA',
   spell:             '#2AAA7A',
   trap:              '#CC4A8A',
-  token:             '#aaa',
+  token:             '#7a6248',
   skill:             '#6A8AAA',
 }
 
@@ -66,7 +66,7 @@ const ARROW_POSITIONS = {
 const BANLIST_STYLE = {
   Forbidden:     { color: '#8b1a3a', bg: '#3a1a1a', label: 'Forbidden' },
   Limited:       { color: '#f4c542', bg: '#3a3a1a', label: 'Limited' },
-  'Semi-Limited': { color: '#0097a7', bg: '#1a1a3a', label: 'Semi-Limited' },
+  'Semi-Limited': { color: 'var(--accent)', bg: '#1a1a3a', label: 'Semi-Limited' },
 }
 
 function LinkArrows({ markers }) {
@@ -78,7 +78,7 @@ function LinkArrows({ markers }) {
           if (row === 1 && col === 1) {
             return (
               <div key="center" className="rounded-sm flex items-center justify-center"
-                style={{ width: 20, height: 20, backgroundColor: '#f5f0e8', border: '1px solid #d4c4a8', fontSize: '10px', color: '#7a6248' }}>
+                style={{ width: 20, height: 20, backgroundColor: 'var(--bg-page)', border: '1px solid var(--border)', fontSize: '10px', color: 'var(--text-muted)' }}>
                 ⬡
               </div>
             )
@@ -158,7 +158,7 @@ export default function YuGiOhCardInfo({ card }) {
           </span>
         )}
         {attrs.archetype && (
-          <span className="text-xs px-3 py-1 rounded" style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#7a6248' }}>
+          <span className="text-xs px-3 py-1 rounded" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
             {attrs.archetype}
           </span>
         )}
@@ -179,7 +179,7 @@ export default function YuGiOhCardInfo({ card }) {
           {/* Level/Rank stars */}
           {!isLink && attrs.level && (
             <div>
-              <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#7a6248' }}>
+              <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>
                 {isXyz ? 'Rank' : 'Level'}
               </p>
               <LevelStars level={attrs.level} isXyz={isXyz} />
@@ -189,23 +189,23 @@ export default function YuGiOhCardInfo({ card }) {
           {/* ATK / DEF or LINK */}
           <div className="flex items-center gap-3">
             <div className="flex flex-col items-center px-4 py-2 rounded-lg border"
-              style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8' }}>
-              <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>ATK</span>
-              <span className="text-xl font-bold" style={{ color: '#1c1008' }}>
+              style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)' }}>
+              <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>ATK</span>
+              <span className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
                 {attrs.atk != null ? attrs.atk : '?'}
               </span>
             </div>
             {isLink ? (
               <div className="flex flex-col items-center px-4 py-2 rounded-lg border"
-                style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8' }}>
-                <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>LINK</span>
+                style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)' }}>
+                <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>LINK</span>
                 <span className="text-xl font-bold" style={{ color: '#1A7ABA' }}>{attrs.linkval}</span>
               </div>
             ) : (
               <div className="flex flex-col items-center px-4 py-2 rounded-lg border"
-                style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8' }}>
-                <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>DEF</span>
-                <span className="text-xl font-bold" style={{ color: '#1c1008' }}>
+                style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)' }}>
+                <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>DEF</span>
+                <span className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
                   {attrs.def != null ? attrs.def : '?'}
                 </span>
               </div>
@@ -215,8 +215,8 @@ export default function YuGiOhCardInfo({ card }) {
           {/* Pendulum scale */}
           {isPendulum && attrs.scale != null && (
             <div className="flex flex-col items-center px-4 py-2 rounded-lg border"
-              style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8' }}>
-              <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>Scale</span>
+              style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)' }}>
+              <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>Scale</span>
               <span className="text-xl font-bold" style={{ color: '#4A9A6A' }}>{attrs.scale}</span>
             </div>
           )}
@@ -224,7 +224,7 @@ export default function YuGiOhCardInfo({ card }) {
           {/* Link arrows */}
           {isLink && attrs.linkmarkers && (
             <div>
-              <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#7a6248' }}>Arrows</p>
+              <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>Arrows</p>
               <LinkArrows markers={attrs.linkmarkers} />
             </div>
           )}
@@ -232,8 +232,8 @@ export default function YuGiOhCardInfo({ card }) {
           {/* Race */}
           {attrs.race && (
             <div className="flex flex-col justify-center">
-              <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Type</span>
-              <span className="text-sm font-medium mt-0.5" style={{ color: '#1c1008' }}>{attrs.race}</span>
+              <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Type</span>
+              <span className="text-sm font-medium mt-0.5" style={{ color: 'var(--text-primary)' }}>{attrs.race}</span>
             </div>
           )}
         </div>
@@ -244,21 +244,21 @@ export default function YuGiOhCardInfo({ card }) {
         <div className="rounded-xl p-4 mb-3 border"
           style={{ backgroundColor: '#1a2a1a', borderColor: '#4A9A6A44' }}>
           <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: '#4A9A6A' }}>Pendulum Effect</p>
-          <p className="whitespace-pre-line text-sm leading-relaxed" style={{ color: '#1c1008' }}>{pendText}</p>
+          <p className="whitespace-pre-line text-sm leading-relaxed" style={{ color: '#a5d6a7' }}>{pendText}</p>
         </div>
       )}
 
       {/* Monster effect / card text */}
       {isPendulum && monsterText ? (
         <div className="rounded-xl p-4 mb-4 border"
-          style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8' }}>
-          <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: '#7a6248' }}>Monster Effect</p>
-          <p className="whitespace-pre-line text-sm leading-relaxed" style={{ color: '#1c1008' }}>{monsterText}</p>
+          style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
+          <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: 'var(--text-muted)' }}>Monster Effect</p>
+          <p className="whitespace-pre-line text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>{monsterText}</p>
         </div>
       ) : rulesText && (
         <div className="rounded-xl p-5 mb-4 border"
-          style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8' }}>
-          <p className="whitespace-pre-line leading-relaxed text-base" style={{ color: '#1c1008' }}>{rulesText}</p>
+          style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
+          <p className="whitespace-pre-line leading-relaxed text-base" style={{ color: 'var(--text-primary)' }}>{rulesText}</p>
         </div>
       )}
     </div>

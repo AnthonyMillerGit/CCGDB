@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
 
 const AVATAR_COLORS = [
-  '#0097a7', '#8b1a3a', '#7C3AED', '#2563EB', '#16A34A',
+  'var(--accent)', 'var(--accent-maroon)', '#7C3AED', '#2563EB', '#16A34A',
   '#EA580C', '#CA8A04', '#DB2777', '#0891B2', '#64748B',
 ]
 
@@ -43,21 +43,21 @@ function ExportMenu({ onExport }) {
       <button
         onClick={e => { e.stopPropagation(); setOpen(o => !o) }}
         className="text-xs px-3 py-1.5 rounded flex items-center gap-1"
-        style={{ backgroundColor: '#d4c4a8', color: '#0097a7', border: '1px solid #9e836a' }}
+        style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid #9e836a' }}
       >
         Export ▾
       </button>
       {open && (
         <div
           className="absolute right-0 mt-1 rounded shadow-lg z-10 py-1 min-w-[80px]"
-          style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}
+          style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
         >
           {formats.map(f => (
             <button
               key={f.value}
               onClick={e => { e.stopPropagation(); setOpen(false); onExport(f.value) }}
               className="w-full text-left px-3 py-1.5 text-xs hover:bg-[#d4c4a8] transition-colors"
-              style={{ color: '#1c1008' }}
+              style={{ color: 'var(--text-primary)' }}
             >
               {f.label}
             </button>
@@ -95,7 +95,7 @@ function ImportButton({ onImport, label = 'Import', importing = false }) {
         onClick={handleClick}
         disabled={importing}
         className="text-xs px-3 py-1.5 rounded flex items-center gap-1"
-        style={{ backgroundColor: '#d4c4a8', color: importing ? '#7a6248' : '#0097a7', border: '1px solid #9e836a', cursor: importing ? 'not-allowed' : 'pointer' }}
+        style={{ backgroundColor: 'var(--bg-chip)', color: importing ? 'var(--text-muted)' : 'var(--accent)', border: '1px solid #9e836a', cursor: importing ? 'not-allowed' : 'pointer' }}
       >
         {importing ? 'Importing…' : label}
       </button>
@@ -111,14 +111,14 @@ function ImportResultBanner({ result, onDismiss }) {
       style={{
         backgroundColor: result.error ? '#3a1a1a' : '#1a3a2a',
         border: `1px solid ${result.error ? '#6a2d2d' : '#2d6a4a'}`,
-        color: result.error ? '#8b1a3a' : '#1eff00',
+        color: result.error ? 'var(--accent-maroon)' : '#1eff00',
       }}
     >
       {result.error
         ? <span>{result.error}</span>
         : <span>Imported {result.imported} card{result.imported !== 1 ? 's' : ''}{result.skipped > 0 ? ` · ${result.skipped} skipped (not found)` : ''}.</span>
       }
-      <button onClick={onDismiss} style={{ color: '#7a6248', fontSize: '1rem', lineHeight: 1 }}>×</button>
+      <button onClick={onDismiss} style={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1 }}>×</button>
     </div>
   )
 }
@@ -158,20 +158,20 @@ function UnverifiedBanner({ authFetch }) {
 function ConfirmModal({ message, confirmLabel = 'Delete', onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}>
-      <div className="rounded-xl p-6 w-full max-w-sm mx-4" style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}>
-        <p className="text-sm mb-6" style={{ color: '#1c1008' }}>{message}</p>
+      <div className="rounded-xl p-6 w-full max-w-sm mx-4" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+        <p className="text-sm mb-6" style={{ color: 'var(--text-primary)' }}>{message}</p>
         <div className="flex justify-end gap-3">
           <button
             onClick={onCancel}
             className="px-4 py-2 rounded text-sm"
-            style={{ backgroundColor: '#d4c4a8', color: '#1c1008' }}
+            style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)' }}
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
             className="px-4 py-2 rounded text-sm font-semibold"
-            style={{ backgroundColor: '#8b1a3a', color: '#fff' }}
+            style={{ backgroundColor: 'var(--accent-maroon)', color: '#fff' }}
           >
             {confirmLabel}
           </button>
@@ -185,10 +185,10 @@ function ConfirmModal({ message, confirmLabel = 'Delete', onConfirm, onCancel })
 
 function ProgressBar({ pct }) {
   return (
-    <div className="flex-1 rounded-full overflow-hidden" style={{ backgroundColor: '#d4c4a8', height: '8px' }}>
+    <div className="flex-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-chip)', height: '8px' }}>
       <div
         className="h-full rounded-full transition-all duration-500"
-        style={{ width: `${Math.min(100, Math.max(0, pct))}%`, backgroundColor: pct >= 100 ? '#0097a7' : '#5a6ee0' }}
+        style={{ width: `${Math.min(100, Math.max(0, pct))}%`, backgroundColor: pct >= 100 ? 'var(--accent)' : '#5a6ee0' }}
       />
     </div>
   )
@@ -248,11 +248,11 @@ function CollectionStatsTab({ authFetch }) {
     setMissingCards(prev => ({ ...prev, [id]: Array.isArray(data) ? data : [] }))
   }
 
-  if (loading) return <p style={{ color: '#7a6248' }}>Loading stats…</p>
+  if (loading) return <p style={{ color: 'var(--text-muted)' }}>Loading stats…</p>
 
   if (stats.length === 0) return (
     <div className="text-center py-16">
-      <p className="text-lg mb-2" style={{ color: '#7a6248' }}>No collection data yet.</p>
+      <p className="text-lg mb-2" style={{ color: 'var(--text-muted)' }}>No collection data yet.</p>
       <p className="text-sm" style={{ color: '#9e836a' }}>Add cards to your collection to see stats.</p>
     </div>
   )
@@ -263,24 +263,24 @@ function CollectionStatsTab({ authFetch }) {
         const gamePct = game.total_cards > 0 ? (game.owned_cards / game.total_cards) * 100 : 0
         const isOpen = expanded.has(game.game_id)
         return (
-          <div key={game.game_id} className="rounded-xl overflow-hidden" style={{ border: '1px solid #d4c4a8' }}>
+          <div key={game.game_id} className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             {/* Game row */}
             <button
               onClick={() => toggleGame(game.game_id)}
               className="w-full flex items-center gap-4 px-5 py-4 text-left transition-colors"
-              style={{ backgroundColor: '#faf6ee' }}
+              style={{ backgroundColor: 'var(--bg-surface)' }}
             >
-              <span className="font-semibold w-48 shrink-0 truncate" style={{ color: '#1c1008' }}>{game.game_name}</span>
+              <span className="font-semibold w-48 shrink-0 truncate" style={{ color: 'var(--text-primary)' }}>{game.game_name}</span>
               <ProgressBar pct={gamePct} />
-              <span className="text-sm w-12 text-right shrink-0" style={{ color: '#0097a7' }}>
+              <span className="text-sm w-12 text-right shrink-0" style={{ color: 'var(--accent)' }}>
                 {gamePct < 0.1 ? '<0.1' : gamePct.toFixed(1)}%
               </span>
-              <span className="text-xs w-4 shrink-0 text-right" style={{ color: '#7a6248' }}>{isOpen ? '▲' : '▼'}</span>
+              <span className="text-xs w-4 shrink-0 text-right" style={{ color: 'var(--text-muted)' }}>{isOpen ? '▲' : '▼'}</span>
             </button>
 
             {/* Set rows */}
             {isOpen && (
-              <div className="divide-y" style={{ backgroundColor: '#e8ddc8', borderColor: '#d4c4a8' }}>
+              <div className="divide-y" style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)' }}>
                 {game.sets.map(set => {
                   const setPct = set.total_cards > 0 ? (set.owned_cards / set.total_cards) * 100 : 0
                   const missing = missingCards[set.set_id]
@@ -289,16 +289,16 @@ function CollectionStatsTab({ authFetch }) {
                   return (
                     <div key={set.set_id}>
                       <div className="flex items-center gap-4 px-5 py-3 pl-10">
-                        <span className="text-sm w-48 shrink-0 truncate" style={{ color: '#1c1008' }} title={set.set_name}>{set.set_name}</span>
+                        <span className="text-sm w-48 shrink-0 truncate" style={{ color: 'var(--text-primary)' }} title={set.set_name}>{set.set_name}</span>
                         <ProgressBar pct={setPct} />
-                        <span className="text-xs w-20 text-right shrink-0 tabular-nums" style={{ color: '#7a6248' }}>
+                        <span className="text-xs w-20 text-right shrink-0 tabular-nums" style={{ color: 'var(--text-muted)' }}>
                           {set.owned_cards}/{set.total_cards}
                         </span>
                         <Link
                           to={`/collection/${game.game_slug}?set=${encodeURIComponent(set.set_name)}`}
                           onClick={e => e.stopPropagation()}
                           className="text-xs px-2 py-1 rounded shrink-0"
-                          style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#7a6248', textDecoration: 'none' }}
+                          style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-muted)', textDecoration: 'none' }}
                         >
                           In my collection
                         </Link>
@@ -306,7 +306,7 @@ function CollectionStatsTab({ authFetch }) {
                           <button
                             onClick={e => toggleMissing(e, set)}
                             className="text-xs px-2 py-1 rounded shrink-0"
-                            style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: isMissingOpen ? '#0097a7' : '#7a6248' }}
+                            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: isMissingOpen ? 'var(--accent)' : 'var(--text-muted)' }}
                           >
                             {isMissingOpen ? 'Hide missing' : 'Show missing from my collection'}
                           </button>
@@ -317,9 +317,9 @@ function CollectionStatsTab({ authFetch }) {
                             disabled={addingWishlist.has(set.set_id)}
                             className="text-xs px-2 py-1 rounded shrink-0"
                             style={{
-                              backgroundColor: wishlistAdded[set.set_id] != null ? '#1a3a2a' : '#faf6ee',
-                              border: `1px solid ${wishlistAdded[set.set_id] != null ? '#2d6a4a' : '#d4c4a8'}`,
-                              color: addingWishlist.has(set.set_id) ? '#7a6248' : wishlistAdded[set.set_id] != null ? '#1eff00' : '#0097a7',
+                              backgroundColor: wishlistAdded[set.set_id] != null ? '#1a3a2a' : 'var(--bg-surface)',
+                              border: `1px solid ${wishlistAdded[set.set_id] != null ? '#2d6a4a' : 'var(--border)'}`,
+                              color: addingWishlist.has(set.set_id) ? 'var(--text-muted)' : wishlistAdded[set.set_id] != null ? '#1eff00' : 'var(--accent)',
                               cursor: addingWishlist.has(set.set_id) ? 'not-allowed' : 'pointer',
                             }}
                           >
@@ -332,10 +332,10 @@ function CollectionStatsTab({ authFetch }) {
                       {isMissingOpen && (
                         <div className="px-10 pb-3">
                           {missing === 'loading' && (
-                            <p className="text-xs py-2" style={{ color: '#7a6248' }}>Loading…</p>
+                            <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>Loading…</p>
                           )}
                           {Array.isArray(missing) && missing.length === 0 && (
-                            <p className="text-xs py-2" style={{ color: '#0097a7' }}>Collection complete!</p>
+                            <p className="text-xs py-2" style={{ color: 'var(--accent)' }}>Collection complete!</p>
                           )}
                           {Array.isArray(missing) && missing.length > 0 && (
                             <ul className="flex flex-col gap-0.5 max-h-48 overflow-y-auto pr-1">
@@ -344,7 +344,7 @@ function CollectionStatsTab({ authFetch }) {
                                   <Link
                                     to={`/cards/${card.id}?printing=${card.printing_id}`}
                                     className="text-xs hover:underline"
-                                    style={{ color: '#7a6248' }}
+                                    style={{ color: 'var(--text-muted)' }}
                                   >
                                     {card.name}
                                   </Link>
@@ -401,11 +401,11 @@ function MyWishlistTab({ authFetch }) {
     setConfirm(null)
   }
 
-  if (loading) return <p style={{ color: '#7a6248' }}>Loading wishlist…</p>
+  if (loading) return <p style={{ color: 'var(--text-muted)' }}>Loading wishlist…</p>
 
   if (items.length === 0) return (
     <div className="text-center py-16">
-      <p className="text-lg mb-2" style={{ color: '#7a6248' }}>Your wishlist is empty.</p>
+      <p className="text-lg mb-2" style={{ color: 'var(--text-muted)' }}>Your wishlist is empty.</p>
       <p className="text-sm" style={{ color: '#9e836a' }}>Add cards to your wishlist from any card detail page.</p>
     </div>
   )
@@ -420,8 +420,8 @@ function MyWishlistTab({ authFetch }) {
         />
       )}
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm" style={{ color: '#7a6248' }}>
-          <strong style={{ color: '#1c1008' }}>{items.length}</strong> {items.length === 1 ? 'card' : 'cards'}
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          <strong style={{ color: 'var(--text-primary)' }}>{items.length}</strong> {items.length === 1 ? 'card' : 'cards'}
         </p>
         <button
           onClick={() => setConfirm({
@@ -429,7 +429,7 @@ function MyWishlistTab({ authFetch }) {
             onConfirm: handleClearAll,
           })}
           className="text-xs px-3 py-1.5 rounded"
-          style={{ backgroundColor: '#d4c4a8', color: '#8b1a3a', border: '1px solid #9e836a' }}
+          style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent-maroon)', border: '1px solid #9e836a' }}
         >
           Clear Wishlist
         </button>
@@ -437,7 +437,7 @@ function MyWishlistTab({ authFetch }) {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
         {items.map(item => (
           <div key={item.id} className="relative rounded-xl overflow-hidden border"
-            style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8' }}>
+            style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
             <button
               onClick={() => navigate(`/cards/${item.card_id}`)}
               className="w-full text-left"
@@ -445,19 +445,19 @@ function MyWishlistTab({ authFetch }) {
               {item.image_url
                 ? <img src={item.image_url} alt={item.card_name} className="w-full" />
                 : <div className="aspect-[2.5/3.5] flex items-center justify-center p-2"
-                    style={{ backgroundColor: '#d4c4a8' }}>
-                    <span className="text-xs text-center" style={{ color: '#7a6248' }}>{item.card_name}</span>
+                    style={{ backgroundColor: 'var(--bg-chip)' }}>
+                    <span className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>{item.card_name}</span>
                   </div>
               }
               <div className="px-2 py-1.5">
-                <p className="text-xs font-medium truncate" style={{ color: '#1c1008' }}>{item.card_name}</p>
-                <p className="text-xs truncate" style={{ color: '#7a6248' }}>{item.set_name}</p>
+                <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>{item.card_name}</p>
+                <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{item.set_name}</p>
               </div>
             </button>
             <button
               onClick={() => handleAddToCollection(item)}
               className="absolute top-1.5 left-1.5 w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center"
-              style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
+              style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}
               title="Add to collection"
             >
               +
@@ -465,7 +465,7 @@ function MyWishlistTab({ authFetch }) {
             <button
               onClick={() => handleRemove(item.printing_id)}
               className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center"
-              style={{ backgroundColor: '#8b1a3a', color: '#fff' }}
+              style={{ backgroundColor: 'var(--accent-maroon)', color: '#fff' }}
               title="Remove from wishlist"
             >
               ×
@@ -595,9 +595,9 @@ function MyDecksTab({ authFetch }) {
     }
   }
 
-  const inputStyle = { backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008' }
+  const inputStyle = { backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }
 
-  if (loading) return <p style={{ color: '#7a6248' }}>Loading decks…</p>
+  if (loading) return <p style={{ color: 'var(--text-muted)' }}>Loading decks…</p>
 
   return (
     <div>
@@ -610,7 +610,7 @@ function MyDecksTab({ authFetch }) {
       )}
       <ImportResultBanner result={importResult} onDismiss={() => setImportResult(null)} />
       <div className="flex items-center justify-between mb-6">
-        <span className="text-sm" style={{ color: '#7a6248' }}>
+        <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
           {decks.length} {decks.length === 1 ? 'deck' : 'decks'}
         </span>
         {!showForm && !showImportForm && (
@@ -618,14 +618,14 @@ function MyDecksTab({ authFetch }) {
             <button
               onClick={openImportForm}
               className="text-xs px-3 py-1.5 rounded"
-              style={{ backgroundColor: '#d4c4a8', color: '#0097a7', border: '1px solid #9e836a' }}
+              style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid #9e836a' }}
             >
               Import Deck
             </button>
             <button
               onClick={openForm}
               className="px-4 py-2 rounded text-sm font-semibold"
-              style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
+              style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}
             >
               + New Deck
             </button>
@@ -636,7 +636,7 @@ function MyDecksTab({ authFetch }) {
       {/* Create deck form */}
       {showForm && (
         <form onSubmit={handleCreate} className="mb-6 p-4 rounded-xl flex flex-col sm:flex-row gap-3"
-          style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}>
+          style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
           <input
             type="text"
             placeholder="Deck name"
@@ -659,12 +659,12 @@ function MyDecksTab({ authFetch }) {
           <div className="flex gap-2">
             <button type="submit" disabled={creating}
               className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
-              style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}>
+              style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}>
               {creating ? 'Creating…' : 'Create'}
             </button>
             <button type="button" onClick={() => setShowForm(false)}
               className="px-4 py-2 rounded text-sm"
-              style={{ backgroundColor: '#d4c4a8', color: '#1c1008' }}>
+              style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)' }}>
               Cancel
             </button>
           </div>
@@ -674,9 +674,9 @@ function MyDecksTab({ authFetch }) {
       {/* Import deck form */}
       {showImportForm && (
         <form onSubmit={handleImportDeck} className="mb-6 p-4 rounded-xl flex flex-col gap-3"
-          style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}>
-          <p className="text-sm font-semibold" style={{ color: '#1c1008' }}>Import Deck from File</p>
-          <p className="text-xs" style={{ color: '#7a6248' }}>Supports CSV or JSON files exported from CCGVault, or .dec/.txt decklist files.</p>
+          style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+          <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Import Deck from File</p>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Supports CSV or JSON files exported from CCGVault, or .dec/.txt decklist files.</p>
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="text"
@@ -704,17 +704,17 @@ function MyDecksTab({ authFetch }) {
             required
             onChange={e => setImportFile(e.target.files?.[0] || null)}
             className="text-sm"
-            style={{ color: '#1c1008' }}
+            style={{ color: 'var(--text-primary)' }}
           />
           <div className="flex gap-2">
             <button type="submit" disabled={importing || !importFile}
               className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
-              style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}>
+              style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}>
               {importing ? 'Importing…' : 'Import'}
             </button>
             <button type="button" onClick={() => setShowImportForm(false)}
               className="px-4 py-2 rounded text-sm"
-              style={{ backgroundColor: '#d4c4a8', color: '#1c1008' }}>
+              style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)' }}>
               Cancel
             </button>
           </div>
@@ -722,9 +722,9 @@ function MyDecksTab({ authFetch }) {
       )}
 
       {decks.length === 0 && !showForm && (
-        <div className="text-center py-20" style={{ color: '#7a6248' }}>
+        <div className="text-center py-20" style={{ color: 'var(--text-muted)' }}>
           <p className="text-lg mb-2">No decks yet.</p>
-          <p>Hit <strong style={{ color: '#1c1008' }}>+ New Deck</strong> to build your first one.</p>
+          <p>Hit <strong style={{ color: 'var(--text-primary)' }}>+ New Deck</strong> to build your first one.</p>
         </div>
       )}
 
@@ -732,11 +732,11 @@ function MyDecksTab({ authFetch }) {
         {decks.map(deck => (
           <div key={deck.id}
             className="flex items-center gap-4 px-4 py-3 rounded-xl cursor-pointer transition-colors"
-            style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
             onClick={() => navigate(`/decks/${deck.id}`)}
           >
             {/* Thumbnail */}
-            <div className="shrink-0 rounded overflow-hidden" style={{ width: '44px', height: '62px', backgroundColor: '#e8ddc8' }}>
+            <div className="shrink-0 rounded overflow-hidden" style={{ width: '44px', height: '62px', backgroundColor: 'var(--bg-chip)' }}>
               {deck.thumbnail_url
                 ? <img src={deck.thumbnail_url} alt="" className="w-full h-full object-cover" />
                 : <div className="w-full h-full flex items-center justify-center" style={{ color: '#9e836a', fontSize: '1.4rem' }}>🃏</div>
@@ -744,15 +744,15 @@ function MyDecksTab({ authFetch }) {
             </div>
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <p className="font-semibold truncate" style={{ color: '#1c1008' }}>{deck.name}</p>
+              <p className="font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{deck.name}</p>
               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                <span className="text-xs" style={{ color: '#0097a7' }}>{deck.game_name}</span>
-                <span className="text-xs" style={{ color: '#7a6248' }}>
+                <span className="text-xs" style={{ color: 'var(--accent)' }}>{deck.game_name}</span>
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                   {deck.total_cards} {deck.total_cards === 1 ? 'card' : 'cards'}
                 </span>
                 {deck.format && (
                   <span className="text-xs px-1.5 py-0.5 rounded font-medium"
-                    style={{ backgroundColor: '#d4c4a8', color: '#1c1008', border: '1px solid #9e836a' }}>
+                    style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)', border: '1px solid #9e836a' }}>
                     {deck.format}
                   </span>
                 )}
@@ -766,14 +766,14 @@ function MyDecksTab({ authFetch }) {
               <button
                 onClick={e => { e.stopPropagation(); handleCopy(deck) }}
                 className="text-xs px-3 py-1.5 rounded"
-                style={{ backgroundColor: '#d4c4a8', color: '#0097a7', border: '1px solid #9e836a' }}
+                style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid #9e836a' }}
               >
                 Copy
               </button>
               <button
                 onClick={e => { e.stopPropagation(); handleDelete(deck) }}
                 className="text-xs px-3 py-1.5 rounded"
-                style={{ backgroundColor: '#d4c4a8', color: '#8b1a3a', border: '1px solid #9e836a' }}
+                style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent-maroon)', border: '1px solid #9e836a' }}
               >
                 Delete
               </button>
@@ -926,14 +926,14 @@ export default function ProfilePage() {
       {/* Account card */}
       <div
         className="rounded-xl p-6 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-        style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}
+        style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
       >
         <div className="flex items-center gap-4">
           {/* Avatar — click to change color */}
           <div className="relative flex-shrink-0" ref={colorPickerRef}>
             <div
               className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold cursor-pointer select-none"
-              style={{ backgroundColor: fullUser?.avatar_color || '#0097a7', color: '#f5f0e8' }}
+              style={{ backgroundColor: fullUser?.avatar_color || 'var(--accent)', color: 'var(--bg-page)' }}
               onClick={() => setShowColorPicker(o => !o)}
               title="Change avatar color"
             >
@@ -942,7 +942,7 @@ export default function ProfilePage() {
             {showColorPicker && (
               <div
                 className="absolute left-0 top-16 z-20 p-2 rounded-xl shadow-xl grid gap-2"
-                style={{ backgroundColor: '#e8ddc8', border: '1px solid #d4c4a8', gridTemplateColumns: 'repeat(5, 1fr)' }}
+                style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', gridTemplateColumns: 'repeat(5, 1fr)' }}
               >
                 {AVATAR_COLORS.map(color => (
                   <button
@@ -950,7 +950,7 @@ export default function ProfilePage() {
                     className="w-7 h-7 rounded-full border-2 transition-transform hover:scale-110"
                     style={{
                       backgroundColor: color,
-                      borderColor: (fullUser?.avatar_color || '#0097a7') === color ? '#fff' : 'transparent',
+                      borderColor: (fullUser?.avatar_color || 'var(--accent)') === color ? '#fff' : 'transparent',
                     }}
                     onClick={() => handleColorChange(color)}
                   />
@@ -966,24 +966,24 @@ export default function ProfilePage() {
                 <input
                   autoFocus
                   className="text-lg font-bold rounded px-2 py-0.5 outline-none"
-                  style={{ backgroundColor: '#d4c4a8', color: '#1c1008', border: '1px solid #9e836a', maxWidth: '200px' }}
+                  style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)', border: '1px solid #9e836a', maxWidth: '200px' }}
                   value={displayNameInput}
                   onChange={e => setDisplayNameInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') saveDisplayName(); if (e.key === 'Escape') setEditingDisplayName(false) }}
                   maxLength={50}
                 />
-                <button onClick={saveDisplayName} className="text-xs font-semibold" style={{ color: '#0097a7' }}>Save</button>
-                <button onClick={() => setEditingDisplayName(false)} className="text-xs" style={{ color: '#7a6248' }}>Cancel</button>
+                <button onClick={saveDisplayName} className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>Save</button>
+                <button onClick={() => setEditingDisplayName(false)} className="text-xs" style={{ color: 'var(--text-muted)' }}>Cancel</button>
               </div>
             ) : (
               <div className="flex items-center gap-2 mb-0.5">
-                <h2 className="text-xl font-bold" style={{ color: '#1c1008' }}>
+                <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
                   {displayName || user?.username}
                 </h2>
                 <button
                   onClick={() => { setDisplayNameInput(displayName); setEditingDisplayName(true) }}
                   className="text-xs"
-                  style={{ color: '#7a6248' }}
+                  style={{ color: 'var(--text-muted)' }}
                   title="Edit display name"
                 >
                   Edit
@@ -991,19 +991,19 @@ export default function ProfilePage() {
               </div>
             )}
             {displayName && (
-              <p className="text-xs -mt-0.5 mb-0.5" style={{ color: '#7a6248' }}>@{user?.username}</p>
+              <p className="text-xs -mt-0.5 mb-0.5" style={{ color: 'var(--text-muted)' }}>@{user?.username}</p>
             )}
-            <p className="text-sm" style={{ color: '#7a6248' }}>{user?.email}</p>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{user?.email}</p>
             <div className="flex items-center gap-3 mt-1">
               {user?.is_verified ? (
-                <span className="text-xs font-medium" style={{ color: '#0097a7' }}>Verified</span>
+                <span className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Verified</span>
               ) : (
                 <span className="text-xs" style={{ color: '#f4c542' }}>Unverified</span>
               )}
               {memberSince && (
                 <>
-                  <span style={{ color: '#d4c4a8' }}>·</span>
-                  <span className="text-xs" style={{ color: '#7a6248' }}>Member since {memberSince}</span>
+                  <span style={{ color: 'var(--border)' }}>·</span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Member since {memberSince}</span>
                 </>
               )}
             </div>
@@ -1012,22 +1012,22 @@ export default function ProfilePage() {
         <button
           onClick={handleLogout}
           className="self-start sm:self-auto px-4 py-2 rounded text-sm font-medium"
-          style={{ backgroundColor: '#d4c4a8', color: '#1c1008', border: '1px solid #9e836a' }}
+          style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)', border: '1px solid #9e836a' }}
         >
           Sign Out
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex mb-6 gap-1 border-b" style={{ borderColor: '#d4c4a8' }}>
+      <div className="flex mb-6 gap-1 border-b" style={{ borderColor: 'var(--border)' }}>
         {[['collection', 'My Collection'], ['decks', 'My Decks'], ['wishlist', 'Wishlist'], ['stats', 'Stats']].map(([key, label]) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
             className="px-4 py-2 text-sm font-semibold transition-colors -mb-px border-b-2"
             style={{
-              borderColor: activeTab === key ? '#0097a7' : 'transparent',
-              color: activeTab === key ? '#0097a7' : '#7a6248',
+              borderColor: activeTab === key ? 'var(--accent)' : 'transparent',
+              color: activeTab === key ? 'var(--accent)' : 'var(--text-muted)',
             }}
           >
             {label}
@@ -1050,10 +1050,10 @@ export default function ProfilePage() {
           {/* Stats + actions row */}
           <div className="flex items-center justify-between mb-6">
             {!loading && totalUnique > 0 && (
-              <div className="flex gap-4 text-sm" style={{ color: '#7a6248' }}>
-                <span><strong style={{ color: '#1c1008' }}>{collection.length}</strong> games</span>
-                <span><strong style={{ color: '#1c1008' }}>{totalUnique}</strong> unique cards</span>
-                <span><strong style={{ color: '#1c1008' }}>{totalCopies}</strong> copies</span>
+              <div className="flex gap-4 text-sm" style={{ color: 'var(--text-muted)' }}>
+                <span><strong style={{ color: 'var(--text-primary)' }}>{collection.length}</strong> games</span>
+                <span><strong style={{ color: 'var(--text-primary)' }}>{totalUnique}</strong> unique cards</span>
+                <span><strong style={{ color: 'var(--text-primary)' }}>{totalCopies}</strong> copies</span>
               </div>
             )}
             {!loading && (
@@ -1068,14 +1068,14 @@ export default function ProfilePage() {
             )}
           </div>
 
-          {loading && <p style={{ color: '#7a6248' }}>Loading collection…</p>}
+          {loading && <p style={{ color: 'var(--text-muted)' }}>Loading collection…</p>}
 
           {!loading && collection.length === 0 && (
-            <div className="text-center py-20" style={{ color: '#7a6248' }}>
+            <div className="text-center py-20" style={{ color: 'var(--text-muted)' }}>
               <p className="text-lg mb-2">Your collection is empty.</p>
               <p>
-                Browse <Link to="/" style={{ color: '#0097a7' }}>games</Link> and use the{' '}
-                <strong style={{ color: '#1c1008' }}>+</strong> button on any card to get started.
+                Browse <Link to="/" style={{ color: 'var(--accent)' }}>games</Link> and use the{' '}
+                <strong style={{ color: 'var(--text-primary)' }}>+</strong> button on any card to get started.
               </p>
             </div>
           )}
@@ -1088,14 +1088,14 @@ export default function ProfilePage() {
                 const gameCopies = game.cards.reduce((s, c) => s + c.quantity, 0)
                 const sampleImages = game.cards.filter(c => c.image_url).slice(0, 4).map(c => c.image_url)
                 return (
-                  <div key={game.game_id} className="relative rounded-xl overflow-hidden" style={{ border: '1px solid #d4c4a8', backgroundColor: '#e8ddc8' }}>
+                  <div key={game.game_id} className="relative rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--bg-chip)' }}>
                     <Link
                       to={`/collection/${game.game_slug}`}
                       className="block transition-all duration-150 hover:ring-1"
-                      style={{ textDecoration: 'none', ringColor: '#0097a7' }}
+                      style={{ textDecoration: 'none', ringColor: 'var(--accent)' }}
                     >
                       {/* Card image collage */}
-                      <div className="relative h-32 overflow-hidden" style={{ backgroundColor: '#faf6ee' }}>
+                      <div className="relative h-32 overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)' }}>
                         {sampleImages.length > 0 ? (
                           <div className="flex h-full">
                             {sampleImages.map((url) => (
@@ -1104,15 +1104,15 @@ export default function ProfilePage() {
                           </div>
                         ) : (
                           <div className="h-full flex items-center justify-center">
-                            <span className="text-2xl" style={{ color: '#d4c4a8' }}>🃏</span>
+                            <span className="text-2xl" style={{ color: 'var(--border)' }}>🃏</span>
                           </div>
                         )}
                         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(30,35,48,0.85) 0%, transparent 60%)' }} />
                       </div>
                       {/* Info */}
                       <div className="px-3 py-2 pr-10">
-                        <p className="font-semibold text-sm truncate" style={{ color: '#1c1008' }}>{game.game_name}</p>
-                        <p className="text-xs mt-0.5" style={{ color: '#7a6248' }}>
+                        <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{game.game_name}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                           {gameUnique} cards · {gameCopies} copies
                         </p>
                       </div>

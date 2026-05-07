@@ -49,22 +49,22 @@ export default function LandingPage() {
 
       {/* Hero */}
       <div className="text-center py-20">
-        <h1 className="text-5xl font-bold mb-4" style={{ color: '#0097a7' }}>CCGVault</h1>
-        <p className="text-xl mb-2" style={{ color: '#1c1008' }}>
+        <h1 className="text-5xl font-bold mb-4" style={{ color: 'var(--accent)' }}>CCGVault</h1>
+        <p className="text-xl mb-2" style={{ color: 'var(--text-primary)' }}>
           The collectible card game database for everyone.
         </p>
         <div className="flex items-center justify-center gap-4 flex-wrap">
           <button
             onClick={() => navigate('/games')}
             className="px-6 py-3 rounded-lg font-semibold text-base transition-opacity hover:opacity-90"
-            style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
+            style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}
           >
             Browse Games
           </button>
 <button
             onClick={() => goToRandomCard(navigate)}
             className="px-6 py-3 rounded-lg font-semibold text-base transition-opacity hover:opacity-90"
-            style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
+            style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}
           >
             🎲 Random Card
           </button>
@@ -72,7 +72,7 @@ export default function LandingPage() {
             <Link
               to="/login"
               className="px-6 py-3 rounded-lg font-semibold text-base"
-              style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008' }}
+              style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
             >
               Sign Up Free
             </Link>
@@ -84,25 +84,25 @@ export default function LandingPage() {
       {stats && (
         <div
           className="flex flex-col md:flex-row items-center gap-4 px-8 py-8 rounded-xl mb-16"
-          style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}
+          style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
         >
           {/* Stats + description — 50% */}
           <div className="flex flex-col items-center md:items-start gap-4 w-full md:w-1/2">
             <div className="flex items-center gap-12">
               <div className="text-center md:text-left">
-                <p className="text-6xl font-bold" style={{ color: '#0097a7' }}>{stats.games}</p>
-                <p className="text-lg mt-1" style={{ color: '#1c1008' }}>Games</p>
+                <p className="text-6xl font-bold" style={{ color: 'var(--accent)' }}>{stats.games}</p>
+                <p className="text-lg mt-1" style={{ color: 'var(--text-primary)' }}>Games</p>
               </div>
               <div className="text-center md:text-left">
-                <p className="text-6xl font-bold" style={{ color: '#0097a7' }}>{stats.sets?.toLocaleString()}</p>
-                <p className="text-lg mt-1" style={{ color: '#1c1008' }}>Sets</p>
+                <p className="text-6xl font-bold" style={{ color: 'var(--accent)' }}>{stats.sets?.toLocaleString()}</p>
+                <p className="text-lg mt-1" style={{ color: 'var(--text-primary)' }}>Sets</p>
               </div>
               <div className="text-center md:text-left">
-                <p className="text-6xl font-bold" style={{ color: '#0097a7' }}>{stats.cards?.toLocaleString()}</p>
-                <p className="text-lg mt-1" style={{ color: '#1c1008' }}>Cards</p>
+                <p className="text-6xl font-bold" style={{ color: 'var(--accent)' }}>{stats.cards?.toLocaleString()}</p>
+                <p className="text-lg mt-1" style={{ color: 'var(--text-primary)' }}>Cards</p>
               </div>
             </div>
-            <p className="text-base text-center md:text-left" style={{ color: '#7a6248' }}>
+            <p className="text-base text-center md:text-left" style={{ color: 'var(--text-muted)' }}>
               CCGVault is a collector's companion — track your collection, build decks,
               and explore card games in one place. Whether you're rediscovering a game
               from the 90s or diving into something new, we've got the cards.
@@ -141,8 +141,8 @@ export default function LandingPage() {
       {posts.length > 0 && (
         <div className="mb-16">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold" style={{ color: '#1c1008' }}>Latest from the Blog</h2>
-            <Link to="/blog" className="text-sm" style={{ color: '#0097a7' }}>All posts →</Link>
+            <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Latest from the Blog</h2>
+            <Link to="/blog" className="text-sm" style={{ color: 'var(--accent)' }}>All posts →</Link>
           </div>
           <div className="flex flex-col gap-4">
             {posts.map(post => (
@@ -150,11 +150,11 @@ export default function LandingPage() {
                 key={post.id}
                 to={`/blog/${post.slug}`}
                 className="p-5 rounded-xl transition-colors hover:border-[#0097a7]"
-                style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}
+                style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
               >
-                <p className="font-semibold mb-1" style={{ color: '#1c1008' }}>{post.title}</p>
+                <p className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>{post.title}</p>
                 {post.excerpt && (
-                  <p className="text-sm line-clamp-2" style={{ color: '#7a6248' }}>{post.excerpt}</p>
+                  <p className="text-sm line-clamp-2" style={{ color: 'var(--text-muted)' }}>{post.excerpt}</p>
                 )}
                 <p className="text-xs mt-2" style={{ color: '#9e836a' }}>
                   {new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}

@@ -14,22 +14,22 @@ const TRIGGER_ICONS = {
   GATE:    { symbol: '⬡', color: '#e67e22', label: 'Gate' },
   TREASURE:{ symbol: '★', color: '#f1c40f', label: 'Treasure' },
   CHOICE:  { symbol: '⊗', color: '#1abc9c', label: 'Choice' },
-  BOOK:    { symbol: '📖', color: '#7a6248', label: 'Book' },
+  BOOK:    { symbol: '📖', color: 'var(--text-muted)', label: 'Book' },
 }
 
 function StatBox({ label, value, accent }) {
   if (value == null || value === '') return null
   return (
     <div className="flex flex-col items-center px-4 py-2 rounded-lg border"
-      style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8', minWidth: '56px' }}>
-      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>{label}</span>
+      style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)', minWidth: '56px' }}>
+      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>{label}</span>
       <span className="text-xl font-bold" style={{ color: accent || '#1c1008' }}>{value}</span>
     </div>
   )
 }
 
 function TriggerBadge({ trigger }) {
-  const t = TRIGGER_ICONS[trigger?.toUpperCase()] || { symbol: trigger, color: '#7a6248', label: trigger }
+  const t = TRIGGER_ICONS[trigger?.toUpperCase()] || { symbol: trigger, color: 'var(--text-muted)', label: trigger }
   return (
     <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded"
       style={{ backgroundColor: t.color + '22', border: `1px solid ${t.color}55`, color: t.color }}>
@@ -42,7 +42,7 @@ function TriggerBadge({ trigger }) {
 export default function WeissSchwarzCardInfo({ card }) {
   const attrs = card.attributes || {}
   const color = (attrs.color || '').toUpperCase()
-  const colorStyle = COLOR_STYLES[color] || { bg: '#eee4d4', border: '#d4c4a844', text: '#7a6248' }
+  const colorStyle = COLOR_STYLES[color] || { bg: 'var(--bg-chip)', border: '#d4c4a844', text: 'var(--text-muted)' }
   const triggers = Array.isArray(attrs.trigger) ? attrs.trigger.filter(Boolean) : []
   const traits = Array.isArray(attrs.traits) ? attrs.traits.filter(t => t && t !== '-') : []
   const isCharacter = (attrs.type || '').toLowerCase() === 'character'
@@ -66,12 +66,12 @@ export default function WeissSchwarzCardInfo({ card }) {
           </span>
         )}
         {attrs.rarity && (
-          <span className="text-xs px-3 py-1 rounded" style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#7a6248' }}>
+          <span className="text-xs px-3 py-1 rounded" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
             {attrs.rarity}
           </span>
         )}
         {attrs.expansion && (
-          <span className="text-xs px-3 py-1 rounded" style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#7a6248' }}>
+          <span className="text-xs px-3 py-1 rounded" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
             {attrs.expansion}
           </span>
         )}
@@ -98,7 +98,7 @@ export default function WeissSchwarzCardInfo({ card }) {
       {/* Trigger icons */}
       {triggers.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
-          <span className="text-xs uppercase tracking-wide self-center" style={{ color: '#7a6248' }}>Trigger:</span>
+          <span className="text-xs uppercase tracking-wide self-center" style={{ color: 'var(--text-muted)' }}>Trigger:</span>
           {triggers.map((t, i) => <TriggerBadge key={i} trigger={t} />)}
         </div>
       )}
@@ -106,7 +106,7 @@ export default function WeissSchwarzCardInfo({ card }) {
       {/* Traits */}
       {traits.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 mb-4">
-          <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Traits:</span>
+          <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Traits:</span>
           {traits.map((t, i) => (
             <span key={i} className="text-xs px-2 py-0.5 rounded"
               style={{ backgroundColor: colorStyle.bg, border: `1px solid ${colorStyle.border}`, color: colorStyle.text }}>
@@ -119,8 +119,8 @@ export default function WeissSchwarzCardInfo({ card }) {
       {/* Rules text */}
       {card.rules_text && (
         <div className="rounded-xl p-5 mb-4 border"
-          style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8' }}>
-          <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>
+          style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
+          <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: 'var(--text-primary)' }}>
             {card.rules_text}
           </p>
         </div>

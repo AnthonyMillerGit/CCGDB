@@ -39,23 +39,23 @@ export default function LoginPage() {
     }
   }
 
-  const inputStyle = { backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }
+  const inputStyle = { backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }
 
   return (
     <div className="max-w-md mx-auto mt-16">
       {searchParams.get('reset') === '1' && (
-        <div className="mb-4 px-4 py-3 rounded text-sm" style={{ backgroundColor: '#1a3a2a', border: '1px solid #2d6a4f', color: '#0097a7' }}>
+        <div className="mb-4 px-4 py-3 rounded text-sm" style={{ backgroundColor: '#1a3a2a', border: '1px solid #2d6a4f', color: 'var(--accent)' }}>
           Password updated successfully. Sign in with your new password.
         </div>
       )}
       {/* Tab toggle */}
-      <div className="flex mb-6 rounded-lg overflow-hidden" style={{ border: '1px solid #d4c4a8' }}>
+      <div className="flex mb-6 rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
         <button
           onClick={() => switchMode('login')}
           className="flex-1 py-2 text-sm font-semibold transition-colors"
           style={{
-            backgroundColor: mode === 'login' ? '#0097a7' : '#faf6ee',
-            color: mode === 'login' ? '#f5f0e8' : '#7a6248',
+            backgroundColor: mode === 'login' ? 'var(--accent)' : 'var(--bg-surface)',
+            color: mode === 'login' ? 'var(--bg-page)' : 'var(--text-muted)',
           }}
         >
           Sign In
@@ -64,8 +64,8 @@ export default function LoginPage() {
           onClick={() => switchMode('register')}
           className="flex-1 py-2 text-sm font-semibold transition-colors"
           style={{
-            backgroundColor: mode === 'register' ? '#0097a7' : '#faf6ee',
-            color: mode === 'register' ? '#f5f0e8' : '#7a6248',
+            backgroundColor: mode === 'register' ? 'var(--accent)' : 'var(--bg-surface)',
+            color: mode === 'register' ? 'var(--bg-page)' : 'var(--text-muted)',
           }}
         >
           Create Account
@@ -101,7 +101,7 @@ export default function LoginPage() {
           <div className="flex justify-between items-baseline mb-1">
             <label className="block text-sm text-gray-400">Password</label>
             {mode === 'login' && (
-              <Link to="/forgot-password" className="text-xs" style={{ color: '#0097a7' }}>
+              <Link to="/forgot-password" className="text-xs" style={{ color: 'var(--accent)' }}>
                 Forgot password?
               </Link>
             )}
@@ -121,7 +121,7 @@ export default function LoginPage() {
           type="submit"
           disabled={loading}
           className="py-2 rounded font-semibold disabled:opacity-50"
-          style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
+          style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}
         >
           {loading
             ? (mode === 'login' ? 'Signing in…' : 'Creating account…')

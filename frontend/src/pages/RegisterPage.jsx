@@ -27,7 +27,7 @@ export default function RegisterPage() {
 
   return (
     <div className="max-w-md mx-auto mt-16">
-      <h2 className="text-2xl font-bold mb-6" style={{ color: '#0097a7' }}>Create Account</h2>
+      <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--accent)' }}>Create Account</h2>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
           <label className="block text-sm mb-1 text-gray-400">Username</label>
@@ -37,7 +37,7 @@ export default function RegisterPage() {
             onChange={e => setUsername(e.target.value)}
             required
             className="w-full px-3 py-2 rounded text-white"
-            style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
           />
         </div>
         <div>
@@ -48,7 +48,7 @@ export default function RegisterPage() {
             onChange={e => setEmail(e.target.value)}
             required
             className="w-full px-3 py-2 rounded text-white"
-            style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
           />
         </div>
         <div>
@@ -60,7 +60,7 @@ export default function RegisterPage() {
             required
             minLength={8}
             className="w-full px-3 py-2 rounded text-white"
-            style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }}
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
           />
         </div>
         {error && <p className="text-red-400 text-sm">{error}</p>}
@@ -68,14 +68,14 @@ export default function RegisterPage() {
           type="submit"
           disabled={loading}
           className="py-2 rounded font-semibold disabled:opacity-50"
-          style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
+          style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}
         >
           {loading ? 'Creating account…' : 'Create Account'}
         </button>
       </form>
       <p className="mt-4 text-sm text-gray-400">
         Already have an account?{' '}
-        <Link to="/login" style={{ color: '#0097a7' }}>Sign in</Link>
+        <Link to="/login" style={{ color: 'var(--accent)' }}>Sign in</Link>
       </p>
     </div>
   )

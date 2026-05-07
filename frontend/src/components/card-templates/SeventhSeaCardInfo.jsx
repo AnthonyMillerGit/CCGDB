@@ -13,18 +13,18 @@ const FACTION_STYLES = {
   'Rabicano':          { text: '#e67e22', bg: '#3a2a1a', border: '#b06010' },
   'Sea Dogs':          { text: '#5ba4e0', bg: '#1a2535', border: '#3060a0' },
   'Syrneth':           { text: '#1abc9c', bg: '#1a3530', border: '#208070' },
-  'Unaligned':         { text: '#7a6248', bg: '#eee4d4', border: '#d4c4a8' },
+  'Unaligned':         { text: 'var(--text-muted)', bg: 'var(--bg-chip)', border: 'var(--border)' },
   'Vendel':            { text: '#4caf50', bg: '#1a3a1a', border: '#3aa040' },
   'Vestenmannavnjar':  { text: '#e67e22', bg: '#3a2a1a', border: '#b06010' },
 }
-const DEFAULT_FACTION = { text: '#7a6248', bg: '#eee4d4', border: '#d4c4a8' }
+const DEFAULT_FACTION = { text: 'var(--text-muted)', bg: 'var(--bg-chip)', border: 'var(--border)' }
 
 // ── Rarity palette ────────────────────────────────────────────────────────────
 const RARITY_STYLES = {
   F:     { label: 'Fixed',     color: '#f1c40f' },
   R:     { label: 'Rare',      color: '#9b59b6' },
   U:     { label: 'Uncommon',  color: '#5ba4e0' },
-  C:     { label: 'Common',    color: '#7a6248' },
+  C:     { label: 'Common',    color: 'var(--text-muted)' },
   NMRP:  { label: 'NMRP',      color: '#e67e22' },
   MRP:   { label: 'MRP',       color: '#e67e22' },
 }
@@ -94,7 +94,7 @@ function TypeRarityRow({ type, rarity, extra }) {
     <div className="flex items-center gap-2 mb-4 flex-wrap">
       {type && (
         <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded"
-          style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008' }}>
+          style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
           {type}
         </span>
       )}
@@ -113,8 +113,8 @@ function StatBox({ label, value, color, wide }) {
   if (value == null) return null
   return (
     <div className="flex flex-col items-center px-3 py-2 rounded-lg border"
-      style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8', minWidth: wide ? '80px' : '52px' }}>
-      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>{label}</span>
+      style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)', minWidth: wide ? '80px' : '52px' }}>
+      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>{label}</span>
       <span className="text-lg font-bold leading-tight" style={{ color: color || '#1c1008' }}>
         {value === 0 ? '0' : (value ?? '—')}
       </span>
@@ -127,15 +127,15 @@ function SkillRow({ attrs }) {
   if (!hasSkills) return null
   return (
     <div className="mb-5">
-      <p className="text-xs uppercase tracking-widest mb-2" style={{ color: '#7a6248' }}>Skills</p>
+      <p className="text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Skills</p>
       <div className="flex flex-wrap gap-2">
         {SKILLS.map(({ key, label, color }) => {
           if (attrs[key] == null) return null
           return (
             <div key={key} className="flex flex-col items-center px-3 py-2 rounded-lg border"
-              style={{ backgroundColor: '#eee4d4', borderColor: color + '55', minWidth: '64px' }}>
+              style={{ backgroundColor: 'var(--bg-chip)', borderColor: color + '55', minWidth: '64px' }}>
               <span className="text-xs font-semibold mb-0.5" style={{ color }}>{label}</span>
-              <span className="text-xl font-bold" style={{ color: '#1c1008' }}>
+              <span className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
                 {attrs[key] === 0 ? '0' : attrs[key]}
               </span>
             </div>
@@ -152,23 +152,23 @@ function CombatRow({ attack, parry, boarding }) {
   if (!atkName && !parryArr.length && !boarding) return null
   return (
     <div className="flex flex-wrap items-center gap-4 mb-4 px-4 py-2 rounded-lg"
-      style={{ backgroundColor: '#f5f0e8', border: '1px solid #38384a' }}>
-      <span className="text-xs uppercase tracking-widest font-semibold" style={{ color: '#7a6248' }}>Combat</span>
+      style={{ backgroundColor: 'var(--bg-page)', border: '1px solid var(--border)' }}>
+      <span className="text-xs uppercase tracking-widest font-semibold" style={{ color: 'var(--text-muted)' }}>Combat</span>
       {boarding && (
         <div className="flex items-center gap-1.5">
-          <span className="text-xs" style={{ color: '#7a6248' }}>Boarding:</span>
-          <span className="text-xs font-bold" style={{ color: '#1c1008' }}>{boarding}</span>
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Boarding:</span>
+          <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{boarding}</span>
         </div>
       )}
       {atkName && (
         <div className="flex items-center gap-1.5">
-          <span className="text-xs" style={{ color: '#7a6248' }}>Attack:</span>
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Attack:</span>
           <span className="text-xs font-bold" style={{ color: '#e74c3c' }}>{atkName}</span>
         </div>
       )}
       {parryArr.length > 0 && (
         <div className="flex items-center gap-1.5">
-          <span className="text-xs" style={{ color: '#7a6248' }}>Parry:</span>
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Parry:</span>
           <span className="text-xs font-bold" style={{ color: '#5ba4e0' }}>{parryArr.join(', ')}</span>
         </div>
       )}
@@ -182,7 +182,7 @@ function KeywordChips({ keywords, fStyle }) {
     <div className="flex flex-wrap gap-2 mb-4">
       {keywords.map((k, i) => (
         <span key={i} className="text-xs px-2 py-0.5 rounded"
-          style={{ backgroundColor: fStyle.bg, border: `1px solid ${fStyle.border}55`, color: '#ccc' }}>
+          style={{ backgroundColor: fStyle.bg, border: `1px solid ${fStyle.border}55`, color: fStyle.text }}>
           {k}
         </span>
       ))}
@@ -194,8 +194,8 @@ function RulesBox({ text }) {
   if (!text) return null
   return (
     <div className="rounded-xl p-5 mb-4 border"
-      style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8' }}>
-      <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>{text}</p>
+      style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
+      <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: 'var(--text-primary)' }}>{text}</p>
     </div>
   )
 }
@@ -205,7 +205,7 @@ function ErrataBox({ text }) {
   return (
     <div className="rounded-xl p-4 mb-4 border"
       style={{ backgroundColor: '#1a1a2a', borderColor: '#3a3a6a' }}>
-      <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: '#0097a7' }}>Errata</p>
+      <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: 'var(--accent)' }}>Errata</p>
       <p className="text-sm" style={{ color: '#aaa' }}>{text}</p>
     </div>
   )
@@ -225,9 +225,9 @@ function CaptainLayout({ card, attrs, fStyle }) {
         {wealth && <StatBox label="Starting Wealth" value={wealth} color="#f1c40f" wide />}
         {startPort && (
           <div className="flex flex-col justify-center px-4 py-2 rounded-lg border"
-            style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8' }}>
-            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>Home Port</span>
-            <span className="text-sm font-semibold" style={{ color: '#1c1008' }}>{startPort}</span>
+            style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)' }}>
+            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>Home Port</span>
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{startPort}</span>
           </div>
         )}
         {alignment && (
@@ -236,7 +236,7 @@ function CaptainLayout({ card, attrs, fStyle }) {
               backgroundColor: alignment.toLowerCase() === 'heroic' ? '#1a2a1a' : '#2a1a1a',
               borderColor: alignment.toLowerCase() === 'heroic' ? '#3a8040' : '#803030',
             }}>
-            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>Alignment</span>
+            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>Alignment</span>
             <span className="text-sm font-semibold"
               style={{ color: alignment.toLowerCase() === 'heroic' ? '#4caf50' : '#e74c3c' }}>
               {alignment}
@@ -261,7 +261,7 @@ function CrewLayout({ card, attrs, fStyle }) {
       <TypeRarityRow type="Crew" rarity={attrs.rarity}
         extra={attrs.cost_raw && (
           <span className="text-xs px-3 py-1 rounded"
-            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#1c1008' }}>
+            style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
             Cost: <strong>{attrs.cost_raw}</strong>
           </span>
         )}
@@ -313,21 +313,21 @@ function AdventureLayout({ card, attrs, fStyle }) {
         {distance && (
           <div className="flex flex-col items-center px-4 py-2 rounded-lg border"
             style={{ backgroundColor: '#1a2535', borderColor: '#3060a055' }}>
-            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>Distance</span>
+            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>Distance</span>
             <span className="text-sm font-bold" style={{ color: '#5ba4e0' }}>{distance}</span>
           </div>
         )}
         {attrs.cost_raw && (
           <div className="flex flex-col justify-center px-4 py-2 rounded-lg border"
-            style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8' }}>
-            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>Completion Cost</span>
-            <span className="text-sm font-semibold" style={{ color: '#1c1008' }}>{attrs.cost_raw}</span>
+            style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)' }}>
+            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>Completion Cost</span>
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{attrs.cost_raw}</span>
           </div>
         )}
         {attachType && (
           <div className="flex flex-col items-center px-4 py-2 rounded-lg border"
             style={{ backgroundColor: '#1a2a1a', borderColor: '#3a803055' }}>
-            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>Becomes</span>
+            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>Becomes</span>
             <span className="text-sm font-bold" style={{ color: '#4caf50' }}>{attachType}</span>
           </div>
         )}
@@ -361,8 +361,8 @@ function ActionChanteyLayout({ card, attrs, fStyle, type }) {
         )}
         {attrs.cancel != null && (
           <div className="flex flex-col items-center px-4 py-2 rounded-lg border"
-            style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8', minWidth: '80px' }}>
-            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>Cancel</span>
+            style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)', minWidth: '80px' }}>
+            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>Cancel</span>
             <span className="text-lg font-bold" style={{ color: '#e74c3c' }}>
               {attrs.cancel}{cancelSkill ? ` ${cancelSkill}` : ''}
             </span>
@@ -392,8 +392,8 @@ function AttachmentLayout({ card, attrs, fStyle }) {
       />
       {(attrs.cost_raw || attrs.cost) && (
         <div className="mb-4">
-          <span className="text-xs uppercase tracking-wide mr-2" style={{ color: '#7a6248' }}>Cost:</span>
-          <span className="text-sm font-semibold" style={{ color: '#1c1008' }}>
+          <span className="text-xs uppercase tracking-wide mr-2" style={{ color: 'var(--text-muted)' }}>Cost:</span>
+          <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
             {attrs.cost_raw || attrs.cost}
           </span>
         </div>

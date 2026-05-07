@@ -21,6 +21,7 @@ import AdminPostsPage from './pages/AdminPostsPage'
 import SearchBar from './components/SearchBar'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ThemeProvider, useTheme } from './context/ThemeContext'
 
 function NavLink({ to, children }) {
   const location = useLocation()
@@ -29,7 +30,7 @@ function NavLink({ to, children }) {
     <Link
       to={to}
       className="text-sm font-medium transition-colors"
-      style={{ color: active ? '#0097a7' : '#7a6248' }}
+      style={{ color: active ? 'var(--accent)' : 'var(--text-muted)' }}
     >
       {children}
     </Link>
@@ -63,27 +64,27 @@ function UserMenu({ user }) {
       <button
         onClick={() => setOpen(o => !o)}
         className="text-sm font-medium px-3 py-1.5 rounded flex items-center gap-2"
-        style={{ backgroundColor: '#f5f0e8', border: '1px solid #d4c4a8', color: '#1c1008' }}
+        style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
       >
         <span
           className="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: '#0097a7', color: '#f5f0e8' }}
+          style={{ backgroundColor: 'var(--accent)', color: 'var(--bg-page)' }}
         >
           {user.username.slice(0, 1).toUpperCase()}
         </span>
         <span className="hidden sm:inline">{user.username}</span>
-        <span className="text-xs" style={{ color: '#7a6248' }}>{open ? '▲' : '▼'}</span>
+        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
         <div
           className="absolute right-0 mt-1 w-44 rounded-lg overflow-hidden z-50"
-          style={{ backgroundColor: '#ffffff', border: '1px solid #d4c4a8', boxShadow: '0 8px 24px rgba(28,16,8,0.12)' }}
+          style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', boxShadow: '0 8px 24px var(--shadow)' }}
         >
           {items.map(([label, to]) =>
             to === null ? (
               <div key={label} className="px-4 py-1.5 text-xs font-semibold uppercase"
-                style={{ color: '#9e836a', borderTop: '1px solid #d4c4a8', marginTop: '4px', paddingTop: '8px' }}>
+                style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)', marginTop: '4px', paddingTop: '8px' }}>
                 Admin
               </div>
             ) : (
@@ -92,8 +93,8 @@ function UserMenu({ user }) {
                 to={to}
                 onClick={() => setOpen(false)}
                 className="block px-4 py-2.5 text-sm transition-colors hover:bg-opacity-50"
-                style={{ color: '#1c1008', textDecoration: 'none', backgroundColor: 'transparent' }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#d4c4a8'}
+                style={{ color: 'var(--text-primary)', textDecoration: 'none', backgroundColor: 'transparent' }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-chip)'}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 {label}
@@ -106,17 +107,31 @@ function UserMenu({ user }) {
   )
 }
 
+function ThemeToggle() {
+  const { isDark, toggleTheme } = useTheme()
+  return (
+    <button
+      onClick={toggleTheme}
+      className="text-sm px-2.5 py-1.5 rounded transition-colors"
+      style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+      title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      {isDark ? '☀' : '☾'}
+    </button>
+  )
+}
+
 function Header() {
   const navigate = useNavigate()
   const { user } = useAuth()
   return (
     <header
       className="px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-6"
-      style={{ backgroundColor: '#ffffff', borderBottom: '3px solid #0097a7' }}
+      style={{ backgroundColor: 'var(--bg-header)', borderBottom: '3px solid var(--accent)' }}
     >
       <h1
         className="text-xl sm:text-2xl font-bold cursor-pointer flex-shrink-0 tracking-tight"
-        style={{ color: '#8b1a3a' }}
+        style={{ color: 'var(--accent-maroon)' }}
         onClick={() => navigate('/')}
       >
         CCGVault
@@ -127,20 +142,21 @@ function Header() {
         <button
           onClick={() => goToRandomCard(navigate)}
           className="text-sm font-medium transition-colors"
-          style={{ color: '#7a6248', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
           🎲 Random
         </button>
       </nav>
       <div className="flex items-center gap-2 sm:gap-4 ml-auto">
         <SearchBar />
+        <ThemeToggle />
         {user ? (
           <UserMenu user={user} />
         ) : (
           <Link
             to="/login"
             className="text-sm font-medium px-3 py-1.5 rounded"
-            style={{ backgroundColor: '#8b1a3a', color: '#ffffff' }}
+            style={{ backgroundColor: 'var(--accent-maroon)', color: '#ffffff' }}
           >
             Login
           </Link>
@@ -154,7 +170,7 @@ function Footer() {
   return (
     <footer
       className="border-t mt-12 px-6 py-8 flex flex-col items-center gap-3"
-      style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8', color: '#7a6248' }}
+      style={{ backgroundColor: 'var(--bg-footer)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
     >
       <p className="text-sm">© {new Date().getFullYear()} CCGVault — built by a collector, for collectors</p>
       <a
@@ -162,16 +178,16 @@ function Footer() {
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-2 text-sm px-4 py-2 rounded transition-opacity hover:opacity-80"
-        style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#0097a7' }}
+        style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--accent)' }}
       >
         ☕ Buy me a coffee
       </a>
-      <p className="text-xs text-center max-w-2xl leading-relaxed" style={{ color: '#9e836a' }}>
+      <p className="text-xs text-center max-w-2xl leading-relaxed" style={{ color: 'var(--text-muted)' }}>
         CCGVault is an independent fan site and is not affiliated with, endorsed by, or sponsored by
         any card game publisher. All card names, images, and game content are the property of their
         respective owners. CCGVault is a non-commercial reference tool for collectors and players.
         For DMCA inquiries or takedown requests, contact{' '}
-        <a href="mailto:admin@ccgvault.io" style={{ color: '#7a6248' }}>admin@ccgvault.io</a>.
+        <a href="mailto:admin@ccgvault.io" style={{ color: 'var(--text-muted)' }}>admin@ccgvault.io</a>.
       </p>
     </footer>
   )
@@ -181,7 +197,8 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#f5f0e8', color: '#1c1008' }}>
+        <ThemeProvider>
+        <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg-page)', color: 'var(--text-primary)' }}>
           <Header />
           <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
             <Routes>
@@ -207,6 +224,7 @@ function App() {
           </main>
           <Footer />
         </div>
+        </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>
   )

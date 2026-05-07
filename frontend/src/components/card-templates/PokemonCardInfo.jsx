@@ -2,7 +2,7 @@ import { EnergySymbol, EnergyCost } from '../PokemonEnergy'
 
 // ── Stage / subtype badge styles ──────────────────────────────────────────────
 const SUBTYPE_STYLES = {
-  'Basic':         { bg: '#eee4d4', border: '#d4c4a8',  text: '#aaa' },
+  'Basic':         { bg: 'var(--bg-chip)', border: 'var(--border)',  text: 'var(--text-muted)' },
   'Stage 1':       { bg: '#0d2010', border: '#2e7d32',  text: '#a5d6a7' },
   'Stage 2':       { bg: '#0d1b2e', border: '#1565c0',  text: '#90caf9' },
   'V':             { bg: '#1e0d2e', border: '#7b1fa2',  text: '#ce93d8' },
@@ -21,11 +21,11 @@ const SUBTYPE_STYLES = {
   'Stadium':       { bg: '#0d2a25', border: '#00695c',  text: '#80cbc4' },
   'Pokémon Tool':  { bg: '#2a1500', border: '#6d4c41',  text: '#bcaaa4' },
   'Technical Machine': { bg: '#1a1a2e', border: '#303f9f', text: '#9fa8da' },
-  'Trainer':       { bg: '#eee4d4', border: '#d4c4a8',  text: '#aaa' },
+  'Trainer':       { bg: 'var(--bg-chip)', border: 'var(--border)',  text: 'var(--text-muted)' },
   'Special':       { bg: '#251520', border: '#880e4f',  text: '#f48fb1' },
-  'Basic Energy':  { bg: '#eee4d4', border: '#d4c4a8',  text: '#7a6248' },
+  'Basic Energy':  { bg: 'var(--bg-chip)', border: 'var(--border)',  text: 'var(--text-muted)' },
 }
-const DEFAULT_SUBTYPE = { bg: '#eee4d4', border: '#d4c4a8', text: '#aaa' }
+const DEFAULT_SUBTYPE = { bg: 'var(--bg-chip)', border: 'var(--border)', text: 'var(--text-muted)' }
 
 // Stage subtypes shown as the primary badge; others shown as secondary chips
 const STAGE_TYPES = new Set(['Basic','Stage 1','Stage 2','VMAX','VSTAR','V','GX','EX','ex',
@@ -41,7 +41,7 @@ function AbilityBlock({ ability }) {
           style={{ backgroundColor: '#c62828', color: '#fff' }}>
           {ability.type || 'Ability'}
         </span>
-        <span className="font-bold text-sm" style={{ color: '#1c1008' }}>{ability.name}</span>
+        <span className="font-bold text-sm" style={{ color: '#fde0e0' }}>{ability.name}</span>
       </div>
       {ability.text && (
         <div className="px-3 py-2" style={{ backgroundColor: '#2a1a1a' }}>
@@ -55,18 +55,18 @@ function AbilityBlock({ ability }) {
 // ── Attack block ──────────────────────────────────────────────────────────────
 function AttackBlock({ attack }) {
   return (
-    <div className="mb-2 rounded-lg border px-3 py-2.5" style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8' }}>
+    <div className="mb-2 rounded-lg border px-3 py-2.5" style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)' }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 flex-wrap">
           <EnergyCost cost={attack.cost} />
-          <span className="font-bold text-sm" style={{ color: '#1c1008' }}>{attack.name}</span>
+          <span className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{attack.name}</span>
         </div>
         {attack.damage && (
           <span className="font-bold text-xl ml-2 flex-shrink-0" style={{ color: '#90caf9' }}>{attack.damage}</span>
         )}
       </div>
       {attack.text && (
-        <p className="text-sm mt-1.5 leading-relaxed" style={{ color: '#aaa' }}>{attack.text}</p>
+        <p className="text-sm mt-1.5 leading-relaxed" style={{ color: 'var(--text-muted)' }}>{attack.text}</p>
       )}
     </div>
   )
@@ -81,10 +81,10 @@ function CombatStats({ attrs }) {
 
   return (
     <div className="flex flex-wrap gap-5 px-4 py-3 rounded-lg mt-3"
-      style={{ backgroundColor: '#22222a', border: '1px solid #faf6ee' }}>
+      style={{ backgroundColor: '#22222a', border: '1px solid var(--border)' }}>
       {hasWeakness && (
         <div className="flex items-center gap-2">
-          <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Weakness</span>
+          <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Weakness</span>
           {attrs.weaknesses.map((w, i) => (
             <div key={i} className="flex items-center gap-0.5">
               <EnergySymbol type={w.type} size="sm" />
@@ -95,7 +95,7 @@ function CombatStats({ attrs }) {
       )}
       {hasResistance && (
         <div className="flex items-center gap-2">
-          <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Resist</span>
+          <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Resist</span>
           {attrs.resistances.map((r, i) => (
             <div key={i} className="flex items-center gap-0.5">
               <EnergySymbol type={r.type} size="sm" />
@@ -106,7 +106,7 @@ function CombatStats({ attrs }) {
       )}
       {hasRetreat && (
         <div className="flex items-center gap-2">
-          <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Retreat</span>
+          <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Retreat</span>
           <div className="flex gap-0.5">
             {attrs.retreatCost.map((t, i) => <EnergySymbol key={i} type={t} size="sm" />)}
           </div>
@@ -123,7 +123,7 @@ function LegalityRow({ legalities }) {
   if (!entries.length) return null
   return (
     <div className="mt-5 mb-2">
-      <p className="text-xs uppercase tracking-widest mb-2" style={{ color: '#7a6248' }}>Legality</p>
+      <p className="text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Legality</p>
       <div className="flex flex-wrap gap-2">
         {entries.map(([format, status]) => {
           const legal = status === 'Legal'
@@ -170,8 +170,8 @@ export default function PokemonCardInfo({ attrs, rulesText, cardType }) {
             )
           })()}
           {attrs.evolvesFrom && (
-            <span className="text-xs px-2 py-0.5 rounded" style={{ color: '#7a6248', border: '1px solid #faf6ee' }}>
-              Evolves from <span style={{ color: '#1c1008' }}>{attrs.evolvesFrom}</span>
+            <span className="text-xs px-2 py-0.5 rounded" style={{ color: 'var(--text-muted)', border: '1px solid var(--border-panel)' }}>
+              Evolves from <span style={{ color: 'var(--text-primary)' }}>{attrs.evolvesFrom}</span>
             </span>
           )}
           {otherSubtypes.map(s => {
@@ -192,13 +192,13 @@ export default function PokemonCardInfo({ attrs, rulesText, cardType }) {
           style={{ borderBottom: '1px solid #faf6ee' }}>
           {attrs.hp && (
             <div className="flex items-baseline gap-1.5">
-              <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>HP</span>
+              <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>HP</span>
               <span className="text-3xl font-extrabold leading-none" style={{ color: '#ef5350' }}>{attrs.hp}</span>
             </div>
           )}
           {attrs.types?.length > 0 && (
             <div className="flex items-center gap-1.5">
-              <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Type</span>
+              <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Type</span>
               <div className="flex gap-1">
                 {attrs.types.map(t => <EnergySymbol key={t} type={t} size="md" />)}
               </div>
@@ -206,8 +206,8 @@ export default function PokemonCardInfo({ attrs, rulesText, cardType }) {
           )}
           {attrs.level && (
             <div className="flex items-baseline gap-1">
-              <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Lv.</span>
-              <span className="text-sm font-semibold" style={{ color: '#1c1008' }}>{attrs.level}</span>
+              <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Lv.</span>
+              <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{attrs.level}</span>
             </div>
           )}
           {attrs.nationalPokedexNumbers?.length > 0 && (
@@ -220,8 +220,8 @@ export default function PokemonCardInfo({ attrs, rulesText, cardType }) {
 
       {/* ── Trainer rules text ─────────────────────────────────────────────── */}
       {!isPokemon && rulesText && (
-        <div className="rounded-lg p-4 mb-4 border" style={{ backgroundColor: '#28282f', borderColor: '#faf6ee' }}>
-          <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>
+        <div className="rounded-lg p-4 mb-4 border" style={{ backgroundColor: 'var(--bg-panel)', borderColor: 'var(--border)' }}>
+          <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: 'var(--text-panel)' }}>
             {rulesText}
           </p>
         </div>

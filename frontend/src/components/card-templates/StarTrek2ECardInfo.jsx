@@ -8,7 +8,7 @@ const AFFIL_STYLES = {
   'Cardassian':   { bg: '#2a1a00', border: '#795548', text: '#d7ccc8' },
   'Dominion':     { bg: '#1a0a2e', border: '#6a1b9a', text: '#ce93d8' },
   'Ferengi':      { bg: '#2a1500', border: '#e65100', text: '#ffcc80' },
-  'Non-Aligned':  { bg: '#22222a', border: '#d4c4a8', text: '#9e9e9e' },
+  'Non-Aligned':  { bg: '#22222a', border: 'var(--border)', text: '#9e9e9e' },
   'Bajoran':      { bg: '#0d1e2e', border: '#0277bd', text: '#b3e5fc' },
   'Borg':         { bg: '#0a1a0a', border: '#388e3c', text: '#c8e6c9' },
   'Kazon':        { bg: '#1a1205', border: '#827717', text: '#f9a825' },
@@ -19,7 +19,7 @@ const AFFIL_STYLES = {
   'Vidiian':      { bg: '#2e1a2e', border: '#7b1fa2', text: '#e1bee7' },
   'Vulcan':       { bg: '#002e2a', border: '#00695c', text: '#a7ffeb' },
 }
-const DEFAULT_AFFIL = { bg: '#22222a', border: '#d4c4a8', text: '#aaa' }
+const DEFAULT_AFFIL = { bg: '#22222a', border: 'var(--border)', text: '#9e9e9e' }
 
 // ── Icon labels ────────────────────────────────────────────────────────────────
 const ICON_LABELS = {
@@ -39,8 +39,8 @@ function StatChip({ label, value, color = '#1c1008' }) {
   if (value == null || value === '' || value === 'null') return null
   return (
     <div className="flex flex-col items-center px-3 py-1.5 rounded-lg min-w-[52px]"
-      style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8' }}>
-      <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>{label}</span>
+      style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}>
+      <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{label}</span>
       <span className="text-2xl font-extrabold leading-none mt-0.5" style={{ color }}>{value}</span>
     </div>
   )
@@ -59,14 +59,14 @@ function Chip({ label, bg = '#22222a', border = '#faf6ee', text = '#7a6248', tit
 function TextBlock({ label, text, labelColor = '#7a6248' }) {
   if (!text) return null
   return (
-    <div className="rounded-lg border mb-3" style={{ borderColor: '#faf6ee', backgroundColor: '#28282f' }}>
+    <div className="rounded-lg border mb-3" style={{ borderColor: 'var(--border-panel)', backgroundColor: 'var(--bg-panel)' }}>
       {label && (
         <div className="px-3 pt-2.5 pb-1">
           <span className="text-xs font-bold uppercase tracking-wider" style={{ color: labelColor }}>{label}</span>
         </div>
       )}
       <div className={label ? 'px-3 pb-3' : 'p-4'}>
-        <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>{text}</p>
+        <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: 'var(--text-panel)' }}>{text}</p>
       </div>
     </div>
   )
@@ -107,7 +107,7 @@ export default function StarTrek2ECardInfo({ card }) {
         {/* Card type */}
         {cardType && (
           <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded"
-            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#1c1008' }}>
+            style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
             {attrs.is_unique && '◆ '}{cardType}
             {missionTypeLabel && ` — ${missionTypeLabel}`}
           </span>
@@ -132,7 +132,7 @@ export default function StarTrek2ECardInfo({ card }) {
         {/* Species (personnel) */}
         {attrs.species && (
           <span className="text-xs font-semibold px-2.5 py-1 rounded uppercase tracking-wide"
-            style={{ backgroundColor: '#1a1a24', border: '1px solid #d4c4a8', color: '#ce93d8' }}>
+            style={{ backgroundColor: '#1a1a24', border: '1px solid var(--border)', color: '#ce93d8' }}>
             {attrs.species}
           </span>
         )}
@@ -140,7 +140,7 @@ export default function StarTrek2ECardInfo({ card }) {
         {/* Ship class */}
         {attrs.class && (
           <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded"
-            style={{ backgroundColor: '#1a1a24', border: '1px solid #d4c4a8', color: '#ffe082' }}>
+            style={{ backgroundColor: '#1a1a24', border: '1px solid var(--border)', color: '#ffe082' }}>
             {attrs.class}
           </span>
         )}
@@ -160,13 +160,13 @@ export default function StarTrek2ECardInfo({ card }) {
 
       {/* Free-text mission affiliation */}
       {isFreetextAffil && (
-        <p className="text-xs mb-4" style={{ color: '#7a6248' }}>{affiliation}</p>
+        <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>{affiliation}</p>
       )}
 
       {/* ── Ship staffing ────────────────────────────────────────────────── */}
       {staffIcons.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 mb-4">
-          <span className="text-xs" style={{ color: '#7a6248' }}>Staffing:</span>
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Staffing:</span>
           {staffIcons.map((icon, i) => (
             <Chip key={i} label={icon} bg="#1a2535" border="#1565c0" text="#90caf9"
               title={ICON_LABELS[icon] || icon} />
@@ -190,9 +190,9 @@ export default function StarTrek2ECardInfo({ card }) {
           <StatChip label="Span"   value={attrs.span}   color="#80cbc4" />
           {attrs.quadrant && (
             <div className="flex flex-col justify-center px-3 py-1.5 rounded-lg"
-              style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8' }}>
-              <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>Quadrant</span>
-              <span className="text-sm font-semibold mt-0.5" style={{ color: '#1c1008' }}>{attrs.quadrant}</span>
+              style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}>
+              <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Quadrant</span>
+              <span className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text-primary)' }}>{attrs.quadrant}</span>
             </div>
           )}
         </div>

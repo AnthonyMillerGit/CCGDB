@@ -41,11 +41,11 @@ export default function ResetPasswordPage() {
     )
   }
 
-  const inputStyle = { backgroundColor: '#faf6ee', border: '1px solid #d4c4a8' }
+  const inputStyle = { backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }
 
   return (
     <div className="max-w-md mx-auto mt-16">
-      <h2 className="text-2xl font-bold mb-6" style={{ color: '#0097a7' }}>Set new password</h2>
+      <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--accent)' }}>Set new password</h2>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
           <label className="block text-sm mb-1 text-gray-400">New Password</label>
@@ -75,7 +75,7 @@ export default function ResetPasswordPage() {
           type="submit"
           disabled={loading}
           className="py-2 rounded font-semibold disabled:opacity-50"
-          style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
+          style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}
         >
           {loading ? 'Updating…' : 'Update Password'}
         </button>

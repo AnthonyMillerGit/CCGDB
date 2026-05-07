@@ -2,8 +2,8 @@ function StatChip({ label, value, color = '#1c1008' }) {
   if (value == null || value === '') return null
   return (
     <div className="flex flex-col items-center px-3 py-1.5 rounded-lg min-w-[52px]"
-      style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8' }}>
-      <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>{label}</span>
+      style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}>
+      <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{label}</span>
       <span className="text-2xl font-extrabold leading-none mt-0.5" style={{ color }}>{value}</span>
     </div>
   )
@@ -22,14 +22,14 @@ function Chip({ label, bg = '#22222a', border = '#faf6ee', text = '#7a6248' }) {
 function TextBlock({ label, text, labelColor = '#7a6248' }) {
   if (!text) return null
   return (
-    <div className="rounded-lg border mb-3" style={{ borderColor: '#faf6ee', backgroundColor: '#28282f' }}>
+    <div className="rounded-lg border mb-3" style={{ borderColor: 'var(--border-panel)', backgroundColor: 'var(--bg-panel)' }}>
       {label && (
         <div className="px-3 pt-2.5 pb-1">
           <span className="text-xs font-bold uppercase tracking-wider" style={{ color: labelColor }}>{label}</span>
         </div>
       )}
       <div className={label ? 'px-3 pb-3' : 'p-4'}>
-        <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>{text}</p>
+        <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: 'var(--text-panel)' }}>{text}</p>
       </div>
     </div>
   )
@@ -52,7 +52,7 @@ export default function UnionArenaCardInfo({ card }) {
         {/* Card type */}
         {cardType && (
           <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded"
-            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#1c1008' }}>
+            style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
             {cardType}
           </span>
         )}

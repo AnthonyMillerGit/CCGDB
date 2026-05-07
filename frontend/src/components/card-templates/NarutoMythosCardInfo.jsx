@@ -6,7 +6,7 @@ const GROUP_STYLES = {
   'Akatsuki':      { text: '#ef9a9a', bg: '#2e0d0d', border: '#b71c1c' },
   'Independent':   { text: '#90caf9', bg: '#0d1b2e', border: '#1565c0' },
 }
-const DEFAULT_GROUP = { text: '#7a6248', bg: '#eee4d4', border: '#d4c4a8' }
+const DEFAULT_GROUP = { text: 'var(--text-muted)', bg: 'var(--bg-chip)', border: 'var(--border)' }
 
 // ── Rarity colors ──────────────────────────────────────────────────────────────
 const RARITY_STYLES = {
@@ -28,7 +28,7 @@ const EFFECT_STYLES = {
   'AMBUSH':  { bg: '#2e0d0d', border: '#b71c1c', text: '#ef9a9a' },
   'SCORE':   { bg: '#0d2a1a', border: '#2e7d32', text: '#a5d6a7' },
 }
-const DEFAULT_EFFECT = { bg: '#eee4d4', border: '#d4c4a8', text: '#1c1008' }
+const DEFAULT_EFFECT = { bg: 'var(--bg-chip)', border: 'var(--border)', text: '#1c1008' }
 
 // ── Timing symbol cleanup ─────────────────────────────────────────────────────
 function cleanTiming(t) {
@@ -40,8 +40,8 @@ function StatBox({ label, value, color }) {
   if (value == null) return null
   return (
     <div className="flex flex-col items-center px-3 py-2 rounded-lg border"
-      style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8', minWidth: '52px' }}>
-      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>{label}</span>
+      style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)', minWidth: '52px' }}>
+      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>{label}</span>
       <span className="text-xl font-bold" style={{ color: color || '#1c1008' }}>{value}</span>
     </div>
   )
@@ -60,7 +60,7 @@ function EffectChip({ type }) {
 function KeywordChip({ kw }) {
   return (
     <span className="text-xs px-2 py-0.5 rounded"
-      style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#b0bec5' }}>
+      style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
       {kw}
     </span>
   )
@@ -71,8 +71,8 @@ function RulesText({ text }) {
   if (!text) return null
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g)
   return (
-    <div className="rounded-xl p-5 mb-4 border" style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8' }}>
-      <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>
+    <div className="rounded-xl p-5 mb-4 border" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
+      <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: 'var(--text-primary)' }}>
         {parts.map((part, i) => {
           if (part.startsWith('**') && part.endsWith('**'))
             return <strong key={i}>{part.slice(2, -2)}</strong>
@@ -122,7 +122,7 @@ export default function NarutoMythosCardInfo({ card }) {
         )}
         {attrs.version && (
           <span className="text-xs px-2 py-0.5 rounded italic"
-            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#aaa' }}>
+            style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
             {attrs.version}
           </span>
         )}
@@ -156,8 +156,8 @@ export default function NarutoMythosCardInfo({ card }) {
         )}
         {timingLabels.length > 0 && (
           <div className="flex flex-col justify-center px-3 py-2 rounded-lg border"
-            style={{ backgroundColor: '#eee4d4', borderColor: '#d4c4a8' }}>
-            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: '#7a6248' }}>Timing</span>
+            style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)' }}>
+            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>Timing</span>
             <span className="text-sm font-semibold" style={{ color: isContinuous ? '#ffe082' : '#90caf9' }}>
               {isContinuous ? 'Continuous' : isOnPlay ? 'On Play' : timingLabels[0]}
             </span>
@@ -184,7 +184,7 @@ export default function NarutoMythosCardInfo({ card }) {
 
       {/* Collector number */}
       {card.printings?.[0]?.collector_number && (
-        <p className="text-xs mt-1" style={{ color: '#555' }}>
+        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
           {card.printings[0].collector_number}
         </p>
       )}

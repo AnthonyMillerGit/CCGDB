@@ -103,14 +103,14 @@ function CollectionModal({ printing, cardCollectionItems, onClose, onSave }) {
     >
       <div
         className="w-full max-w-sm rounded-2xl p-6 shadow-2xl"
-        style={{ backgroundColor: '#f5f0e8', border: '1px solid #d4c4a8' }}
+        style={{ backgroundColor: 'var(--bg-page)', border: '1px solid var(--border)' }}
       >
         <div className="flex items-start justify-between mb-5">
           <div>
-            <h3 className="text-base font-bold" style={{ color: '#1c1008' }}>Edit Collection</h3>
-            <p className="text-xs mt-0.5" style={{ color: '#7a6248' }}>{printing.set_name}</p>
+            <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>Edit Collection</h3>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{printing.set_name}</p>
           </div>
-          <button onClick={onClose} className="text-lg leading-none hover:opacity-70" style={{ color: '#7a6248' }}>×</button>
+          <button onClick={onClose} className="text-lg leading-none hover:opacity-70" style={{ color: 'var(--text-muted)' }}>×</button>
         </div>
 
         {/* Existing entries */}
@@ -120,7 +120,7 @@ function CollectionModal({ printing, cardCollectionItems, onClose, onSave }) {
               <div key={entry.finish} className="flex items-center gap-2">
                 <span
                   className={`text-xs font-bold w-14 shrink-0${entry.finish === 'foil' ? ' foil-rainbow' : ''}`}
-                  style={entry.finish === 'foil' ? {} : { color: '#7a6248' }}
+                  style={entry.finish === 'foil' ? {} : { color: 'var(--text-muted)' }}
                 >
                   {entry.finish}
                 </span>
@@ -134,20 +134,20 @@ function CollectionModal({ printing, cardCollectionItems, onClose, onSave }) {
                     if (!isNaN(v) && v >= 1) setEntryField(entry.finish, 'quantity', v)
                   }}
                   className="w-16 px-2 py-1 rounded text-sm text-center outline-none"
-                  style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008' }}
+                  style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                 />
                 <select
                   value={entry.condition}
                   onChange={e => setEntryField(entry.finish, 'condition', e.target.value)}
                   className="flex-1 px-2 py-1 rounded text-sm outline-none"
-                  style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008' }}
+                  style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                 >
                   {CONDITIONS.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
                 <button
                   onClick={() => markDeleted(entry.finish)}
                   className="shrink-0 text-sm hover:opacity-70"
-                  style={{ color: '#8b1a3a' }}
+                  style={{ color: 'var(--accent-maroon)' }}
                 >×</button>
               </div>
             ))}
@@ -158,9 +158,9 @@ function CollectionModal({ printing, cardCollectionItems, onClose, onSave }) {
         {availableFinishes.length > 0 && (
           <>
             {activeEntries.length > 0 && (
-              <div className="border-t mb-4" style={{ borderColor: '#d4c4a8' }} />
+              <div className="border-t mb-4" style={{ borderColor: 'var(--border)' }} />
             )}
-            <p className="text-xs font-semibold uppercase mb-3" style={{ color: '#7a6248' }}>
+            <p className="text-xs font-semibold uppercase mb-3" style={{ color: 'var(--text-muted)' }}>
               {activeEntries.length === 0 ? 'Add to Collection' : 'Add Another'}
             </p>
             <div className="flex items-center gap-2 mb-5">
@@ -168,7 +168,7 @@ function CollectionModal({ printing, cardCollectionItems, onClose, onSave }) {
                 value={newFinish}
                 onChange={e => setNewFinish(e.target.value)}
                 className="px-2 py-1 rounded text-sm outline-none"
-                style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008', width: '90px' }}
+                style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', width: '90px' }}
               >
                 {availableFinishes.map(f => <option key={f} value={f}>{f}</option>)}
               </select>
@@ -182,13 +182,13 @@ function CollectionModal({ printing, cardCollectionItems, onClose, onSave }) {
                   if (!isNaN(v) && v >= 1) setNewQty(v)
                 }}
                 className="w-16 px-2 py-1 rounded text-sm text-center outline-none"
-                style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008' }}
+                style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
               />
               <select
                 value={newCondition}
                 onChange={e => setNewCondition(e.target.value)}
                 className="flex-1 px-2 py-1 rounded text-sm outline-none"
-                style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008' }}
+                style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
               >
                 {CONDITIONS.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
@@ -201,7 +201,7 @@ function CollectionModal({ printing, cardCollectionItems, onClose, onSave }) {
           <button
             onClick={onClose}
             className="flex-1 py-2 rounded-lg text-sm font-medium"
-            style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#7a6248' }}
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
           >
             Cancel
           </button>
@@ -210,7 +210,7 @@ function CollectionModal({ printing, cardCollectionItems, onClose, onSave }) {
               onClick={handleAdd}
               disabled={saving}
               className="flex-1 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
-              style={{ backgroundColor: '#0097a7', color: '#e8ddc8' }}
+              style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
             >
               {saving ? '…' : activeEntries.length === 0 ? 'Add' : 'Add Entry'}
             </button>
@@ -220,7 +220,7 @@ function CollectionModal({ printing, cardCollectionItems, onClose, onSave }) {
               onClick={handleSave}
               disabled={saving}
               className="flex-1 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
-              style={{ backgroundColor: '#faf6ee', border: '1px solid #0097a7', color: '#0097a7' }}
+              style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--accent)', color: 'var(--accent)' }}
             >
               {saving ? '…' : 'Save'}
             </button>
@@ -294,7 +294,7 @@ function AddToDeckButton({ card, authFetch, fullWidth }) {
       <button
         onClick={openMenu}
         className={`${fullWidth ? 'w-full text-sm font-semibold px-4 py-2.5' : 'text-xs px-3 py-1.5 font-medium'} rounded-lg`}
-        style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008' }}
+        style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
       >
         Add To Deck ▾
       </button>
@@ -302,18 +302,18 @@ function AddToDeckButton({ card, authFetch, fullWidth }) {
       {menuOpen && (
         <div
           className="absolute left-0 top-full mt-1 z-20 rounded-xl overflow-hidden shadow-2xl"
-          style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', minWidth: '220px' }}
+          style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', minWidth: '220px' }}
         >
           {deckSuccess ? (
-            <div className="px-4 py-3 text-sm font-medium" style={{ color: '#0097a7' }}>
+            <div className="px-4 py-3 text-sm font-medium" style={{ color: 'var(--accent)' }}>
               Added to "{deckSuccess}"
             </div>
           ) : gameDecks === null ? (
-            <p className="px-4 py-3 text-sm" style={{ color: '#7a6248' }}>Loading decks…</p>
+            <p className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>Loading decks…</p>
           ) : (
             <>
               {gameDecks.length === 0 && !showNewDeckInput && (
-                <p className="px-4 py-3 text-xs" style={{ color: '#7a6248' }}>
+                <p className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
                   No {card.game} decks yet.
                 </p>
               )}
@@ -322,10 +322,10 @@ function AddToDeckButton({ card, authFetch, fullWidth }) {
                   key={deck.id}
                   onClick={() => handleAddToDeck(deck.id, deck.name)}
                   className="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:opacity-80 transition-opacity"
-                  style={{ borderBottom: '1px solid #d4c4a8', color: '#1c1008' }}
+                  style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-primary)' }}
                 >
                   <span className="truncate mr-3">{deck.name}</span>
-                  <span className="text-xs flex-shrink-0" style={{ color: '#7a6248' }}>
+                  <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
                     {deck.total_cards} cards
                   </span>
                 </button>
@@ -344,13 +344,13 @@ function AddToDeckButton({ card, authFetch, fullWidth }) {
                       if (e.key === 'Escape') setShowNewDeckInput(false)
                     }}
                     className="flex-1 px-2 py-1 rounded text-sm outline-none"
-                    style={{ backgroundColor: '#e8ddc8', border: '1px solid #d4c4a8', color: '#1c1008' }}
+                    style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                   />
                   <button
                     onClick={handleCreateDeck}
                     disabled={creating || !newDeckName.trim()}
                     className="px-2 py-1 rounded text-xs font-semibold disabled:opacity-50"
-                    style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
+                    style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}
                   >
                     {creating ? '…' : 'Create'}
                   </button>
@@ -359,7 +359,7 @@ function AddToDeckButton({ card, authFetch, fullWidth }) {
                 <button
                   onClick={() => setShowNewDeckInput(true)}
                   className="w-full text-left px-4 py-2.5 text-sm hover:opacity-80 transition-opacity"
-                  style={{ color: '#0097a7' }}
+                  style={{ color: 'var(--accent)' }}
                 >
                   + New Deck
                 </button>
@@ -487,19 +487,19 @@ export default function CardDetailPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <p className="text-lg" style={{ color: '#7a6248' }}>Loading card...</p>
+      <p className="text-lg" style={{ color: 'var(--text-muted)' }}>Loading card...</p>
     </div>
   )
 
   if (!card) return (
     <div className="flex items-center justify-center h-64">
-      <p className="text-lg" style={{ color: '#7a6248' }}>Card not found</p>
+      <p className="text-lg" style={{ color: 'var(--text-muted)' }}>Card not found</p>
     </div>
   )
 
   const attrs = card.attributes || {}
   const isDoubleFaced = (attrs.card_faces || []).length > 0
-  const rarityColor = RARITY_COLORS[normalizeRarity(selectedPrinting?.rarity)] || '#7a6248'
+  const rarityColor = RARITY_COLORS[normalizeRarity(selectedPrinting?.rarity)] || 'var(--text-muted)'
 
   const ownedForPrinting = cardCollectionItems.filter(i => i.printing_id === selectedPrinting?.id)
   const totalOwnedForPrinting = ownedForPrinting.reduce((s, i) => s + i.quantity, 0)
@@ -509,7 +509,7 @@ export default function CardDetailPage() {
       <button
         onClick={() => navigate(-1)}
         className="text-sm mb-6 flex items-center gap-1 hover:opacity-80 transition-opacity"
-        style={{ color: '#0097a7' }}
+        style={{ color: 'var(--accent)' }}
       >
         ← Back
       </button>
@@ -532,9 +532,9 @@ export default function CardDetailPage() {
                 <button
                   onClick={() => setFlipped(!flipped)}
                   className="text-sm font-medium px-4 py-2 rounded-lg transition-all duration-200 w-full"
-                  style={{ backgroundColor: '#8b1a3a', color: '#f5f0e8' }}
+                  style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}
                   onMouseEnter={e => e.currentTarget.style.backgroundColor = '#06b6b4'}
-                  onMouseLeave={e => e.currentTarget.style.backgroundColor = '#0097a7'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
                 >
                   {flipped ? '← Front' : 'Flip Card →'}
                 </button>
@@ -542,8 +542,8 @@ export default function CardDetailPage() {
             </>
           ) : (
             <div className="w-full max-w-xs sm:max-w-sm md:w-80 lg:w-96 aspect-[2.5/3.5] rounded-xl flex items-center justify-center"
-              style={{ backgroundColor: '#faf6ee' }}>
-              <span style={{ color: '#7a6248' }}>No image</span>
+              style={{ backgroundColor: 'var(--bg-surface)' }}>
+              <span style={{ color: 'var(--text-muted)' }}>No image</span>
             </div>
           )}
 
@@ -554,11 +554,11 @@ export default function CardDetailPage() {
                 <div className="flex items-start gap-2 flex-wrap">
                   <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg flex-wrap min-w-0"
                     style={{ backgroundColor: '#dff0f4', border: '1px solid #0097a733' }}>
-                    <span className="text-sm font-bold" style={{ color: '#0097a7' }}>✓</span>
+                    <span className="text-sm font-bold" style={{ color: 'var(--accent)' }}>✓</span>
                     {ownedForPrinting.map(item => (
                       <span key={item.finish}
                         className={`text-sm font-semibold${item.finish === 'foil' ? ' foil-rainbow' : ''}`}
-                        style={item.finish === 'foil' ? {} : { color: '#0097a7' }}>
+                        style={item.finish === 'foil' ? {} : { color: 'var(--accent)' }}>
                         ×{item.quantity} {item.finish}
                       </span>
                     ))}
@@ -566,7 +566,7 @@ export default function CardDetailPage() {
                   <button
                     onClick={() => setModalOpen(true)}
                     className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200 hover:opacity-80"
-                    style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#1c1008', whiteSpace: 'nowrap' }}
+                    style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}
                   >
                     + Add More
                   </button>
@@ -575,7 +575,7 @@ export default function CardDetailPage() {
                 <button
                   onClick={() => setModalOpen(true)}
                   className="w-full text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors duration-200 hover:opacity-80"
-                  style={{ backgroundColor: '#faf6ee', border: '1px solid #d4c4a8', color: '#7a6248' }}
+                  style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
                 >
                   Add to Collection
                 </button>
@@ -589,9 +589,9 @@ export default function CardDetailPage() {
                   disabled={wishlistLoading}
                   className="flex-1 text-sm font-semibold px-4 py-2.5 rounded-lg disabled:opacity-50 transition-colors duration-200"
                   style={{
-                    backgroundColor: wishlisted ? '#f5e0e6' : '#faf6ee',
-                    border: `1px solid ${wishlisted ? '#8b1a3a' : '#d4c4a8'}`,
-                    color: wishlisted ? '#8b1a3a' : '#7a6248',
+                    backgroundColor: wishlisted ? '#f5e0e6' : 'var(--bg-surface)',
+                    border: `1px solid ${wishlisted ? 'var(--accent-maroon)' : 'var(--border)'}`,
+                    color: wishlisted ? 'var(--accent-maroon)' : 'var(--text-muted)',
                   }}
                 >
                   {wishlisted ? '♥ In Wishlist' : 'Add To Wishlist'}
@@ -604,24 +604,24 @@ export default function CardDetailPage() {
         {/* Card info */}
         <div className="flex-1 min-w-0">
 
-          <Link to={`/games/${card.game_slug}`} className="text-base font-semibold uppercase tracking-widest hover:underline" style={{ color: '#0097a7' }}>
+          <Link to={`/games/${card.game_slug}`} className="text-base font-semibold uppercase tracking-widest hover:underline" style={{ color: 'var(--accent)' }}>
             {card.game}
           </Link>
 
-          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold leading-tight mt-2 mb-2 break-words" style={{ color: '#1c1008' }}>{card.name}</h2>
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold leading-tight mt-2 mb-2 break-words" style={{ color: 'var(--text-primary)' }}>{card.name}</h2>
 
-          <p className="text-xl mb-4" style={{ color: '#7a6248' }}>{card.card_type}</p>
+          <p className="text-xl mb-4" style={{ color: 'var(--text-muted)' }}>{card.card_type}</p>
 
           {selectedPrinting && (
             <div className="flex items-center gap-3 mb-6">
               <button
                 onClick={() => navigate(`/sets/${selectedPrinting.set_id}`)}
                 className="text-lg font-semibold hover:opacity-80 transition-opacity underline underline-offset-2"
-                style={{ color: '#0097a7' }}
+                style={{ color: 'var(--accent)' }}
               >
                 {selectedPrinting.set_name}
               </button>
-              <span style={{ color: '#d4c4a8' }}>•</span>
+              <span style={{ color: 'var(--border)' }}>•</span>
               <span className="text-lg font-semibold capitalize" style={{ color: rarityColor }}>
                 {selectedPrinting.rarity}
               </span>
@@ -665,8 +665,8 @@ export default function CardDetailPage() {
           {/* Flavor text */}
           {selectedPrinting?.flavor_text && (
             <div className="rounded-xl px-5 py-4 mb-5 border"
-              style={{ backgroundColor: '#e8ddc8', borderColor: '#d4c4a8' }}>
-              <p className="italic text-base leading-relaxed" style={{ color: '#7a6248' }}>
+              style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)' }}>
+              <p className="italic text-base leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                 "{selectedPrinting.flavor_text}"
               </p>
             </div>
@@ -674,29 +674,29 @@ export default function CardDetailPage() {
 
           {selectedPrinting && (
             <div className="grid grid-cols-2 gap-4 mb-6 p-4 rounded-xl border"
-              style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8' }}>
+              style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
               {selectedPrinting.collector_number && (
                 <div>
-                  <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#7a6248' }}>Collector #</p>
-                  <p className="text-base font-medium" style={{ color: '#1c1008' }}>{selectedPrinting.collector_number}</p>
+                  <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>Collector #</p>
+                  <p className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>{selectedPrinting.collector_number}</p>
                 </div>
               )}
               {selectedPrinting.release_date && (
                 <div>
-                  <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#7a6248' }}>Released</p>
-                  <p className="text-base font-medium" style={{ color: '#1c1008' }}>{selectedPrinting.release_date}</p>
+                  <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>Released</p>
+                  <p className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>{selectedPrinting.release_date}</p>
                 </div>
               )}
               {selectedPrinting.artist && (
                 <div>
-                  <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#7a6248' }}>Artist</p>
-                  <p className="text-base font-medium" style={{ color: '#1c1008' }}>✏️ {selectedPrinting.artist}</p>
+                  <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>Artist</p>
+                  <p className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>✏️ {selectedPrinting.artist}</p>
                 </div>
               )}
               {selectedPrinting.set_code && (
                 <div>
-                  <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#7a6248' }}>Set Code</p>
-                  <p className="text-base font-medium" style={{ color: '#1c1008' }}>{selectedPrinting.set_code?.toUpperCase()}</p>
+                  <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>Set Code</p>
+                  <p className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>{selectedPrinting.set_code?.toUpperCase()}</p>
                 </div>
               )}
             </div>
@@ -709,9 +709,9 @@ export default function CardDetailPage() {
       {/* All Printings */}
       {card.printings?.length > 1 && (
         <div>
-          <h3 className="text-2xl font-bold mb-4" style={{ color: '#1c1008' }}>
+          <h3 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
             All Printings
-            <span className="text-lg font-normal ml-2" style={{ color: '#7a6248' }}>
+            <span className="text-lg font-normal ml-2" style={{ color: 'var(--text-muted)' }}>
               ({card.printings.length})
             </span>
           </h3>
@@ -722,28 +722,28 @@ export default function CardDetailPage() {
                 onClick={() => handleSelectPrinting(printing)}
                 className="rounded-xl overflow-hidden border cursor-pointer transition-all duration-200"
                 style={{
-                  backgroundColor: selectedPrinting?.id === printing.id ? '#d4c4a8' : '#faf6ee',
-                  borderColor: selectedPrinting?.id === printing.id ? '#0097a7' : '#d4c4a8'
+                  backgroundColor: selectedPrinting?.id === printing.id ? 'var(--bg-chip)' : 'var(--bg-surface)',
+                  borderColor: selectedPrinting?.id === printing.id ? 'var(--accent)' : 'var(--border)'
                 }}
                 onMouseEnter={e => {
-                  if (selectedPrinting?.id !== printing.id) e.currentTarget.style.borderColor = '#0097a7'
+                  if (selectedPrinting?.id !== printing.id) e.currentTarget.style.borderColor = 'var(--accent)'
                 }}
                 onMouseLeave={e => {
-                  if (selectedPrinting?.id !== printing.id) e.currentTarget.style.borderColor = '#d4c4a8'
+                  if (selectedPrinting?.id !== printing.id) e.currentTarget.style.borderColor = 'var(--border)'
                 }}
               >
                 {printing.image_url ? (
                   <img src={printing.image_url} alt={printing.set_name} className="w-full" />
                 ) : (
                   <div className="aspect-[2.5/3.5] flex items-center justify-center p-3"
-                    style={{ backgroundColor: '#d4c4a8' }}>
-                    <span className="text-xs text-center" style={{ color: '#7a6248' }}>{printing.set_name}</span>
+                    style={{ backgroundColor: 'var(--bg-chip)' }}>
+                    <span className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>{printing.set_name}</span>
                   </div>
                 )}
                 <div className="p-2">
-                  <p className="text-xs font-medium truncate" style={{ color: '#1c1008' }}>{printing.set_name}</p>
+                  <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>{printing.set_name}</p>
                   <p className="text-xs capitalize"
-                    style={{ color: RARITY_COLORS[normalizeRarity(printing.rarity)] || '#7a6248' }}>
+                    style={{ color: RARITY_COLORS[normalizeRarity(printing.rarity)] || 'var(--text-muted)' }}>
                     {printing.rarity}
                   </p>
                   {user && (() => {
@@ -752,7 +752,7 @@ export default function CardDetailPage() {
                     const allFoil = printingItems.length > 0 && printingItems.every(i => i.finish === 'foil')
                     return count > 0 ? (
                       <p className={`text-xs font-semibold mt-0.5${allFoil ? ' foil-rainbow' : ''}`}
-                        style={allFoil ? {} : { color: '#0097a7' }}>×{count} owned</p>
+                        style={allFoil ? {} : { color: 'var(--accent)' }}>×{count} owned</p>
                     ) : null
                   })()}
                 </div>

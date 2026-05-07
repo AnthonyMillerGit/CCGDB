@@ -8,7 +8,7 @@ export default function GenericCardInfo({ card }) {
     <div>
       {rules_text && (
         <div className="rounded-xl p-5 mb-5 border card-rules-html"
-          style={{ backgroundColor: '#faf6ee', borderColor: '#d4c4a8', color: '#1c1008', lineHeight: '1.6' }}>
+          style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)', color: 'var(--text-primary)', lineHeight: '1.6' }}>
           {isHtml
             ? <div dangerouslySetInnerHTML={{ __html: rules_text }} />
             : <p className="whitespace-pre-line leading-relaxed text-base">{rules_text}</p>

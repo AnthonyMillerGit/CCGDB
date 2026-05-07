@@ -6,14 +6,14 @@ const DOMAIN_STYLES = {
   Wild:    { bg: '#002e12', border: '#2e7d32', text: '#a5d6a7' },
   Void:    { bg: '#121212', border: '#424242', text: '#bdbdbd' },
 }
-const DEFAULT_DOMAIN = { bg: '#22222a', border: '#d4c4a8', text: '#aaa' }
+const DEFAULT_DOMAIN = { bg: '#22222a', border: 'var(--border)', text: 'var(--text-muted)' }
 
 function StatChip({ label, value, color = '#1c1008' }) {
   if (value == null || value === '') return null
   return (
     <div className="flex flex-col items-center px-3 py-1.5 rounded-lg min-w-[52px]"
-      style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8' }}>
-      <span className="text-xs uppercase tracking-wide" style={{ color: '#7a6248' }}>{label}</span>
+      style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}>
+      <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{label}</span>
       <span className="text-2xl font-extrabold leading-none mt-0.5" style={{ color }}>{value}</span>
     </div>
   )
@@ -22,12 +22,12 @@ function StatChip({ label, value, color = '#1c1008' }) {
 function TextBlock({ text, isHtml = false }) {
   if (!text) return null
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: '#faf6ee', backgroundColor: '#28282f' }}>
+    <div className="rounded-lg border p-4" style={{ borderColor: 'var(--border-panel)', backgroundColor: 'var(--bg-panel)' }}>
       {isHtml
         ? <div className="leading-relaxed text-sm card-rules-html"
-            style={{ color: '#1c1008' }}
+            style={{ color: 'var(--text-panel)' }}
             dangerouslySetInnerHTML={{ __html: text }} />
-        : <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: '#1c1008' }}>{text}</p>
+        : <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: 'var(--text-panel)' }}>{text}</p>
       }
     </div>
   )
@@ -67,7 +67,7 @@ export default function RiftboundCardInfo({ card }) {
         {/* Card type */}
         {cardType && (
           <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded"
-            style={{ backgroundColor: '#eee4d4', border: '1px solid #d4c4a8', color: '#1c1008' }}>
+            style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
             {cardType}
           </span>
         )}
@@ -75,7 +75,7 @@ export default function RiftboundCardInfo({ card }) {
         {/* Card number */}
         {attrs.number && (
           <span className="text-xs font-mono px-2 py-0.5 rounded"
-            style={{ backgroundColor: '#1a1a24', border: '1px solid #d4c4a8', color: '#7a6248' }}>
+            style={{ backgroundColor: '#1a1a24', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
             {attrs.number}
           </span>
         )}
