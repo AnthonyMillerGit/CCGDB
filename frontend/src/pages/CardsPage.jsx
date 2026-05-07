@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
 import { RARITY_COLORS, normalizeRarity, rarityRank } from '../theme'
@@ -49,16 +49,37 @@ export default function CardsPage() {
   const [tooltipPos, setTooltipPos]   = useState({ x: 0, y: 0 })
   const [owned, setOwned]       = useState({})   // printing_id → quantity
   const [addingSet, setAddingSet] = useState(false)
-  const [sort, setSort]         = useState('name_asc')
-  const [search, setSearch]     = useState('')
-  const [rarityFilter, setRarityFilter] = useState([])
-  const [rarityOpen, setRarityOpen]     = useState(false)
+  const [rarityOpen, setRarityOpen] = useState(false)
   const rarityRef = useRef(null)
-  const [page, setPage]         = useState(1)
-  const [pageSize, setPageSize] = useState(25)
+
+  // ── URL-persisted filter/sort/page state ──────────────────────────────────
+  const [searchParams, setSearchParams] = useSearchParams()
+  const sort        = searchParams.get('sort')    || 'name_asc'
+  const search      = searchParams.get('q')       || ''
+  const rarityFilter = searchParams.getAll('rarity')
+  const page        = parseInt(searchParams.get('page') || '1', 10)
+  const pageSize    = parseInt(searchParams.get('per')  || '25', 10)
+  const viewMode    = searchParams.get('view')    || 'card'
+
+  function setParam(updates) {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev)
+      for (const [k, v] of Object.entries(updates)) {
+        if (v === null || v === undefined || v === '') {
+          next.delete(k)
+        } else if (Array.isArray(v)) {
+          next.delete(k)
+          for (const item of v) next.append(k, item)
+        } else {
+          next.set(k, String(v))
+        }
+      }
+      return next
+    }, { replace: true })
+  }
 
   // view + bulk-add state
-  const [viewMode, setViewMode]       = useState('card')   // 'card' | 'list'
+  // viewMode is in URL; 'card' | 'list'
   const [bulkTarget, setBulkTarget]   = useState(null)     // null | 'collection' | 'deck' | 'wishlist'
   const [bulkOpen, setBulkOpen]       = useState(false)
   const [bulkQtys, setBulkQtys]       = useState({})       // printing_id → qty delta
@@ -322,12 +343,12 @@ export default function CardsPage() {
             type="text"
             placeholder="Search cards…"
             value={search}
-            onChange={e => { setSearch(e.target.value); setPage(1) }}
+            onChange={e => setParam({ q: e.target.value, page: 1 })}
             className="text-sm pl-7 pr-8 py-1.5 rounded"
             style={{ backgroundColor: '#35353f', border: `1px solid ${search ? '#6A7EFC' : '#42424e'}`, color: '#EDF2F6', width: 180, outline: 'none' }}
           />
           {search && (
-            <button onClick={() => { setSearch(''); setPage(1) }}
+            <button onClick={() => setParam({ q: '', page: 1 })}
               className="absolute right-2 text-sm hover:opacity-80"
               style={{ color: '#8e8e9e' }}>×</button>
           )}
@@ -336,7 +357,7 @@ export default function CardsPage() {
         {/* Sort */}
         <div className="flex items-center gap-1.5">
           <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>Sort By</span>
-          <select value={sort} onChange={e => { setSort(e.target.value); setPage(1) }}
+          <select value={sort} onChange={e => setParam({ sort: e.target.value, page: 1 })}
             className="text-sm px-3 py-1.5 rounded"
             style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6' }}>
             <option value="number_asc">Collector # ↑</option>
@@ -372,13 +393,13 @@ export default function CardsPage() {
                       <label key={r} className="flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer hover:opacity-80"
                         style={{ backgroundColor: rarityFilter.includes(r) ? '#35353f' : 'transparent' }}>
                         <input type="checkbox" checked={rarityFilter.includes(r)}
-                          onChange={() => { setRarityFilter(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]); setPage(1) }}
+                          onChange={() => setParam({ rarity: rarityFilter.includes(r) ? rarityFilter.filter(x => x !== r) : [...rarityFilter, r], page: 1 })}
                           className="accent-[#6A7EFC]" />
                         <span className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(r)] || '#8e8e9e' }}>{r}</span>
                       </label>
                     ))}
                     {rarityFilter.length > 0 && (
-                      <button onClick={() => { setRarityFilter([]); setPage(1) }}
+                      <button onClick={() => setParam({ rarity: [], page: 1 })}
                         className="w-full text-xs px-3 py-1.5 mt-1 rounded text-left"
                         style={{ color: '#8e8e9e', borderTop: '1px solid #42424e' }}>
                         Clear filter
@@ -394,7 +415,7 @@ export default function CardsPage() {
         {/* Cards Per Page */}
         <div className="flex items-center gap-1.5">
           <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>Cards Per Page</span>
-          <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(1) }}
+          <select value={pageSize} onChange={e => setParam({ per: Number(e.target.value) || null, page: 1 })}
             className="text-sm px-3 py-1.5 rounded"
             style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: '#EDF2F6' }}>
             <option value={25}>25</option>
@@ -408,12 +429,12 @@ export default function CardsPage() {
         <div className="flex items-center gap-2">
           <span className="text-xs uppercase tracking-wide" style={{ color: '#8e8e9e' }}>View As</span>
           <div className="flex rounded overflow-hidden border" style={{ borderColor: '#42424e' }}>
-            <button onClick={() => { setViewMode('card'); setPageSize(25); setPage(1) }}
+            <button onClick={() => setParam({ view: null, per: null, page: 1 })}
               className="text-xs px-3 py-1.5 transition-colors"
               style={{ backgroundColor: viewMode === 'card' ? '#6A7EFC' : '#35353f', color: viewMode === 'card' ? '#fff' : '#8e8e9e' }}>
               Images
             </button>
-            <button onClick={() => { setViewMode('list'); setPageSize(0); setPage(1) }}
+            <button onClick={() => setParam({ view: 'list', per: 0, page: 1 })}
               className="text-xs px-3 py-1.5 transition-colors"
               style={{ backgroundColor: viewMode === 'list' ? '#6A7EFC' : '#35353f', color: viewMode === 'list' ? '#fff' : '#8e8e9e', borderLeft: '1px solid #42424e' }}>
               Grid
@@ -588,7 +609,7 @@ export default function CardsPage() {
       {/* ── Pagination ───────────────────────────────────────────────────── */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-8">
-          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1}
+          <button onClick={() => setParam({ page: Math.max(1, page - 1) })} disabled={safePage === 1}
             className="text-sm px-3 py-1.5 rounded"
             style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: safePage === 1 ? '#555562' : '#EDF2F6', cursor: safePage === 1 ? 'not-allowed' : 'pointer' }}>
             ‹ Prev
@@ -598,12 +619,12 @@ export default function CardsPage() {
             .reduce((acc, p, i, arr) => { if (i > 0 && p - arr[i-1] > 1) acc.push('…'); acc.push(p); return acc }, [])
             .map((p, i) => p === '…'
               ? <span key={`e-${i}`} className="text-sm px-1" style={{ color: '#555562' }}>…</span>
-              : <button key={p} onClick={() => setPage(p)} className="text-sm w-8 h-8 rounded"
+              : <button key={p} onClick={() => setParam({ page: p })} className="text-sm w-8 h-8 rounded"
                   style={{ backgroundColor: p === safePage ? '#6A7EFC' : '#35353f', border: '1px solid #42424e', color: p === safePage ? '#1f1f25' : '#EDF2F6', fontWeight: p === safePage ? '600' : '400' }}>
                   {p}
                 </button>
             )}
-          <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages}
+          <button onClick={() => setParam({ page: Math.min(totalPages, page + 1) })} disabled={safePage === totalPages}
             className="text-sm px-3 py-1.5 rounded"
             style={{ backgroundColor: '#35353f', border: '1px solid #42424e', color: safePage === totalPages ? '#555562' : '#EDF2F6', cursor: safePage === totalPages ? 'not-allowed' : 'pointer' }}>
             Next ›
