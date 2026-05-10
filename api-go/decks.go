@@ -9,9 +9,9 @@ import (
 func (a *App) getDeckOrForbid(w http.ResponseWriter, r *http.Request, deckID, userID int) (*DeckDetail, bool) {
 	var d DeckDetail
 	err := a.db.QueryRow(r.Context(),
-		"SELECT id, user_id, game_id, name, description, format FROM decks WHERE id = $1",
+		"SELECT id, user_id, game_id, name, COALESCE(description, ''), format, thumbnail_card_id FROM decks WHERE id = $1",
 		deckID,
-	).Scan(&d.ID, &d.UserID, &d.GameID, &d.Name, &d.Description, &d.Format)
+	).Scan(&d.ID, &d.UserID, &d.GameID, &d.Name, &d.Description, &d.Format, &d.ThumbnailCardID)
 	if err != nil {
 		jsonError(w, "Deck not found", http.StatusNotFound)
 		return nil, false
@@ -26,14 +26,15 @@ func (a *App) getDeckOrForbid(w http.ResponseWriter, r *http.Request, deckID, us
 func (a *App) listDecks(w http.ResponseWriter, r *http.Request) {
 	user := getUser(r)
 	rows, err := a.db.Query(r.Context(), `
-		SELECT d.id, d.name, d.description, d.format, d.created_at, d.updated_at,
+		SELECT d.id, d.name, COALESCE(d.description, ''), d.format, d.created_at, d.updated_at,
 		       g.id AS game_id, g.name AS game_name, g.slug AS game_slug,
 		       COUNT(dc.id) AS card_count,
 		       COALESCE(SUM(dc.quantity), 0) AS total_cards,
 		       (
 		         SELECT p.image_url FROM deck_cards dc2
 		         JOIN printings p ON p.card_id = dc2.card_id AND p.image_url IS NOT NULL
-		         WHERE dc2.deck_id = d.id ORDER BY dc2.id LIMIT 1
+		         WHERE dc2.deck_id = d.id
+		         ORDER BY CASE WHEN dc2.card_id = d.thumbnail_card_id THEN 0 ELSE 1 END, dc2.id LIMIT 1
 		       ) AS thumbnail_url
 		FROM decks d
 		JOIN games g ON g.id = d.game_id
@@ -179,6 +180,10 @@ func (a *App) updateDeck(w http.ResponseWriter, r *http.Request) {
 	if body.Format != nil {
 		a.db.Exec(r.Context(), "UPDATE decks SET format = $1, updated_at = NOW() WHERE id = $2",
 			*body.Format, deckID)
+	}
+	if body.ThumbnailCardID != nil {
+		a.db.Exec(r.Context(), "UPDATE decks SET thumbnail_card_id = $1, updated_at = NOW() WHERE id = $2",
+			*body.ThumbnailCardID, deckID)
 	}
 	jsonResponse(w, map[string]string{"message": "Deck updated"}, http.StatusOK)
 }

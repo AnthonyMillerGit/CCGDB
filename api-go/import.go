@@ -357,7 +357,7 @@ func (a *App) importDeck(w http.ResponseWriter, r *http.Request) {
 	// Create the deck
 	var deckID int
 	err = a.db.QueryRow(r.Context(), `
-		INSERT INTO decks (user_id, game_id, name) VALUES ($1, $2, $3) RETURNING id
+		INSERT INTO decks (user_id, game_id, name, description) VALUES ($1, $2, $3, '') RETURNING id
 	`, user.ID, gameID, deckName).Scan(&deckID)
 	if err != nil {
 		jsonError(w, "Failed to create deck", http.StatusInternalServerError)

@@ -494,6 +494,7 @@ function MyDecksTab({ authFetch }) {
   const [importFile, setImportFile] = useState(null)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState(null)
+  const importFileRef = useRef(null)
   const [confirm, setConfirm] = useState(null)
 
   useEffect(() => {
@@ -563,7 +564,10 @@ function MyDecksTab({ authFetch }) {
 
   async function handleImportDeck(e) {
     e.preventDefault()
-    if (!importDeckName.trim() || !importDeckGame || !importFile) return
+    if (!importDeckName.trim() || !importDeckGame || !importFile) {
+      setImportResult({ error: 'Please fill in the deck name, select a game, and choose a file.' })
+      return
+    }
     setImporting(true)
     const form = new FormData()
     form.append('file', importFile)
@@ -698,16 +702,28 @@ function MyDecksTab({ authFetch }) {
               {games.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
             </select>
           </div>
-          <input
-            type="file"
-            accept=".csv,.json,.dec,.txt"
-            required
-            onChange={e => setImportFile(e.target.files?.[0] || null)}
-            className="text-sm"
-            style={{ color: 'var(--text-primary)' }}
-          />
+          <div className="flex items-center gap-3">
+            <input
+              ref={importFileRef}
+              type="file"
+              accept=".csv,.json,.dec,.txt"
+              className="hidden"
+              onChange={e => setImportFile(e.target.files?.[0] || null)}
+            />
+            <button
+              type="button"
+              onClick={() => importFileRef.current?.click()}
+              className="px-3 py-1.5 rounded text-sm flex-shrink-0"
+              style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid #9e836a' }}
+            >
+              Choose File
+            </button>
+            <span className="text-sm truncate" style={{ color: importFile ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+              {importFile ? importFile.name : 'No file chosen'}
+            </span>
+          </div>
           <div className="flex gap-2">
-            <button type="submit" disabled={importing || !importFile}
+            <button type="submit" disabled={importing}
               className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
               style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}>
               {importing ? 'Importing…' : 'Import'}

@@ -5,10 +5,12 @@ import { API_URL } from '../config'
 
 // ── Deck card row (left panel) ────────────────────────────────────────────────
 
-function DeckCardRow({ card, onIncrease, onDecrease }) {
+function DeckCardRow({ card, onIncrease, onDecrease, onMouseEnter, onMouseLeave, onSetThumbnail, isThumbnail }) {
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5"
-      style={{ borderBottom: '1px solid #f5f0e8' }}>
+    <div className="group flex items-center gap-2 px-3 py-1.5"
+      style={{ borderBottom: '1px solid #f5f0e8' }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}>
       {card.image_url
         ? <img src={card.image_url} alt={card.card_name} className="w-7 rounded flex-shrink-0" />
         : <div className="w-7 h-10 rounded flex-shrink-0" style={{ backgroundColor: 'var(--bg-chip)' }} />
@@ -33,6 +35,16 @@ function DeckCardRow({ card, onIncrease, onDecrease }) {
           className="w-7 h-7 rounded text-sm font-bold flex items-center justify-center transition-colors"
           style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)' }}>
           +
+        </button>
+        <button
+          onClick={e => { e.stopPropagation(); onSetThumbnail() }}
+          title={isThumbnail ? 'Deck thumbnail' : 'Set as deck thumbnail'}
+          className={`w-6 h-6 flex items-center justify-center rounded transition-opacity ${isThumbnail ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+          style={{ color: isThumbnail ? 'var(--accent)' : 'var(--text-muted)' }}
+        >
+          <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+            <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+          </svg>
         </button>
       </div>
     </div>
@@ -86,21 +98,23 @@ export default function DeckBuilderPage() {
   const [nameInput, setNameInput] = useState('')
   const [editingFormat, setEditingFormat] = useState(false)
   const [formatInput, setFormatInput] = useState('')
+  const [notesInput, setNotesInput] = useState('')
 
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
   const [searching, setSearching] = useState(false)
   const searchTimer = useRef(null)
   const searchInputRef = useRef(null)
+  const searchContainerRef = useRef(null)
 
   // Hover tooltip
   const [hoveredCard, setHoveredCard] = useState(null)
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 })
+  const [tooltipPos, setTooltipPos] = useState(null)
 
   useEffect(() => {
     authFetch(`${API_URL}/api/decks/${deckId}`)
       .then(r => r.json())
-      .then(data => { setDeck(data); setNameInput(data.name); setLoading(false) })
+      .then(data => { setDeck(data); setNameInput(data.name); setNotesInput(data.description || ''); setLoading(false) })
   }, [deckId, authFetch])
 
   useEffect(() => {
@@ -118,6 +132,17 @@ export default function DeckBuilderPage() {
     }, 300)
     return () => clearTimeout(searchTimer.current)
   }, [searchQuery, deck])
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+        setSearchQuery('')
+        setSearchResults([])
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const cardQtyMap = deck ? Object.fromEntries(deck.cards.map(c => [c.card_id, c.quantity])) : {}
   const totalCards = deck?.cards.reduce((s, c) => s + c.quantity, 0) ?? 0
@@ -147,6 +172,14 @@ export default function DeckBuilderPage() {
     })
     setDeck(prev => ({ ...prev, format: trimmed }))
     setEditingFormat(false)
+  }
+
+  async function saveNotes() {
+    if (notesInput === (deck.description || '')) return
+    await authFetch(`${API_URL}/api/decks/${deckId}`, {
+      method: 'PATCH', body: JSON.stringify({ description: notesInput }),
+    })
+    setDeck(prev => ({ ...prev, description: notesInput }))
   }
 
   async function handleAdd(card) {
@@ -184,6 +217,20 @@ export default function DeckBuilderPage() {
       if (!res.ok) return
       setDeck(prev => ({ ...prev, cards: prev.cards.map(c => c.card_id === card.card_id ? { ...c, quantity: c.quantity - 1 } : c) }))
     }
+  }
+
+  async function handleSetThumbnail(card) {
+    await authFetch(`${API_URL}/api/decks/${deckId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ thumbnail_card_id: card.card_id }),
+    })
+    setDeck(prev => ({ ...prev, thumbnail_card_id: card.card_id }))
+  }
+
+  function handleDeckListHover(card) {
+    if (!card.image_url || isTouchDevice) return
+    setHoveredCard(card)
+    setTooltipPos(null)
   }
 
   function handleMouseEnter(e, card) {
@@ -284,13 +331,22 @@ export default function DeckBuilderPage() {
         {/* Left — deck list */}
         <div className="lg:w-72 flex-shrink-0">
           <div className="rounded-xl overflow-hidden sticky top-4" style={{ border: '1px solid var(--border)' }}>
-            <div className="px-3 py-2.5 flex items-center justify-between"
+            <div className="px-3 py-2.5"
               style={{ backgroundColor: 'var(--bg-surface)', borderBottom: '1px solid var(--border)' }}>
-              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Deck List</p>
-              <span className="text-xs px-2 py-0.5 rounded-full"
-                style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)' }}>
-                {totalCards}
-              </span>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Deck List</p>
+                <span className="text-xs px-2 py-0.5 rounded-full"
+                  style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)' }}>
+                  {totalCards}
+                </span>
+              </div>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                Hover a card and click
+                <svg viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 inline mx-1 align-middle" style={{ color: 'var(--accent)' }}>
+                  <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                </svg>
+                to set the deck cover.
+              </p>
             </div>
             <div className="overflow-y-auto" style={{ backgroundColor: 'var(--bg-chip)', maxHeight: 'calc(100vh - 220px)' }}>
               {deck.cards.length === 0 ? (
@@ -309,6 +365,10 @@ export default function DeckBuilderPage() {
                       <DeckCardRow key={card.card_id} card={card}
                         onIncrease={() => handleIncrease(card)}
                         onDecrease={() => handleDecrease(card)}
+                        onMouseEnter={() => handleDeckListHover(card)}
+                        onMouseLeave={() => setHoveredCard(null)}
+                        onSetThumbnail={() => handleSetThumbnail(card)}
+                        isThumbnail={deck.thumbnail_card_id === card.card_id}
                       />
                     ))}
                   </div>
@@ -319,7 +379,7 @@ export default function DeckBuilderPage() {
         </div>
 
         {/* Right — card search */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0" ref={searchContainerRef}>
           {/* Search input */}
           <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl mb-4"
             style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
@@ -345,15 +405,58 @@ export default function DeckBuilderPage() {
             )}
           </div>
 
-          {/* States */}
+          {/* Card preview / empty state */}
           {searchQuery.trim().length < 2 && (
-            <div className="text-center py-16">
-              <p className="text-lg mb-1" style={{ color: 'var(--text-muted)' }}>Find cards to add</p>
-              <p className="text-sm" style={{ color: 'var(--border)' }}>
-                Search by card name — results are scoped to {deck.game_name}
-              </p>
+            <div className="flex justify-center py-6">
+              {hoveredCard?.image_url ? (
+                <div className="rounded-xl overflow-hidden shadow-2xl transition-all duration-150"
+                  style={{
+                    width: '320px',
+                    border: '2px solid var(--accent)',
+                    backgroundColor: 'var(--bg-surface)',
+                    boxShadow: '0 0 40px rgba(8, 217, 214, 0.25)',
+                  }}>
+                  <img src={hoveredCard.image_url} alt={hoveredCard.card_name || hoveredCard.name} className="w-full" />
+                  <div className="px-3 py-2.5">
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      {hoveredCard.card_name || hoveredCard.name}
+                    </p>
+                    {hoveredCard.card_type && (
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--accent)' }}>{hoveredCard.card_type}</p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <div className="rounded-xl mx-auto mb-4"
+                    style={{ width: '160px', aspectRatio: '2.5/3.5', border: '2px dashed var(--border)', backgroundColor: 'var(--bg-surface)' }} />
+                  <p className="text-base mb-1" style={{ color: 'var(--text-muted)' }}>Hover a card to preview</p>
+                  <p className="text-sm" style={{ color: 'var(--border)' }}>
+                    Search by name to add cards — scoped to {deck.game_name}
+                  </p>
+                </div>
+              )}
             </div>
           )}
+
+          {/* Notes — always visible when not searching */}
+          {searchQuery.trim().length < 2 && (
+            <div className="mt-4 rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+              <p className="px-3 py-2 text-xs font-semibold" style={{ backgroundColor: 'var(--bg-surface)', borderBottom: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+                Notes
+              </p>
+              <textarea
+                value={notesInput}
+                onChange={e => setNotesInput(e.target.value)}
+                onBlur={saveNotes}
+                placeholder="Strategy, sideboard notes, card considerations…"
+                rows={5}
+                className="w-full px-3 py-2.5 text-sm bg-transparent outline-none resize-none"
+                style={{ color: 'var(--text-primary)' }}
+              />
+            </div>
+          )}
+
           {searching && (
             <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>Searching…</p>
           )}
@@ -382,8 +485,8 @@ export default function DeckBuilderPage() {
 
       </div>
 
-      {/* Hover tooltip */}
-      {hoveredCard?.image_url && (
+      {/* Hover tooltip — search results only */}
+      {hoveredCard?.image_url && tooltipPos && (
         <div className="fixed pointer-events-none z-50 rounded-xl overflow-hidden shadow-2xl"
           style={{
             left: Math.max(8, Math.min(tooltipPos.x, window.innerWidth - 368)),
