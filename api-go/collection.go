@@ -56,6 +56,7 @@ func (a *App) getCollection(w http.ResponseWriter, r *http.Request) {
 			}
 			gameOrder = append(gameOrder, gameID)
 		}
+		card.ImageURL = a.imgURL(card.ImageURL)
 		gamesMap[gameID].Cards = append(gamesMap[gameID].Cards, card)
 	}
 

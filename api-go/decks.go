@@ -146,6 +146,7 @@ func (a *App) getDeck(w http.ResponseWriter, r *http.Request) {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}
+		c.ImageURL = a.imgURL(c.ImageURL)
 		deck.Cards = append(deck.Cards, c)
 	}
 	jsonResponse(w, deck, http.StatusOK)

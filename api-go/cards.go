@@ -54,6 +54,7 @@ func (a *App) getSetCards(w http.ResponseWriter, r *http.Request) {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}
+		c.ImageURL = a.imgURL(c.ImageURL)
 		cards = append(cards, c)
 	}
 	jsonResponse(w, cards, http.StatusOK)
@@ -99,6 +100,7 @@ func (a *App) searchCards(w http.ResponseWriter, r *http.Request) {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}
+		c.ImageURL = a.imgURL(c.ImageURL)
 		cards = append(cards, c)
 	}
 	jsonResponse(w, cards, http.StatusOK)
@@ -150,6 +152,7 @@ func (a *App) getCard(w http.ResponseWriter, r *http.Request) {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}
+		p.ImageURL = a.imgURL(p.ImageURL)
 		card.Printings = append(card.Printings, p)
 	}
 	jsonResponse(w, card, http.StatusOK)
@@ -187,6 +190,7 @@ func (a *App) getPrinting(w http.ResponseWriter, r *http.Request) {
 		jsonError(w, "Printing not found", http.StatusNotFound)
 		return
 	}
+	p.ImageURL = a.imgURL(p.ImageURL)
 	jsonResponse(w, p, http.StatusOK)
 }
 
@@ -239,6 +243,7 @@ func (a *App) randomCards(w http.ResponseWriter, r *http.Request) {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}
+		c.ImageURL = a.imgURL(c.ImageURL)
 		cards = append(cards, c)
 	}
 	jsonResponse(w, cards, http.StatusOK)
@@ -285,6 +290,7 @@ func (a *App) searchSuggestions(w http.ResponseWriter, r *http.Request) {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}
+		s.ImageURL = a.imgURL(s.ImageURL)
 		suggestions = append(suggestions, s)
 	}
 	jsonResponse(w, suggestions, http.StatusOK)

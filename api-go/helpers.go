@@ -9,6 +9,17 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// imgURL resolves a stored image path to an absolute URL.
+// Relative paths (e.g. "cards/mtg/foo.png") are prefixed with ASSET_BASE_URL.
+// Absolute URLs (external CDN links already stored as http/https) pass through unchanged.
+func (a *App) imgURL(url *string) *string {
+	if url == nil || *url == "" || strings.HasPrefix(*url, "http") {
+		return url
+	}
+	s := a.cfg.AssetBaseURL + "/" + *url
+	return &s
+}
+
 func escapeLike(s string) string {
 	s = strings.ReplaceAll(s, `\`, `\\`)
 	s = strings.ReplaceAll(s, `%`, `\%`)

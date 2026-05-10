@@ -28,6 +28,7 @@ type Config struct {
 	AllowedOrigins string
 	Port           string
 	AssetsDir      string
+	AssetBaseURL   string
 
 	// Email
 	ResendAPIKey string
@@ -59,6 +60,7 @@ func loadConfig() *Config {
 		AllowedOrigins: getEnv("ALLOWED_ORIGINS", "http://localhost:5173"),
 		Port:           getEnv("PORT", "8000"),
 		AssetsDir:      assetsDir,
+		AssetBaseURL:   getEnv("ASSET_BASE_URL", "http://localhost:8000/assets"),
 
 		ResendAPIKey: getEnv("RESEND_API_KEY", ""),
 	}
