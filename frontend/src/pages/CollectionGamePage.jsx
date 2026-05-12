@@ -268,9 +268,6 @@ export default function CollectionGamePage() {
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             <strong style={{ color: 'var(--text-primary)' }}>{isFiltered ? filteredUnique : totalUnique}</strong>
             {isFiltered && <span> / {totalUnique}</span>} unique printings
-            {' · '}
-            <strong style={{ color: 'var(--text-primary)' }}>{isFiltered ? filteredCopies : totalCopies}</strong>
-            {isFiltered && <span> / {totalCopies}</span>} copies
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
