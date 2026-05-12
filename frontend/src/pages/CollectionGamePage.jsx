@@ -212,7 +212,7 @@ export default function CollectionGamePage() {
 
   const totalPages = Math.max(1, Math.ceil(printingGroups.length / pageSize))
   const safePage = Math.min(page, totalPages)
-  const pageStart = (safePage - 1) * pageSize
+  const pageStart = pageSize === Infinity ? 0 : (safePage - 1) * pageSize
 
   const pagedCards = useMemo(() => {
     if (groupBySet) return printingGroups
