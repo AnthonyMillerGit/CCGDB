@@ -175,6 +175,7 @@ type CollectionCard struct {
 	CollectorNumber *string   `json:"collector_number"`
 	CardID          int       `json:"card_id"`
 	CardName        string    `json:"card_name"`
+	CardType        string    `json:"card_type"`
 	SetID           int       `json:"set_id"`
 	SetName         string    `json:"set_name"`
 }
