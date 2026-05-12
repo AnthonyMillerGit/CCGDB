@@ -266,8 +266,8 @@ export default function CollectionGamePage() {
         <div>
           <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>{gameData.game_name}</h1>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            <strong style={{ color: 'var(--text-primary)' }}>{isFiltered ? filteredUnique : totalUnique}</strong>
-            {isFiltered && <span> / {totalUnique}</span>} unique printings
+            <strong style={{ color: 'var(--text-primary)' }}>{isFiltered ? filteredCopies : totalCopies}</strong>
+            {isFiltered && <span> / {totalCopies}</span>} cards
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
