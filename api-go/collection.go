@@ -275,6 +275,7 @@ func (a *App) getCollectionForCard(w http.ResponseWriter, r *http.Request) {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}
+		item.ImageURL = a.imgURL(item.ImageURL)
 		items = append(items, item)
 	}
 	jsonResponse(w, items, http.StatusOK)
