@@ -281,19 +281,34 @@ export default function CollectionGamePage() {
             {isFiltered && <span> / {totalCopies}</span>} cards
           </p>
         </div>
-        <div className="flex rounded overflow-hidden shrink-0" style={{ border: '1px solid var(--border)' }}>
-          <button
-            onClick={() => setViewMode('grid')}
-            className="px-2.5 py-1.5 text-sm"
-            style={{ backgroundColor: viewMode === 'grid' ? 'var(--accent)' : 'var(--bg-surface)', color: viewMode === 'grid' ? 'var(--text-panel)' : 'var(--text-muted)' }}
-            title="Grid view"
-          >⊞</button>
-          <button
-            onClick={() => setViewMode('list')}
-            className="px-2.5 py-1.5 text-sm"
-            style={{ backgroundColor: viewMode === 'list' ? 'var(--accent)' : 'var(--bg-surface)', color: viewMode === 'list' ? 'var(--text-panel)' : 'var(--text-muted)' }}
-            title="List view"
-          >≡</button>
+        <div className="flex items-center gap-2 shrink-0">
+          {!setFilter && (
+            <button
+              onClick={() => setGroupBySet(g => !g)}
+              className="text-xs px-3 py-1.5 rounded"
+              style={{
+                backgroundColor: groupBySet ? 'var(--accent)' : 'var(--bg-surface)',
+                color: groupBySet ? 'var(--text-panel)' : 'var(--text-muted)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              Group by set
+            </button>
+          )}
+          <div className="flex rounded overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+            <button
+              onClick={() => setViewMode('grid')}
+              className="px-2.5 py-1.5 text-sm"
+              style={{ backgroundColor: viewMode === 'grid' ? 'var(--accent)' : 'var(--bg-surface)', color: viewMode === 'grid' ? 'var(--text-panel)' : 'var(--text-muted)' }}
+              title="Grid view"
+            >⊞</button>
+            <button
+              onClick={() => setViewMode('list')}
+              className="px-2.5 py-1.5 text-sm"
+              style={{ backgroundColor: viewMode === 'list' ? 'var(--accent)' : 'var(--bg-surface)', color: viewMode === 'list' ? 'var(--text-panel)' : 'var(--text-muted)' }}
+              title="List view"
+            >≡</button>
+          </div>
         </div>
       </div>
 
@@ -311,7 +326,7 @@ export default function CollectionGamePage() {
         {/* Filters button */}
         <div className="relative">
           {(() => {
-            const activeCount = (setFilter ? 1 : 0) + (sort !== 'name_asc' ? 1 : 0) + rarityFilter.length + (groupBySet ? 1 : 0) + (pageSize !== 25 ? 1 : 0)
+            const activeCount = (setFilter ? 1 : 0) + (sort !== 'name_asc' ? 1 : 0) + rarityFilter.length + (pageSize !== 25 ? 1 : 0)
             return (
               <button
                 onClick={() => setFiltersOpen(o => !o)}
@@ -387,36 +402,26 @@ export default function CollectionGamePage() {
                 </div>
               )}
 
-              {/* Group by set + page size */}
+              {/* Page size */}
               <div className="flex items-center justify-between gap-2 pt-1" style={{ borderTop: '1px solid var(--border)' }}>
-                {!setFilter && (
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={groupBySet}
-                      onChange={() => setGroupBySet(g => !g)}
-                      className="accent-[#0097a7]"
-                    />
-                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Group by set</span>
-                  </label>
-                )}
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Cards per page</span>
                 <select
                   value={pageSize}
                   onChange={e => { setPageSize(Number(e.target.value)); resetPage() }}
-                  className="text-xs px-2 py-1 rounded ml-auto"
+                  className="text-xs px-2 py-1 rounded"
                   style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                 >
-                  <option value={25}>25 / page</option>
-                  <option value={50}>50 / page</option>
-                  <option value={100}>100 / page</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
                   <option value={Infinity}>All</option>
                 </select>
               </div>
 
               {/* Clear all */}
-              {(setFilter || sort !== 'name_asc' || rarityFilter.length > 0 || groupBySet || pageSize !== 25) && (
+              {(setFilter || sort !== 'name_asc' || rarityFilter.length > 0 || pageSize !== 25) && (
                 <button
-                  onClick={() => { setSetFilter(''); setSort('name_asc'); setRarityFilter([]); setGroupBySet(false); setPageSize(25); resetPage() }}
+                  onClick={() => { setSetFilter(''); setSort('name_asc'); setRarityFilter([]); setPageSize(25); resetPage() }}
                   className="text-xs py-1 rounded"
                   style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)', paddingTop: '0.5rem' }}
                 >
