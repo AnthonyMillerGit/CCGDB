@@ -13,7 +13,7 @@ func (a *App) getCollection(w http.ResponseWriter, r *http.Request) {
 		    p.image_url, p.rarity, p.collector_number,
 		    c.id AS card_id, c.name AS card_name, c.card_type,
 		    s.id AS set_id, s.name AS set_name,
-		    g.id AS game_id, g.name AS game_name, g.slug AS game_slug
+		    g.id AS game_id, g.name AS game_name, g.slug AS game_slug, g.card_back_image
 		FROM user_collections uc
 		JOIN printings p ON p.id = uc.printing_id
 		JOIN cards c ON c.id = p.card_id
@@ -33,26 +33,28 @@ func (a *App) getCollection(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var (
-			card    CollectionCard
-			gameID  int
-			gameName, gameSlug string
+			card                       CollectionCard
+			gameID                     int
+			gameName, gameSlug         string
+			cardBackImage              *string
 		)
 		if err := rows.Scan(
 			&card.ID, &card.PrintingID, &card.Quantity, &card.Finish, &card.Condition, &card.AddedAt,
 			&card.ImageURL, &card.Rarity, &card.CollectorNumber,
 			&card.CardID, &card.CardName, &card.CardType,
 			&card.SetID, &card.SetName,
-			&gameID, &gameName, &gameSlug,
+			&gameID, &gameName, &gameSlug, &cardBackImage,
 		); err != nil {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}
 		if _, ok := gamesMap[gameID]; !ok {
 			gamesMap[gameID] = &CollectionGroup{
-				GameID:   gameID,
-				GameName: gameName,
-				GameSlug: gameSlug,
-				Cards:    []CollectionCard{},
+				GameID:        gameID,
+				GameName:      gameName,
+				GameSlug:      gameSlug,
+				CardBackImage: cardBackImage,
+				Cards:         []CollectionCard{},
 			}
 			gameOrder = append(gameOrder, gameID)
 		}

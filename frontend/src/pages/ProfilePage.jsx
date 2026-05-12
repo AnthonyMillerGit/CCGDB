@@ -1228,36 +1228,31 @@ export default function ProfilePage() {
 
           {/* Game card grid */}
           {!loading && collection.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
               {collection.map(game => {
-                const gameUnique = game.cards.length
                 const gameCopies = game.cards.reduce((s, c) => s + c.quantity, 0)
-                const sampleImage = game.cards.find(c => c.image_url)?.image_url
                 return (
-                  <div key={game.game_id} className="relative rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--bg-chip)' }}>
+                  <div key={game.game_id} className="relative flex flex-col items-center">
                     <Link
                       to={`/collection/${game.game_slug}`}
-                      className="block transition-all duration-150 hover:ring-1"
-                      style={{ textDecoration: 'none', ringColor: 'var(--accent)' }}
+                      className="block w-full transition-all duration-150"
+                      style={{ textDecoration: 'none' }}
                     >
-                      {/* Card image preview — portrait aspect ratio ~5:7 */}
-                      <div className="relative overflow-hidden" style={{ aspectRatio: '5/7', backgroundColor: 'var(--bg-surface)' }}>
-                        {sampleImage ? (
-                          <img src={sampleImage} alt="" className="w-full h-full object-contain" />
+                      <div
+                        className="w-full rounded-xl overflow-hidden border transition-all duration-200"
+                        style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-surface)' }}
+                      >
+                        {game.card_back_image ? (
+                          <img src={game.card_back_image} alt={game.game_name} className="w-full h-auto object-cover" />
                         ) : (
-                          <div className="h-full flex items-center justify-center">
+                          <div className="w-full aspect-[2.5/3.5] flex flex-col items-center justify-center gap-2 p-2" style={{ backgroundColor: 'var(--bg-surface)' }}>
                             <span className="text-2xl" style={{ color: 'var(--border)' }}>🃏</span>
+                            <span className="text-xs text-center leading-tight" style={{ color: 'var(--text-muted)' }}>{game.game_name}</span>
                           </div>
                         )}
-                        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(30,35,48,0.85) 0%, transparent 50%)' }} />
                       </div>
-                      {/* Info */}
-                      <div className="px-2 py-1.5 pr-7">
-                        <p className="font-semibold text-xs truncate" style={{ color: 'var(--text-primary)' }}>{game.game_name}</p>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>
-                          {gameCopies} cards
-                        </p>
-                      </div>
+                      <p className="text-xs font-medium text-center mt-1.5 leading-tight px-1" style={{ color: 'var(--text-primary)' }}>{game.game_name}</p>
+                      <p className="text-xs text-center" style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>{gameCopies} cards</p>
                     </Link>
                     <button
                       onClick={e => { e.preventDefault(); handleClearGame(game) }}

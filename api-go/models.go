@@ -181,10 +181,11 @@ type CollectionCard struct {
 }
 
 type CollectionGroup struct {
-	GameID   int              `json:"game_id"`
-	GameName string           `json:"game_name"`
-	GameSlug string           `json:"game_slug"`
-	Cards    []CollectionCard `json:"cards"`
+	GameID        int              `json:"game_id"`
+	GameName      string           `json:"game_name"`
+	GameSlug      string           `json:"game_slug"`
+	CardBackImage *string          `json:"card_back_image"`
+	Cards         []CollectionCard `json:"cards"`
 }
 
 type CollectionItem struct {
