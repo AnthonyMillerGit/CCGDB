@@ -1228,44 +1228,40 @@ export default function ProfilePage() {
 
           {/* Game card grid */}
           {!loading && collection.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {collection.map(game => {
                 const gameUnique = game.cards.length
                 const gameCopies = game.cards.reduce((s, c) => s + c.quantity, 0)
-                const sampleImages = game.cards.filter(c => c.image_url).slice(0, 4).map(c => c.image_url)
+                const sampleImage = game.cards.find(c => c.image_url)?.image_url
                 return (
-                  <div key={game.game_id} className="relative rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--bg-chip)' }}>
+                  <div key={game.game_id} className="relative rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--bg-chip)' }}>
                     <Link
                       to={`/collection/${game.game_slug}`}
                       className="block transition-all duration-150 hover:ring-1"
                       style={{ textDecoration: 'none', ringColor: 'var(--accent)' }}
                     >
-                      {/* Card image collage */}
-                      <div className="relative h-32 overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)' }}>
-                        {sampleImages.length > 0 ? (
-                          <div className="flex h-full">
-                            {sampleImages.map((url) => (
-                              <img key={url} src={url} alt="" className="h-full object-cover flex-1" style={{ minWidth: 0 }} />
-                            ))}
-                          </div>
+                      {/* Card image preview — portrait aspect ratio ~5:7 */}
+                      <div className="relative overflow-hidden" style={{ aspectRatio: '5/7', backgroundColor: 'var(--bg-surface)' }}>
+                        {sampleImage ? (
+                          <img src={sampleImage} alt="" className="w-full h-full object-contain" />
                         ) : (
                           <div className="h-full flex items-center justify-center">
                             <span className="text-2xl" style={{ color: 'var(--border)' }}>🃏</span>
                           </div>
                         )}
-                        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(30,35,48,0.85) 0%, transparent 60%)' }} />
+                        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(30,35,48,0.85) 0%, transparent 50%)' }} />
                       </div>
                       {/* Info */}
-                      <div className="px-3 py-2 pr-10">
-                        <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{game.game_name}</p>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                      <div className="px-2 py-1.5 pr-7">
+                        <p className="font-semibold text-xs truncate" style={{ color: 'var(--text-primary)' }}>{game.game_name}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>
                           {gameCopies} cards
                         </p>
                       </div>
                     </Link>
                     <button
                       onClick={e => { e.preventDefault(); handleClearGame(game) }}
-                      className="absolute top-2 right-2 w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center"
+                      className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center"
                       style={{ backgroundColor: 'rgba(255,46,99,0.85)', color: '#fff' }}
                       title={`Remove all ${game.game_name} cards`}
                     >
