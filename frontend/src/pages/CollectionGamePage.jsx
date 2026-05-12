@@ -182,6 +182,7 @@ export default function CollectionGamePage() {
         case 'qty_asc':       return a.quantity - b.quantity || a.card_name.localeCompare(b.card_name)
         case 'rarity_desc':   return rarityRank(a.rarity) - rarityRank(b.rarity) || a.card_name.localeCompare(b.card_name)
         case 'rarity_asc':    return rarityRank(b.rarity) - rarityRank(a.rarity) || a.card_name.localeCompare(b.card_name)
+        case 'type_asc':      return (a.card_type || '').localeCompare(b.card_type || '') || a.card_name.localeCompare(b.card_name)
         default:              return a.card_name.localeCompare(b.card_name)
       }
     })
@@ -335,6 +336,7 @@ export default function CollectionGamePage() {
           <option value="qty_asc">Qty: Low→High</option>
           <option value="rarity_desc">Rarity: High→Low</option>
           <option value="rarity_asc">Rarity: Low→High</option>
+          <option value="type_asc">Type</option>
         </select>
 
         {/* Rarity filter dropdown */}
