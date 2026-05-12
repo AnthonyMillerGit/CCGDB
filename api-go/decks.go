@@ -57,6 +57,7 @@ func (a *App) listDecks(w http.ResponseWriter, r *http.Request) {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}
+		d.ThumbnailURL = a.imgURL(d.ThumbnailURL)
 		decks = append(decks, d)
 	}
 	jsonResponse(w, decks, http.StatusOK)
