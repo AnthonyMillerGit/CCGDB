@@ -434,11 +434,10 @@ export default function CollectionGamePage() {
               </div>
             </Link>
             <p className="text-xs font-medium truncate mt-1" style={{ color: 'var(--text-primary)' }} title={group.card_name}>{group.card_name}</p>
-            <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }} title={group.set_name}>{group.set_name}</p>
-            <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-              {group.card_type && <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{group.card_type}</span>}
-              {group.card_type && group.rarity && <span style={{ color: 'var(--border)' }}>·</span>}
-              {group.rarity && <span className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}>{group.rarity}</span>}
+            <div className="flex items-center gap-1 mb-1 flex-wrap">
+              <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }} title={group.set_name}>{group.set_name}</p>
+              {group.card_type && <><span style={{ color: 'var(--border)' }}>·</span><span className="text-xs shrink-0" style={{ color: 'var(--text-muted)' }}>{group.card_type}</span></>}
+              {group.rarity && <><span style={{ color: 'var(--border)' }}>·</span><span className="text-xs shrink-0 capitalize" style={{ color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}>{group.rarity}</span></>}
             </div>
             {group.items.map(item => (
               <div key={item.finish} className="flex items-center gap-2 mt-1">
@@ -474,11 +473,10 @@ export default function CollectionGamePage() {
             </Link>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{group.card_name}</p>
-              <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{group.set_name}</p>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {group.card_type && <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{group.card_type}</span>}
-                {group.card_type && group.rarity && <span style={{ color: 'var(--border)' }}>·</span>}
-                {group.rarity && <span className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}>{group.rarity}</span>}
+              <div className="flex items-center gap-1 flex-wrap">
+                <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{group.set_name}</p>
+                {group.card_type && <><span style={{ color: 'var(--border)' }}>·</span><span className="text-xs shrink-0" style={{ color: 'var(--text-muted)' }}>{group.card_type}</span></>}
+                {group.rarity && <><span style={{ color: 'var(--border)' }}>·</span><span className="text-xs shrink-0 capitalize" style={{ color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}>{group.rarity}</span></>}
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
