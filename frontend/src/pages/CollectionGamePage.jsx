@@ -490,7 +490,7 @@ export default function CollectionGamePage() {
                 <span
                   className={`text-xs font-bold shrink-0${item.finish === 'foil' ? ' foil-rainbow' : ''}`}
                   style={item.finish === 'foil' ? {} : { color: '#9e836a' }}
-                >{item.finish}</span>
+                >{item.finish === 'normal' ? '' : item.finish}</span>
               </div>
             ))}
           </div>
