@@ -1200,7 +1200,6 @@ export default function ProfilePage() {
               <div className="flex gap-4 text-sm" style={{ color: 'var(--text-muted)' }}>
                 <span><strong style={{ color: 'var(--text-primary)' }}>{collection.length}</strong> games</span>
                 <span><strong style={{ color: 'var(--text-primary)' }}>{totalUnique}</strong> unique cards</span>
-                <span><strong style={{ color: 'var(--text-primary)' }}>{totalCopies}</strong> copies</span>
               </div>
             )}
             {!loading && (
@@ -1260,7 +1259,7 @@ export default function ProfilePage() {
                       <div className="px-3 py-2 pr-10">
                         <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{game.game_name}</p>
                         <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                          {gameUnique} cards · {gameCopies} copies
+                          {gameUnique} cards
                         </p>
                       </div>
                     </Link>
