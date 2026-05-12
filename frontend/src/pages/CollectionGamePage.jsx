@@ -51,6 +51,8 @@ export default function CollectionGamePage() {
   const [viewMode, setViewMode] = useState('grid')
   const [groupBySet, setGroupBySet] = useState(false)
   const [collapsedSets, setCollapsedSets] = useState(new Set())
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const filtersRef = useRef(null)
 
   useEffect(() => {
     authFetch(`${API_URL}/api/users/me/collection`)
@@ -62,6 +64,15 @@ export default function CollectionGamePage() {
       })
       .catch(() => setLoading(false))
   }, [authFetch, gameSlug])
+
+  useEffect(() => {
+    if (!filtersOpen) return
+    function handleClickOutside(e) {
+      if (filtersRef.current && !filtersRef.current.contains(e.target)) setFiltersOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [filtersOpen])
 
   const handleIncrease = useCallback(async (card) => {
     const res = await authFetch(`${API_URL}/api/users/me/collection`, {
@@ -270,130 +281,153 @@ export default function CollectionGamePage() {
             {isFiltered && <span> / {totalCopies}</span>} cards
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {!setFilter && (
-            <button
-              onClick={() => setGroupBySet(g => !g)}
-              className="text-xs px-3 py-1.5 rounded"
-              style={{
-                backgroundColor: groupBySet ? 'var(--accent)' : 'var(--bg-surface)',
-                color: groupBySet ? 'var(--text-panel)' : 'var(--text-muted)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              Group by set
-            </button>
-          )}
-          <div className="flex rounded overflow-hidden" style={{ border: '1px solid var(--border)' }}>
-            <button
-              onClick={() => setViewMode('grid')}
-              className="px-2.5 py-1.5 text-sm"
-              style={{ backgroundColor: viewMode === 'grid' ? 'var(--accent)' : 'var(--bg-surface)', color: viewMode === 'grid' ? 'var(--text-panel)' : 'var(--text-muted)' }}
-              title="Grid view"
-            >⊞</button>
-            <button
-              onClick={() => setViewMode('list')}
-              className="px-2.5 py-1.5 text-sm"
-              style={{ backgroundColor: viewMode === 'list' ? 'var(--accent)' : 'var(--bg-surface)', color: viewMode === 'list' ? 'var(--text-panel)' : 'var(--text-muted)' }}
-              title="List view"
-            >≡</button>
-          </div>
+        <div className="flex rounded overflow-hidden shrink-0" style={{ border: '1px solid var(--border)' }}>
+          <button
+            onClick={() => setViewMode('grid')}
+            className="px-2.5 py-1.5 text-sm"
+            style={{ backgroundColor: viewMode === 'grid' ? 'var(--accent)' : 'var(--bg-surface)', color: viewMode === 'grid' ? 'var(--text-panel)' : 'var(--text-muted)' }}
+            title="Grid view"
+          >⊞</button>
+          <button
+            onClick={() => setViewMode('list')}
+            className="px-2.5 py-1.5 text-sm"
+            style={{ backgroundColor: viewMode === 'list' ? 'var(--accent)' : 'var(--bg-surface)', color: viewMode === 'list' ? 'var(--text-panel)' : 'var(--text-muted)' }}
+            title="List view"
+          >≡</button>
         </div>
       </div>
 
-      {/* Filter / sort bar */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      {/* Search + filters */}
+      <div className="flex gap-2 mb-6" ref={filtersRef}>
         <input
           type="text"
           placeholder="Search cards…"
           value={search}
           onChange={e => { setSearch(e.target.value); resetPage() }}
-          className="flex-1 min-w-[160px] text-sm px-3 py-1.5 rounded"
+          className="flex-1 text-sm px-3 py-1.5 rounded"
           style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', outline: 'none' }}
         />
-        <select
-          value={setFilter}
-          onChange={e => { setSetFilter(e.target.value); resetPage() }}
-          className="text-sm px-3 py-1.5 rounded"
-          style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: setFilter ? 'var(--text-primary)' : 'var(--text-muted)' }}
-        >
-          <option value="">All Sets</option>
-          {allSets.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
-        <select
-          value={sort}
-          onChange={e => { setSort(e.target.value); resetPage() }}
-          className="text-sm px-3 py-1.5 rounded"
-          style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-        >
-          <option value="name_asc">Name A→Z</option>
-          <option value="name_desc">Name Z→A</option>
-          <option value="set_asc">Set</option>
-          <option value="qty_desc">Qty: High→Low</option>
-          <option value="qty_asc">Qty: Low→High</option>
-          <option value="rarity_desc">Rarity: High→Low</option>
-          <option value="rarity_asc">Rarity: Low→High</option>
-          <option value="type_asc">Type</option>
-        </select>
 
-        {/* Rarity filter dropdown */}
-        {allRarities.length > 0 && (
-          <div className="relative">
-            <button
-              onClick={() => setRarityOpen(o => !o)}
-              className="text-sm px-3 py-1.5 rounded flex items-center gap-1.5"
-              style={{
-                backgroundColor: 'var(--bg-surface)',
-                border: `1px solid ${rarityFilter.length > 0 ? 'var(--accent)' : 'var(--border)'}`,
-                color: rarityFilter.length > 0 ? 'var(--accent)' : 'var(--text-primary)',
-              }}
+        {/* Filters button */}
+        <div className="relative">
+          {(() => {
+            const activeCount = (setFilter ? 1 : 0) + (sort !== 'name_asc' ? 1 : 0) + rarityFilter.length + (groupBySet ? 1 : 0) + (pageSize !== 25 ? 1 : 0)
+            return (
+              <button
+                onClick={() => setFiltersOpen(o => !o)}
+                className="text-sm px-3 py-1.5 rounded flex items-center gap-1.5"
+                style={{
+                  backgroundColor: 'var(--bg-surface)',
+                  border: `1px solid ${activeCount > 0 ? 'var(--accent)' : 'var(--border)'}`,
+                  color: activeCount > 0 ? 'var(--accent)' : 'var(--text-muted)',
+                }}
+              >
+                Filters{activeCount > 0 ? ` (${activeCount})` : ''} ▾
+              </button>
+            )
+          })()}
+
+          {filtersOpen && (
+            <div
+              className="absolute right-0 z-20 mt-1 rounded-xl shadow-xl p-4 flex flex-col gap-3"
+              style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', minWidth: '220px' }}
             >
-              Show{rarityFilter.length > 0 ? ` (${rarityFilter.length})` : ''} ▾
-            </button>
-            {rarityOpen && (
-              <div className="absolute z-20 mt-1 rounded-lg shadow-xl min-w-[160px]"
-                style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}>
-                <div className="p-1">
-                  {allRarities.map(r => (
-                    <label key={r} className="flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer hover:opacity-80"
-                      style={{ backgroundColor: rarityFilter.includes(r) ? 'var(--bg-surface)' : 'transparent' }}>
-                      <input
-                        type="checkbox"
-                        checked={rarityFilter.includes(r)}
-                        onChange={() => {
-                          setRarityFilter(prev =>
-                            prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]
-                          )
-                          resetPage()
-                        }}
-                        className="accent-[#0097a7]"
-                      />
-                      <span className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(r)] || 'var(--text-muted)' }}>{r}</span>
-                    </label>
-                  ))}
-                  {rarityFilter.length > 0 && (
-                    <button
-                      onClick={() => { setRarityFilter([]); resetPage() }}
-                      className="w-full text-xs px-3 py-1.5 mt-1 rounded text-left"
-                      style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)' }}
-                    >Clear filter</button>
-                  )}
-                </div>
+              {/* Set */}
+              <div>
+                <p className="text-xs mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Set</p>
+                <select
+                  value={setFilter}
+                  onChange={e => { setSetFilter(e.target.value); resetPage() }}
+                  className="w-full text-sm px-2 py-1.5 rounded"
+                  style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                >
+                  <option value="">All Sets</option>
+                  {allSets.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
               </div>
-            )}
-          </div>
-        )}
-        <select
-          value={pageSize}
-          onChange={e => { setPageSize(Number(e.target.value)); resetPage() }}
-          className="text-sm px-3 py-1.5 rounded"
-          style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-        >
-          <option value={25}>25 / page</option>
-          <option value={50}>50 / page</option>
-          <option value={100}>100 / page</option>
-          <option value={Infinity}>All</option>
-        </select>
+
+              {/* Sort */}
+              <div>
+                <p className="text-xs mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Sort</p>
+                <select
+                  value={sort}
+                  onChange={e => { setSort(e.target.value); resetPage() }}
+                  className="w-full text-sm px-2 py-1.5 rounded"
+                  style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                >
+                  <option value="name_asc">Name A→Z</option>
+                  <option value="name_desc">Name Z→A</option>
+                  <option value="set_asc">Set</option>
+                  <option value="qty_desc">Qty: High→Low</option>
+                  <option value="qty_asc">Qty: Low→High</option>
+                  <option value="rarity_desc">Rarity: High→Low</option>
+                  <option value="rarity_asc">Rarity: Low→High</option>
+                  <option value="type_asc">Type</option>
+                </select>
+              </div>
+
+              {/* Rarity */}
+              {allRarities.length > 0 && (
+                <div>
+                  <p className="text-xs mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Rarity</p>
+                  <div className="flex flex-col gap-0.5">
+                    {allRarities.map(r => (
+                      <label key={r} className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer"
+                        style={{ backgroundColor: rarityFilter.includes(r) ? 'var(--bg-surface)' : 'transparent' }}>
+                        <input
+                          type="checkbox"
+                          checked={rarityFilter.includes(r)}
+                          onChange={() => { setRarityFilter(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]); resetPage() }}
+                          className="accent-[#0097a7]"
+                        />
+                        <span className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(r)] || 'var(--text-muted)' }}>{r}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Group by set + page size */}
+              <div className="flex items-center justify-between gap-2 pt-1" style={{ borderTop: '1px solid var(--border)' }}>
+                {!setFilter && (
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={groupBySet}
+                      onChange={() => setGroupBySet(g => !g)}
+                      className="accent-[#0097a7]"
+                    />
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Group by set</span>
+                  </label>
+                )}
+                <select
+                  value={pageSize}
+                  onChange={e => { setPageSize(Number(e.target.value)); resetPage() }}
+                  className="text-xs px-2 py-1 rounded ml-auto"
+                  style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                >
+                  <option value={25}>25 / page</option>
+                  <option value={50}>50 / page</option>
+                  <option value={100}>100 / page</option>
+                  <option value={Infinity}>All</option>
+                </select>
+              </div>
+
+              {/* Clear all */}
+              {(setFilter || sort !== 'name_asc' || rarityFilter.length > 0 || groupBySet || pageSize !== 25) && (
+                <button
+                  onClick={() => { setSetFilter(''); setSort('name_asc'); setRarityFilter([]); setGroupBySet(false); setPageSize(25); resetPage() }}
+                  className="text-xs py-1 rounded"
+                  style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)', paddingTop: '0.5rem' }}
+                >
+                  Reset all filters
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Clear search when filtered */}
         {isFiltered && (
           <button
             onClick={() => { setSearch(''); setSetFilter(''); setRarityFilter([]); resetPage() }}
