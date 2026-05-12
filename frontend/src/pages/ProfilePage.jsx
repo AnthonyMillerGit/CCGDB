@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
@@ -194,14 +195,184 @@ function ProgressBar({ pct }) {
   )
 }
 
+function MissingModal({ set, gameSlug, missing, addingWishlist, wishlistAdded, onAddToWishlist, onClose }) {
+  const isComplete = set.owned_cards >= set.total_cards
+  const setPct = set.total_cards > 0 ? (set.owned_cards / set.total_cards) * 100 : 0
+  const added = wishlistAdded[set.set_id]
+  const adding = addingWishlist.has(set.set_id)
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+      onClick={onClose}
+    >
+      <div
+        className="relative rounded-xl w-full mx-4 flex flex-col"
+        style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', maxWidth: '480px', maxHeight: '80vh' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between px-5 pt-5 pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className="flex-1 min-w-0 pr-4">
+            <h2 className="font-semibold text-base mb-1 truncate" style={{ color: 'var(--text-primary)' }}>{set.set_name}</h2>
+            <div className="flex items-center gap-3">
+              <ProgressBar pct={setPct} />
+              <span className="text-xs shrink-0 tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                {set.owned_cards}/{set.total_cards}
+              </span>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-lg leading-none shrink-0" style={{ color: 'var(--text-muted)' }}>✕</button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-5 py-4">
+          {missing === 'loading' && (
+            <p className="text-sm py-4 text-center" style={{ color: 'var(--text-muted)' }}>Loading…</p>
+          )}
+          {Array.isArray(missing) && missing.length === 0 && (
+            <p className="text-sm py-4 text-center" style={{ color: 'var(--accent)' }}>You have every card in this set!</p>
+          )}
+          {Array.isArray(missing) && missing.length > 0 && (
+            <>
+              <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>{missing.length} card{missing.length !== 1 ? 's' : ''} missing</p>
+              <ul className="flex flex-col gap-1">
+                {missing.map(card => (
+                  <li key={card.id}>
+                    <Link
+                      to={`/cards/${card.id}?printing=${card.printing_id}`}
+                      onClick={onClose}
+                      className="text-sm hover:underline"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      {card.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between gap-3 px-5 py-4" style={{ borderTop: '1px solid var(--border)' }}>
+          <Link
+            to={`/collection/${gameSlug}?set=${encodeURIComponent(set.set_name)}`}
+            onClick={onClose}
+            className="text-sm px-3 py-1.5 rounded"
+            style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-muted)', textDecoration: 'none' }}
+          >
+            View in collection
+          </Link>
+          {!isComplete && (
+            <button
+              onClick={() => onAddToWishlist(set)}
+              disabled={adding}
+              className="text-sm px-3 py-1.5 rounded font-medium"
+              style={{
+                backgroundColor: added != null ? '#1a3a2a' : 'var(--bg-chip)',
+                border: `1px solid ${added != null ? '#2d6a4a' : '#9e836a'}`,
+                color: adding ? 'var(--text-muted)' : added != null ? '#1eff00' : 'var(--accent)',
+                cursor: adding ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {adding ? 'Adding…' : added != null ? `✓ ${added} added to wishlist` : 'Add missing to wishlist'}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SetMenu({ set, gameSlug, addingWishlist, wishlistAdded, onShowMissing, onAddToWishlist }) {
+  const [open, setOpen] = useState(false)
+  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
+  const btnRef = useRef(null)
+  const menuRef = useRef(null)
+  const isComplete = set.owned_cards >= set.total_cards
+  const added = wishlistAdded[set.set_id]
+  const adding = addingWishlist.has(set.set_id)
+
+  useEffect(() => {
+    if (!open) return
+    function handleClick(e) {
+      const inBtn = btnRef.current && btnRef.current.contains(e.target)
+      const inMenu = menuRef.current && menuRef.current.contains(e.target)
+      if (!inBtn && !inMenu) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [open])
+
+  function handleOpen(e) {
+    e.stopPropagation()
+    const rect = btnRef.current.getBoundingClientRect()
+    setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
+    setOpen(o => !o)
+  }
+
+  return (
+    <div className="shrink-0" onClick={e => e.stopPropagation()}>
+      <button
+        ref={btnRef}
+        onClick={handleOpen}
+        className="w-7 h-7 flex items-center justify-center rounded"
+        style={{ color: 'var(--text-muted)', backgroundColor: open ? 'var(--bg-chip)' : 'transparent', border: '1px solid transparent' }}
+        title="Actions"
+      >
+        ···
+      </button>
+      {open && createPortal(
+        <div
+          ref={menuRef}
+          className="fixed rounded-lg py-1 z-50 min-w-max"
+          style={{ top: menuPos.top, right: menuPos.right, backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
+        >
+          <Link
+            to={`/collection/${gameSlug}?set=${encodeURIComponent(set.set_name)}`}
+            className="flex items-center gap-2 px-4 py-2 text-xs"
+            style={{ color: 'var(--text-primary)', textDecoration: 'none' }}
+            onClick={() => setOpen(false)}
+          >
+            View in collection
+          </Link>
+          {!isComplete && (
+            <>
+              <button
+                onClick={() => { setOpen(false); onShowMissing(set) }}
+                className="w-full flex items-center gap-2 px-4 py-2 text-xs text-left"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                Show missing cards
+              </button>
+              <button
+                onClick={() => { setOpen(false); onAddToWishlist(set) }}
+                disabled={adding}
+                className="w-full flex items-center gap-2 px-4 py-2 text-xs text-left"
+                style={{ color: adding ? 'var(--text-muted)' : added != null ? '#1eff00' : 'var(--accent)', cursor: adding ? 'not-allowed' : 'pointer' }}
+              >
+                {adding ? 'Adding…' : added != null ? `✓ ${added} added` : 'Add missing to wishlist'}
+              </button>
+            </>
+          )}
+        </div>,
+        document.body
+      )}
+    </div>
+  )
+}
+
 function CollectionStatsTab({ authFetch }) {
+  const navigate = useNavigate()
   const [stats, setStats] = useState([])
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState(new Set())
-  const [missingCards, setMissingCards] = useState({})   // setId -> [] | 'loading'
-  const [openMissing, setOpenMissing] = useState(new Set())
-  const [addingWishlist, setAddingWishlist] = useState(new Set()) // setIds currently being added
-  const [wishlistAdded, setWishlistAdded] = useState({})  // setId -> count
+  const [missingCards, setMissingCards] = useState({})
+  const [missingModal, setMissingModal] = useState(null)
+  const [addingWishlist, setAddingWishlist] = useState(new Set())
+  const [wishlistAdded, setWishlistAdded] = useState({})
 
   useEffect(() => {
     authFetch(`${API_URL}/api/users/me/collection/stats`)
@@ -218,8 +389,20 @@ function CollectionStatsTab({ authFetch }) {
     })
   }
 
-  async function handleAddMissingToWishlist(e, set) {
-    e.stopPropagation()
+  async function loadMissing(setId) {
+    if (missingCards[setId] !== undefined) return
+    setMissingCards(prev => ({ ...prev, [setId]: 'loading' }))
+    const res = await authFetch(`${API_URL}/api/users/me/collection/set/${setId}/missing`)
+    const data = await res.json()
+    setMissingCards(prev => ({ ...prev, [setId]: Array.isArray(data) ? data : [] }))
+  }
+
+  function handleShowMissing(set, gameSlug) {
+    setMissingModal({ set, gameSlug })
+    loadMissing(set.set_id)
+  }
+
+  async function handleAddMissingToWishlist(set) {
     setAddingWishlist(prev => new Set(prev).add(set.set_id))
     try {
       const res = await authFetch(`${API_URL}/api/users/me/wishlist/set/${set.set_id}`, { method: 'POST' })
@@ -233,21 +416,6 @@ function CollectionStatsTab({ authFetch }) {
     }
   }
 
-  async function toggleMissing(e, set) {
-    e.stopPropagation()
-    const id = set.set_id
-    setOpenMissing(prev => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
-    if (missingCards[id] !== undefined) return
-    setMissingCards(prev => ({ ...prev, [id]: 'loading' }))
-    const res = await authFetch(`${API_URL}/api/users/me/collection/set/${id}/missing`)
-    const data = await res.json()
-    setMissingCards(prev => ({ ...prev, [id]: Array.isArray(data) ? data : [] }))
-  }
-
   if (loading) return <p style={{ color: 'var(--text-muted)' }}>Loading stats…</p>
 
   if (stats.length === 0) return (
@@ -258,111 +426,74 @@ function CollectionStatsTab({ authFetch }) {
   )
 
   return (
-    <div className="flex flex-col gap-3">
-      {stats.map(game => {
-        const gamePct = game.total_cards > 0 ? (game.owned_cards / game.total_cards) * 100 : 0
-        const isOpen = expanded.has(game.game_id)
-        return (
-          <div key={game.game_id} className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
-            {/* Game row */}
-            <button
-              onClick={() => toggleGame(game.game_id)}
-              className="w-full flex items-center gap-4 px-5 py-4 text-left transition-colors"
-              style={{ backgroundColor: 'var(--bg-surface)' }}
-            >
-              <span className="font-semibold w-48 shrink-0 truncate" style={{ color: 'var(--text-primary)' }}>{game.game_name}</span>
-              <ProgressBar pct={gamePct} />
-              <span className="text-sm w-12 text-right shrink-0" style={{ color: 'var(--accent)' }}>
-                {gamePct < 0.1 ? '<0.1' : gamePct.toFixed(1)}%
-              </span>
-              <span className="text-xs w-4 shrink-0 text-right" style={{ color: 'var(--text-muted)' }}>{isOpen ? '▲' : '▼'}</span>
-            </button>
+    <>
+      <div className="flex flex-col gap-3">
+        {stats.map(game => {
+          const gamePct = game.total_cards > 0 ? (game.owned_cards / game.total_cards) * 100 : 0
+          const isOpen = expanded.has(game.game_id)
+          return (
+            <div key={game.game_id} className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+              {/* Game row */}
+              <button
+                onClick={() => toggleGame(game.game_id)}
+                className="w-full flex items-center gap-4 px-5 py-4 text-left transition-colors"
+                style={{ backgroundColor: 'var(--bg-surface)' }}
+              >
+                <span className="font-semibold w-48 shrink-0 truncate" style={{ color: 'var(--text-primary)' }}>{game.game_name}</span>
+                <ProgressBar pct={gamePct} />
+                <span className="text-sm w-12 text-right shrink-0" style={{ color: 'var(--accent)' }}>
+                  {gamePct < 0.1 ? '<0.1' : gamePct.toFixed(1)}%
+                </span>
+                <span className="text-xs w-4 shrink-0 text-right" style={{ color: 'var(--text-muted)' }}>{isOpen ? '▲' : '▼'}</span>
+              </button>
 
-            {/* Set rows */}
-            {isOpen && (
-              <div className="divide-y" style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)' }}>
-                {game.sets.map(set => {
-                  const setPct = set.total_cards > 0 ? (set.owned_cards / set.total_cards) * 100 : 0
-                  const missing = missingCards[set.set_id]
-                  const isMissingOpen = openMissing.has(set.set_id)
-                  const isComplete = set.owned_cards >= set.total_cards
-                  return (
-                    <div key={set.set_id}>
-                      <div className="flex items-center gap-4 px-5 py-3 pl-10">
+              {/* Set rows */}
+              {isOpen && (
+                <div className="divide-y" style={{ backgroundColor: 'var(--bg-chip)', borderColor: 'var(--border)' }}>
+                  {game.sets.map(set => {
+                    const setPct = set.total_cards > 0 ? (set.owned_cards / set.total_cards) * 100 : 0
+                    return (
+                      <div
+                        key={set.set_id}
+                        className="flex items-center gap-4 px-5 py-3 pl-10 cursor-pointer"
+                        style={{ transition: 'background 0.1s' }}
+                        onClick={() => navigate(`/collection/${game.game_slug}?set=${encodeURIComponent(set.set_name)}`)}
+                      >
                         <span className="text-sm w-48 shrink-0 truncate" style={{ color: 'var(--text-primary)' }} title={set.set_name}>{set.set_name}</span>
                         <ProgressBar pct={setPct} />
                         <span className="text-xs w-20 text-right shrink-0 tabular-nums" style={{ color: 'var(--text-muted)' }}>
                           {set.owned_cards}/{set.total_cards}
                         </span>
-                        <Link
-                          to={`/collection/${game.game_slug}?set=${encodeURIComponent(set.set_name)}`}
-                          onClick={e => e.stopPropagation()}
-                          className="text-xs px-2 py-1 rounded shrink-0"
-                          style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-muted)', textDecoration: 'none' }}
-                        >
-                          In my collection
-                        </Link>
-                        {!isComplete && (
-                          <button
-                            onClick={e => toggleMissing(e, set)}
-                            className="text-xs px-2 py-1 rounded shrink-0"
-                            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: isMissingOpen ? 'var(--accent)' : 'var(--text-muted)' }}
-                          >
-                            {isMissingOpen ? 'Hide missing' : 'Show missing from my collection'}
-                          </button>
-                        )}
-                        {!isComplete && (
-                          <button
-                            onClick={e => handleAddMissingToWishlist(e, set)}
-                            disabled={addingWishlist.has(set.set_id)}
-                            className="text-xs px-2 py-1 rounded shrink-0"
-                            style={{
-                              backgroundColor: wishlistAdded[set.set_id] != null ? '#1a3a2a' : 'var(--bg-surface)',
-                              border: `1px solid ${wishlistAdded[set.set_id] != null ? '#2d6a4a' : 'var(--border)'}`,
-                              color: addingWishlist.has(set.set_id) ? 'var(--text-muted)' : wishlistAdded[set.set_id] != null ? '#1eff00' : 'var(--accent)',
-                              cursor: addingWishlist.has(set.set_id) ? 'not-allowed' : 'pointer',
-                            }}
-                          >
-                            {addingWishlist.has(set.set_id) ? 'Adding…' : wishlistAdded[set.set_id] != null ? `+${wishlistAdded[set.set_id]} added` : 'Add missing to my wishlist'}
-                          </button>
-                        )}
+                        <SetMenu
+                          set={set}
+                          gameSlug={game.game_slug}
+                          addingWishlist={addingWishlist}
+                          wishlistAdded={wishlistAdded}
+                          onShowMissing={s => handleShowMissing(s, game.game_slug)}
+                          onAddToWishlist={handleAddMissingToWishlist}
+                        />
                       </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
 
-                      {/* Missing cards list */}
-                      {isMissingOpen && (
-                        <div className="px-10 pb-3">
-                          {missing === 'loading' && (
-                            <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>Loading…</p>
-                          )}
-                          {Array.isArray(missing) && missing.length === 0 && (
-                            <p className="text-xs py-2" style={{ color: 'var(--accent)' }}>Collection complete!</p>
-                          )}
-                          {Array.isArray(missing) && missing.length > 0 && (
-                            <ul className="flex flex-col gap-0.5 max-h-48 overflow-y-auto pr-1">
-                              {missing.map(card => (
-                                <li key={card.id}>
-                                  <Link
-                                    to={`/cards/${card.id}?printing=${card.printing_id}`}
-                                    className="text-xs hover:underline"
-                                    style={{ color: 'var(--text-muted)' }}
-                                  >
-                                    {card.name}
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        )
-      })}
-    </div>
+      {missingModal && (
+        <MissingModal
+          set={missingModal.set}
+          gameSlug={missingModal.gameSlug}
+          missing={missingCards[missingModal.set.set_id]}
+          addingWishlist={addingWishlist}
+          wishlistAdded={wishlistAdded}
+          onAddToWishlist={handleAddMissingToWishlist}
+          onClose={() => setMissingModal(null)}
+        />
+      )}
+    </>
   )
 }
 

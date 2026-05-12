@@ -50,6 +50,7 @@ export default function CollectionGamePage() {
   const [pageSize, setPageSize] = useState(25)
   const [viewMode, setViewMode] = useState('grid')
   const [groupBySet, setGroupBySet] = useState(false)
+  const [collapsedSets, setCollapsedSets] = useState(new Set())
 
   useEffect(() => {
     authFetch(`${API_URL}/api/users/me/collection`)
@@ -392,6 +393,7 @@ export default function CollectionGamePage() {
           <option value={25}>25 / page</option>
           <option value={50}>50 / page</option>
           <option value={100}>100 / page</option>
+          <option value={Infinity}>All</option>
         </select>
         {isFiltered && (
           <button
@@ -492,13 +494,30 @@ export default function CollectionGamePage() {
           </div>
         )
 
-        const setHeader = (setName, count) => (
-          <div className="flex items-center gap-3 px-4 py-2 rounded-lg mb-3 mt-1"
-            style={{ backgroundColor: '#252a3b', border: '1px solid var(--border)' }}>
-            <span className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>{setName}</span>
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{count} {count === 1 ? 'card' : 'cards'}</span>
-          </div>
-        )
+        const toggleSet = (setName) => {
+          setCollapsedSets(prev => {
+            const next = new Set(prev)
+            next.has(setName) ? next.delete(setName) : next.add(setName)
+            return next
+          })
+        }
+
+        const setHeader = (setName, count) => {
+          const collapsed = collapsedSets.has(setName)
+          return (
+            <button
+              onClick={() => toggleSet(setName)}
+              className="w-full flex items-center gap-3 px-4 py-2 rounded-lg mb-3 mt-1 text-left"
+              style={{ backgroundColor: '#252a3b', border: '1px solid var(--border)' }}
+            >
+              <span className="text-xs" style={{ color: 'var(--text-muted)', minWidth: '0.75rem' }}>
+                {collapsed ? '▶' : '▼'}
+              </span>
+              <span className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>{setName}</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{count} {count === 1 ? 'card' : 'cards'}</span>
+            </button>
+          )
+        }
 
         const gridGroup = cards => (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -516,7 +535,9 @@ export default function CollectionGamePage() {
           return groupedCards.map(group => (
             <div key={group.setName} className="mb-6">
               {setHeader(group.setName, group.cards.length)}
-              {viewMode === 'grid' ? gridGroup(group.cards) : listGroup(group.cards)}
+              {!collapsedSets.has(group.setName) && (
+                viewMode === 'grid' ? gridGroup(group.cards) : listGroup(group.cards)
+              )}
             </div>
           ))
         }
