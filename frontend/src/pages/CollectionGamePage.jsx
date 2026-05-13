@@ -68,7 +68,7 @@ export default function CollectionGamePage() {
   const [rarityFilter, setRarityFilter] = useState([])
   const [rarityOpen, setRarityOpen] = useState(false)
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(25)
+  const [pageSize, setPageSize] = useState(100)
   const [viewMode, setViewMode] = useState('grid')
   const [groupBySet, setGroupBySet] = useState(false)
   const [collapsedSets, setCollapsedSets] = useState(new Set())
@@ -363,7 +363,7 @@ export default function CollectionGamePage() {
         {/* Filters button */}
         <div className="relative">
           {(() => {
-            const activeCount = (setFilter ? 1 : 0) + (sort !== 'name_asc' ? 1 : 0) + rarityFilter.length + (foilOnly ? 1 : 0) + (pageSize !== 25 ? 1 : 0)
+            const activeCount = (setFilter ? 1 : 0) + (sort !== 'name_asc' ? 1 : 0) + rarityFilter.length + (foilOnly ? 1 : 0) + (pageSize !== 100 ? 1 : 0)
             return (
               <button
                 onClick={() => setFiltersOpen(o => !o)}
@@ -459,9 +459,9 @@ export default function CollectionGamePage() {
                   className="text-xs px-2 py-1 rounded"
                   style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                 >
-                  <option value={25}>25</option>
                   <option value={50}>50</option>
                   <option value={100}>100</option>
+                  <option value={250}>250</option>
                   <option value={Infinity}>All</option>
                 </select>
               </div>
@@ -469,7 +469,7 @@ export default function CollectionGamePage() {
               {/* Clear all */}
               {(setFilter || sort !== 'name_asc' || rarityFilter.length > 0 || foilOnly || pageSize !== 25) && (
                 <button
-                  onClick={() => { setSetFilter(''); setSort('name_asc'); setRarityFilter([]); setFoilOnly(false); setPageSize(25); resetPage() }}
+                  onClick={() => { setSetFilter(''); setSort('name_asc'); setRarityFilter([]); setFoilOnly(false); setPageSize(100); resetPage() }}
                   className="text-xs py-1 rounded"
                   style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)', paddingTop: '0.5rem' }}
                 >
