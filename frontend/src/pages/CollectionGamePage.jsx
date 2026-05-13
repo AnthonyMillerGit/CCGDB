@@ -4,14 +4,54 @@ import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
 import { RARITY_COLORS, normalizeRarity, rarityRank } from '../theme'
 
-const CONDITION_COLOR = 'var(--accent-maroon)'
-const CONDITION_LABELS = { NM: 'Near Mint', LP: 'Light Play', MP: 'Moderate Play', HP: 'Heavy Play', DM: 'Damaged' }
+// ── Attribute helpers ──────────────────────────────────────────────────────────
+
+function parseAttrs(card) {
+  if (!card.attributes) return null
+  try {
+    return typeof card.attributes === 'string' ? JSON.parse(card.attributes) : card.attributes
+  } catch { return null }
+}
+
+function getAttrVal(card, key) {
+  const attrs = parseAttrs(card)
+  if (!attrs) return null
+  const val = attrs[key]
+  return val ?? null
+}
+
+function attrValToSortable(val) {
+  if (val === null || val === undefined) return null
+  if (Array.isArray(val)) return val.map(String).sort().join(', ')
+  return String(val)
+}
+
+function compareAttrVals(av, bv) {
+  if (av === null && bv === null) return 0
+  if (av === null) return 1
+  if (bv === null) return -1
+  const an = parseFloat(av), bn = parseFloat(bv)
+  if (!isNaN(an) && !isNaN(bn)) return an - bn
+  return av.localeCompare(bv)
+}
+
+function formatAttrKey(key) {
+  return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
+// Returns false if the value is a plain object or array-of-objects (not useful for sort/filter)
+function isPrimitiveAttrVal(val) {
+  if (val === null || val === undefined) return true
+  if (Array.isArray(val)) return val.length === 0 || typeof val[0] !== 'object'
+  return typeof val !== 'object'
+}
+
+// ── Sub-components ─────────────────────────────────────────────────────────────
 
 function ListCardRow({ group, gameSlug, onIncrease, onDecrease, onSet }) {
   const [preview, setPreview] = useState(false)
   return (
     <div className="relative flex items-center gap-1.5 px-1.5 py-1 rounded" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-      {/* Hover image preview */}
       {preview && group.image_url && (
         <div className="absolute bottom-full left-0 mb-1 z-50 pointer-events-none" style={{ filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.6))' }}>
           <img src={group.image_url} alt={group.card_name} className="rounded-lg" style={{ width: '160px' }} />
@@ -45,7 +85,7 @@ function ListCardRow({ group, gameSlug, onIncrease, onDecrease, onSet }) {
   )
 }
 
-function QuantityControl({ quantity, onIncrease, onDecrease, onSet, foil = false }) {
+function QuantityControl({ quantity, onIncrease, onDecrease, onSet }) {
   const [val, setVal] = useState(String(quantity))
   useEffect(() => { setVal(String(quantity)) }, [quantity])
 
@@ -65,13 +105,7 @@ function QuantityControl({ quantity, onIncrease, onDecrease, onSet, foil = false
         onBlur={commit}
         onKeyDown={e => e.key === 'Enter' && commit()}
         className="text-xs font-medium text-center rounded"
-        style={{
-          width: '2rem',
-          backgroundColor: 'var(--bg-chip)',
-          border: '1px solid var(--border)',
-          outline: 'none',
-          color: 'var(--text-primary)',
-        }}
+        style={{ width: '2rem', backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', outline: 'none', color: 'var(--text-primary)' }}
       />
       <button
         onClick={e => { e.preventDefault(); onIncrease() }}
@@ -89,6 +123,8 @@ function QuantityControl({ quantity, onIncrease, onDecrease, onSet, foil = false
 
 const sameCard = (a, b) => a.printing_id === b.printing_id && a.finish === b.finish
 
+// ── Main page ──────────────────────────────────────────────────────────────────
+
 export default function CollectionGamePage() {
   const { gameSlug } = useParams()
   const [searchParams] = useSearchParams()
@@ -96,6 +132,7 @@ export default function CollectionGamePage() {
 
   const [gameData, setGameData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [attrKeys, setAttrKeys] = useState([])
 
   const undoRef = useRef(null)
   const [undoCard, setUndoCard] = useState(null)
@@ -104,7 +141,7 @@ export default function CollectionGamePage() {
   const [setFilter, setSetFilter] = useState(searchParams.get('set') ?? '')
   const [sort, setSort] = useState('name_asc')
   const [rarityFilter, setRarityFilter] = useState([])
-  const [rarityOpen, setRarityOpen] = useState(false)
+  const [attrFilters, setAttrFilters] = useState({}) // { key: string[] }
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(100)
   const [viewMode, setViewMode] = useState('grid')
@@ -112,6 +149,7 @@ export default function CollectionGamePage() {
   const [collapsedSets, setCollapsedSets] = useState(new Set())
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [foilOnly, setFoilOnly] = useState(false)
+  const [expandedAttrKeys, setExpandedAttrKeys] = useState(new Set())
   const filtersRef = useRef(null)
 
   useEffect(() => {
@@ -124,6 +162,13 @@ export default function CollectionGamePage() {
       })
       .catch(() => setLoading(false))
   }, [authFetch, gameSlug])
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/games/${gameSlug}/attribute-keys`)
+      .then(r => r.ok ? r.json() : [])
+      .then(keys => setAttrKeys(Array.isArray(keys) ? keys : []))
+      .catch(() => {})
+  }, [gameSlug])
 
   useEffect(() => {
     if (!filtersOpen) return
@@ -239,6 +284,23 @@ export default function CollectionGamePage() {
     })
   }, [authFetch])
 
+  function toggleAttrFilter(key, val) {
+    setAttrFilters(prev => {
+      const existing = prev[key] ?? []
+      const next = existing.includes(val) ? existing.filter(v => v !== val) : [...existing, val]
+      return { ...prev, [key]: next }
+    })
+    setPage(1)
+  }
+
+  function toggleAttrKeyExpanded(key) {
+    setExpandedAttrKeys(prev => {
+      const next = new Set(prev)
+      next.has(key) ? next.delete(key) : next.add(key)
+      return next
+    })
+  }
+
   const allSets = useMemo(() => {
     if (!gameData) return []
     const sets = new Set(gameData.cards.map(c => c.set_name))
@@ -252,6 +314,42 @@ export default function CollectionGamePage() {
     return [...seen].sort((a, b) => rarityRank(a) - rarityRank(b))
   }, [gameData])
 
+  // Attribute keys that have primitive (sortable/filterable) values — excludes card_faces, legalities, etc.
+  const attrSortableKeys = useMemo(() => {
+    if (!gameData || attrKeys.length === 0) return []
+    return attrKeys.filter(key => {
+      for (const card of gameData.cards) {
+        const val = getAttrVal(card, key)
+        if (val === null || val === undefined) continue
+        return isPrimitiveAttrVal(val)
+      }
+      return false
+    })
+  }, [gameData, attrKeys])
+
+  // Distinct values per attribute key (only categorical: ≤ 30 unique primitive values)
+  const attrDistinctValues = useMemo(() => {
+    if (!gameData || attrSortableKeys.length === 0) return {}
+    const result = {}
+    for (const key of attrSortableKeys) {
+      const vals = new Set()
+      for (const card of gameData.cards) {
+        const val = getAttrVal(card, key)
+        if (val === null || val === undefined) continue
+        if (Array.isArray(val)) val.forEach(v => vals.add(String(v)))
+        else vals.add(String(val))
+      }
+      if (vals.size > 0 && vals.size <= 30) {
+        result[key] = [...vals].sort((a, b) => {
+          const an = parseFloat(a), bn = parseFloat(b)
+          if (!isNaN(an) && !isNaN(bn)) return an - bn
+          return a.localeCompare(b)
+        })
+      }
+    }
+    return result
+  }, [gameData, attrSortableKeys])
+
   const filteredCards = useMemo(() => {
     if (!gameData) return []
     const q = search.toLowerCase()
@@ -260,19 +358,42 @@ export default function CollectionGamePage() {
     if (setFilter) cards = cards.filter(c => c.set_name === setFilter)
     if (rarityFilter.length > 0) cards = cards.filter(c => rarityFilter.includes(c.rarity))
     if (foilOnly) cards = cards.filter(c => c.finish !== 'normal')
+
+    // Attribute filters
+    const activeAttrFilters = Object.entries(attrFilters).filter(([, vals]) => vals.length > 0)
+    if (activeAttrFilters.length > 0) {
+      cards = cards.filter(c => {
+        return activeAttrFilters.every(([key, vals]) => {
+          const val = getAttrVal(c, key)
+          if (val === null || val === undefined) return false
+          if (Array.isArray(val)) return vals.some(v => val.map(String).includes(v))
+          return vals.includes(String(val))
+        })
+      })
+    }
+
     return [...cards].sort((a, b) => {
+      if (sort.startsWith('attr::')) {
+        const parts = sort.split('::')
+        const key = parts[1]
+        const dir = parts[2]
+        const av = attrValToSortable(getAttrVal(a, key))
+        const bv = attrValToSortable(getAttrVal(b, key))
+        const cmp = compareAttrVals(av, bv)
+        return dir === 'desc' ? -cmp : cmp
+      }
       switch (sort) {
-        case 'name_desc':     return b.card_name.localeCompare(a.card_name)
-        case 'set_asc':       return a.set_name.localeCompare(b.set_name) || a.card_name.localeCompare(b.card_name)
-        case 'qty_desc':      return b.quantity - a.quantity || a.card_name.localeCompare(b.card_name)
-        case 'qty_asc':       return a.quantity - b.quantity || a.card_name.localeCompare(b.card_name)
-        case 'rarity_desc':   return rarityRank(a.rarity) - rarityRank(b.rarity) || a.card_name.localeCompare(b.card_name)
-        case 'rarity_asc':    return rarityRank(b.rarity) - rarityRank(a.rarity) || a.card_name.localeCompare(b.card_name)
-        case 'type_asc':      return (a.card_type || '').localeCompare(b.card_type || '') || a.card_name.localeCompare(b.card_name)
-        default:              return a.card_name.localeCompare(b.card_name)
+        case 'name_desc':   return b.card_name.localeCompare(a.card_name)
+        case 'set_asc':     return a.set_name.localeCompare(b.set_name) || a.card_name.localeCompare(b.card_name)
+        case 'qty_desc':    return b.quantity - a.quantity || a.card_name.localeCompare(b.card_name)
+        case 'qty_asc':     return a.quantity - b.quantity || a.card_name.localeCompare(b.card_name)
+        case 'rarity_desc': return rarityRank(a.rarity) - rarityRank(b.rarity) || a.card_name.localeCompare(b.card_name)
+        case 'rarity_asc':  return rarityRank(b.rarity) - rarityRank(a.rarity) || a.card_name.localeCompare(b.card_name)
+        case 'type_asc':    return (a.card_type || '').localeCompare(b.card_type || '') || a.card_name.localeCompare(b.card_name)
+        default:            return a.card_name.localeCompare(b.card_name)
       }
     })
-  }, [gameData, search, setFilter, rarityFilter, foilOnly, sort])
+  }, [gameData, search, setFilter, rarityFilter, foilOnly, attrFilters, sort])
 
   // Group foil + normal copies of the same printing into one tile
   const printingGroups = useMemo(() => {
@@ -290,12 +411,10 @@ export default function CollectionGamePage() {
   const isFiltered = search !== '' || setFilter !== ''
   const totalUnique = useMemo(() => {
     if (!gameData) return 0
-    const ids = new Set(gameData.cards.map(c => c.printing_id))
-    return ids.size
+    return new Set(gameData.cards.map(c => c.printing_id)).size
   }, [gameData])
   const totalCopies = gameData?.cards.reduce((s, c) => s + c.quantity, 0) ?? 0
   const filteredCopies = filteredCards.reduce((s, c) => s + c.quantity, 0)
-  const filteredUnique = printingGroups.length
 
   const totalPages = Math.max(1, Math.ceil(printingGroups.length / pageSize))
   const safePage = Math.min(page, totalPages)
@@ -319,7 +438,18 @@ export default function CollectionGamePage() {
     return [...groups.entries()].map(([setName, cards]) => ({ setName, cards }))
   }, [groupBySet, pagedCards])
 
-  function resetPage() { setPage(1) }
+  const activeAttrFilterCount = Object.values(attrFilters).filter(v => v.length > 0).length
+  const activeCount = (setFilter ? 1 : 0) + (sort !== 'name_asc' ? 1 : 0) + rarityFilter.length + (foilOnly ? 1 : 0) + (pageSize !== 100 ? 1 : 0) + activeAttrFilterCount
+
+  function resetAllFilters() {
+    setSetFilter('')
+    setSort('name_asc')
+    setRarityFilter([])
+    setFoilOnly(false)
+    setPageSize(100)
+    setAttrFilters({})
+    setPage(1)
+  }
 
   if (loading) {
     return (
@@ -393,41 +523,36 @@ export default function CollectionGamePage() {
           type="text"
           placeholder="Search cards…"
           value={search}
-          onChange={e => { setSearch(e.target.value); resetPage() }}
+          onChange={e => { setSearch(e.target.value); setPage(1) }}
           className="flex-1 text-sm px-3 py-1.5 rounded"
           style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', outline: 'none' }}
         />
 
         {/* Filters button */}
         <div className="relative">
-          {(() => {
-            const activeCount = (setFilter ? 1 : 0) + (sort !== 'name_asc' ? 1 : 0) + rarityFilter.length + (foilOnly ? 1 : 0) + (pageSize !== 100 ? 1 : 0)
-            return (
-              <button
-                onClick={() => setFiltersOpen(o => !o)}
-                className="text-sm px-3 py-1.5 rounded flex items-center gap-1.5"
-                style={{
-                  backgroundColor: 'var(--bg-surface)',
-                  border: `1px solid ${activeCount > 0 ? 'var(--accent)' : 'var(--border)'}`,
-                  color: activeCount > 0 ? 'var(--accent)' : 'var(--text-muted)',
-                }}
-              >
-                Filters{activeCount > 0 ? ` (${activeCount})` : ''} ▾
-              </button>
-            )
-          })()}
+          <button
+            onClick={() => setFiltersOpen(o => !o)}
+            className="text-sm px-3 py-1.5 rounded flex items-center gap-1.5"
+            style={{
+              backgroundColor: 'var(--bg-surface)',
+              border: `1px solid ${activeCount > 0 ? 'var(--accent)' : 'var(--border)'}`,
+              color: activeCount > 0 ? 'var(--accent)' : 'var(--text-muted)',
+            }}
+          >
+            Filters{activeCount > 0 ? ` (${activeCount})` : ''} ▾
+          </button>
 
           {filtersOpen && (
             <div
-              className="absolute right-0 z-20 mt-1 rounded-xl shadow-xl p-4 flex flex-col gap-3"
-              style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', minWidth: '220px' }}
+              className="absolute right-0 z-20 mt-1 rounded-xl shadow-xl p-4 flex flex-col gap-3 overflow-y-auto"
+              style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', minWidth: '240px', maxHeight: '80vh' }}
             >
               {/* Set */}
               <div>
                 <p className="text-xs mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Set</p>
                 <select
                   value={setFilter}
-                  onChange={e => { setSetFilter(e.target.value); resetPage() }}
+                  onChange={e => { setSetFilter(e.target.value); setPage(1) }}
                   className="w-full text-sm px-2 py-1.5 rounded"
                   style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                 >
@@ -441,18 +566,28 @@ export default function CollectionGamePage() {
                 <p className="text-xs mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Sort</p>
                 <select
                   value={sort}
-                  onChange={e => { setSort(e.target.value); resetPage() }}
+                  onChange={e => { setSort(e.target.value); setPage(1) }}
                   className="w-full text-sm px-2 py-1.5 rounded"
                   style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                 >
-                  <option value="name_asc">Name A→Z</option>
-                  <option value="name_desc">Name Z→A</option>
-                  <option value="set_asc">Set</option>
-                  <option value="qty_desc">Qty: High→Low</option>
-                  <option value="qty_asc">Qty: Low→High</option>
-                  <option value="rarity_desc">Rarity: High→Low</option>
-                  <option value="rarity_asc">Rarity: Low→High</option>
-                  <option value="type_asc">Type</option>
+                  <optgroup label="Standard">
+                    <option value="name_asc">Name A→Z</option>
+                    <option value="name_desc">Name Z→A</option>
+                    <option value="set_asc">Set</option>
+                    <option value="qty_desc">Qty: High→Low</option>
+                    <option value="qty_asc">Qty: Low→High</option>
+                    <option value="rarity_desc">Rarity: High→Low</option>
+                    <option value="rarity_asc">Rarity: Low→High</option>
+                    <option value="type_asc">Type</option>
+                  </optgroup>
+                  {attrSortableKeys.length > 0 && (
+                    <optgroup label="Card Attributes">
+                      {attrSortableKeys.map(k => [
+                        <option key={`attr::${k}::asc`} value={`attr::${k}::asc`}>{formatAttrKey(k)} ↑</option>,
+                        <option key={`attr::${k}::desc`} value={`attr::${k}::desc`}>{formatAttrKey(k)} ↓</option>,
+                      ])}
+                    </optgroup>
+                  )}
                 </select>
               </div>
 
@@ -467,7 +602,7 @@ export default function CollectionGamePage() {
                         <input
                           type="checkbox"
                           checked={rarityFilter.includes(r)}
-                          onChange={() => { setRarityFilter(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]); resetPage() }}
+                          onChange={() => { setRarityFilter(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]); setPage(1) }}
                           className="accent-[#0097a7]"
                         />
                         <span className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(r)] || 'var(--text-muted)' }}>{r}</span>
@@ -477,12 +612,58 @@ export default function CollectionGamePage() {
                 </div>
               )}
 
+              {/* Dynamic attribute filters — accordion */}
+              {Object.entries(attrDistinctValues).length > 0 && (
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.5rem' }}>
+                  <p className="text-xs mb-2 font-semibold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Attributes</p>
+                  <div className="flex flex-col gap-0.5">
+                    {Object.entries(attrDistinctValues).map(([key, vals]) => {
+                      const activeVals = attrFilters[key] ?? []
+                      const expanded = expandedAttrKeys.has(key)
+                      return (
+                        <div key={key} className="rounded" style={{ backgroundColor: expanded ? 'var(--bg-surface)' : 'transparent', border: expanded ? '1px solid var(--border)' : '1px solid transparent' }}>
+                          <button
+                            onClick={() => toggleAttrKeyExpanded(key)}
+                            className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded"
+                            style={{ color: activeVals.length > 0 ? 'var(--accent)' : 'var(--text-muted)' }}
+                          >
+                            <span className="font-medium">
+                              {formatAttrKey(key)}{activeVals.length > 0 ? ` (${activeVals.length})` : ''}
+                            </span>
+                            <span style={{ fontSize: '0.6rem' }}>{expanded ? '▼' : '▶'}</span>
+                          </button>
+                          {expanded && (
+                            <div className="flex flex-col gap-0.5 pb-1.5 px-1">
+                              {vals.map(val => {
+                                const active = activeVals.includes(val)
+                                return (
+                                  <label key={val} className="flex items-center gap-2 px-2 py-0.5 rounded cursor-pointer text-xs"
+                                    style={{ backgroundColor: active ? 'var(--bg-chip)' : 'transparent', color: 'var(--text-primary)' }}>
+                                    <input
+                                      type="checkbox"
+                                      className="accent-[#0097a7]"
+                                      checked={active}
+                                      onChange={() => toggleAttrFilter(key, val)}
+                                    />
+                                    {val}
+                                  </label>
+                                )
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Foil */}
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={foilOnly}
-                  onChange={() => { setFoilOnly(f => !f); resetPage() }}
+                  onChange={() => { setFoilOnly(f => !f); setPage(1) }}
                   className="accent-[#0097a7]"
                 />
                 <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Foil only</span>
@@ -493,7 +674,7 @@ export default function CollectionGamePage() {
                 <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Cards per page</span>
                 <select
                   value={pageSize}
-                  onChange={e => { setPageSize(Number(e.target.value)); resetPage() }}
+                  onChange={e => { setPageSize(Number(e.target.value)); setPage(1) }}
                   className="text-xs px-2 py-1 rounded"
                   style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                 >
@@ -505,10 +686,10 @@ export default function CollectionGamePage() {
               </div>
 
               {/* Clear all */}
-              {(setFilter || sort !== 'name_asc' || rarityFilter.length > 0 || foilOnly || pageSize !== 25) && (
+              {activeCount > 0 && (
                 <button
-                  onClick={() => { setSetFilter(''); setSort('name_asc'); setRarityFilter([]); setFoilOnly(false); setPageSize(100); resetPage() }}
-                  className="text-xs py-1 rounded"
+                  onClick={resetAllFilters}
+                  className="text-xs py-1 rounded text-left"
                   style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)', paddingTop: '0.5rem' }}
                 >
                   Reset all filters
@@ -521,7 +702,7 @@ export default function CollectionGamePage() {
         {/* Clear search when filtered */}
         {isFiltered && (
           <button
-            onClick={() => { setSearch(''); setSetFilter(''); setRarityFilter([]); resetPage() }}
+            onClick={() => { setSearch(''); setSetFilter(''); setRarityFilter([]); setPage(1) }}
             className="text-sm px-3 py-1.5 rounded"
             style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
           >
@@ -531,14 +712,12 @@ export default function CollectionGamePage() {
       </div>
 
       {/* No results */}
-      {isFiltered && printingGroups.length === 0 && (
+      {printingGroups.length === 0 && (
         <p className="text-center py-12" style={{ color: 'var(--text-muted)' }}>No cards match your filters.</p>
       )}
 
       {/* Cards */}
       {printingGroups.length > 0 && (() => {
-        const conditionColor = () => CONDITION_COLOR
-
         const gridCard = group => (
           <div key={group.printing_id} className="flex flex-col rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
             {/* Name + rarity above image */}
@@ -674,7 +853,6 @@ export default function CollectionGamePage() {
             ‹ Prev
           </button>
 
-          {/* Page number buttons — show a window around current page */}
           {Array.from({ length: totalPages }, (_, i) => i + 1)
             .filter(p => p === 1 || p === totalPages || Math.abs(p - safePage) <= 2)
             .reduce((acc, p, i, arr) => {

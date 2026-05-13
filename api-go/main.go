@@ -76,6 +76,7 @@ func (a *App) routes() http.Handler {
 	r.Get("/api/games", a.getGames)
 	r.Get("/api/games/{slug}", a.getGame)
 	r.Get("/api/games/{slug}/sets", a.getGameSets)
+	r.Get("/api/games/{slug}/attribute-keys", a.getGameAttributeKeys)
 
 	// Specific set routes before parameterized card route
 	r.Get("/api/sets/recent", a.getRecentSets)

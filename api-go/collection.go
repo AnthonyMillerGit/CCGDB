@@ -11,7 +11,7 @@ func (a *App) getCollection(w http.ResponseWriter, r *http.Request) {
 		SELECT
 		    uc.id, uc.printing_id, uc.quantity, uc.finish, uc.condition, uc.added_at,
 		    p.image_url, p.rarity, p.collector_number,
-		    c.id AS card_id, c.name AS card_name, c.card_type,
+		    c.id AS card_id, c.name AS card_name, c.card_type, c.attributes,
 		    s.id AS set_id, s.name AS set_name,
 		    g.id AS game_id, g.name AS game_name, g.slug AS game_slug, g.card_back_image
 		FROM user_collections uc
@@ -41,7 +41,7 @@ func (a *App) getCollection(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(
 			&card.ID, &card.PrintingID, &card.Quantity, &card.Finish, &card.Condition, &card.AddedAt,
 			&card.ImageURL, &card.Rarity, &card.CollectorNumber,
-			&card.CardID, &card.CardName, &card.CardType,
+			&card.CardID, &card.CardName, &card.CardType, &card.Attributes,
 			&card.SetID, &card.SetName,
 			&gameID, &gameName, &gameSlug, &cardBackImage,
 		); err != nil {

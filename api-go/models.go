@@ -164,20 +164,21 @@ type ResetPasswordRequest struct {
 // ── Collection ────────────────────────────────────────────────────────────────
 
 type CollectionCard struct {
-	ID              int       `json:"id"`
-	PrintingID      int       `json:"printing_id"`
-	Quantity        int       `json:"quantity"`
-	Finish          string    `json:"finish"`
-	Condition       string    `json:"condition"`
-	AddedAt         time.Time `json:"added_at"`
-	ImageURL        *string   `json:"image_url"`
-	Rarity          *string   `json:"rarity"`
-	CollectorNumber *string   `json:"collector_number"`
-	CardID          int       `json:"card_id"`
-	CardName        string    `json:"card_name"`
-	CardType        string    `json:"card_type"`
-	SetID           int       `json:"set_id"`
-	SetName         string    `json:"set_name"`
+	ID              int             `json:"id"`
+	PrintingID      int             `json:"printing_id"`
+	Quantity        int             `json:"quantity"`
+	Finish          string          `json:"finish"`
+	Condition       string          `json:"condition"`
+	AddedAt         time.Time       `json:"added_at"`
+	ImageURL        *string         `json:"image_url"`
+	Rarity          *string         `json:"rarity"`
+	CollectorNumber *string         `json:"collector_number"`
+	CardID          int             `json:"card_id"`
+	CardName        string          `json:"card_name"`
+	CardType        string          `json:"card_type"`
+	Attributes      json.RawMessage `json:"attributes"`
+	SetID           int             `json:"set_id"`
+	SetName         string          `json:"set_name"`
 }
 
 type CollectionGroup struct {

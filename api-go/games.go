@@ -104,6 +104,35 @@ func (a *App) getGame(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, g, http.StatusOK)
 }
 
+func (a *App) getGameAttributeKeys(w http.ResponseWriter, r *http.Request) {
+	slug := chi.URLParam(r, "slug")
+	rows, err := a.db.Query(r.Context(), `
+		SELECT DISTINCT jsonb_object_keys(c.attributes)
+		FROM cards c
+		JOIN games g ON g.id = c.game_id
+		WHERE g.slug = $1
+		  AND c.attributes IS NOT NULL
+		  AND c.attributes <> 'null'::jsonb
+		  AND c.attributes <> '{}'::jsonb
+		ORDER BY 1
+	`, slug)
+	if err != nil {
+		jsonError(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	keys := []string{}
+	for rows.Next() {
+		var key string
+		if err := rows.Scan(&key); err != nil {
+			continue
+		}
+		keys = append(keys, key)
+	}
+	jsonResponse(w, keys, http.StatusOK)
+}
+
 func (a *App) getGameSets(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 	rows, err := a.db.Query(r.Context(), `
