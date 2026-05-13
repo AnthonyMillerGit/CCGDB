@@ -7,21 +7,42 @@ import { RARITY_COLORS, normalizeRarity, rarityRank } from '../theme'
 const CONDITION_COLOR = 'var(--accent-maroon)'
 const CONDITION_LABELS = { NM: 'Near Mint', LP: 'Light Play', MP: 'Moderate Play', HP: 'Heavy Play', DM: 'Damaged' }
 
-function QuantityControl({ quantity, onIncrease, onDecrease, foil = false }) {
+function QuantityControl({ quantity, onIncrease, onDecrease, onSet, foil = false }) {
+  const [val, setVal] = useState(String(quantity))
+  useEffect(() => { setVal(String(quantity)) }, [quantity])
+
+  function commit() {
+    const n = parseInt(val, 10)
+    if (!isNaN(n) && n > 0 && n !== quantity) onSet(n)
+    else setVal(String(quantity))
+  }
+
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center justify-center gap-1 w-full">
       <button
         onClick={e => { e.preventDefault(); onDecrease() }}
-        className="w-5 h-5 rounded text-xs font-bold flex items-center justify-center"
+        className="w-5 h-5 rounded text-xs font-bold flex items-center justify-center shrink-0"
         style={{ backgroundColor: 'var(--bg-surface)', color: '#e05c5c', border: '1px solid var(--border)' }}
       >−</button>
-      <span
-        className={`text-xs font-medium w-5 text-center${foil ? ' foil-rainbow' : ''}`}
-        style={foil ? {} : { color: 'var(--text-primary)' }}
-      >{quantity}</span>
+      <input
+        type="text"
+        inputMode="numeric"
+        value={val}
+        onChange={e => setVal(e.target.value)}
+        onBlur={commit}
+        onKeyDown={e => e.key === 'Enter' && commit()}
+        className={`text-xs font-medium text-center rounded${foil ? ' foil-rainbow' : ''}`}
+        style={{
+          width: '2rem',
+          backgroundColor: 'var(--bg-chip)',
+          border: '1px solid var(--border)',
+          outline: 'none',
+          ...(foil ? {} : { color: 'var(--text-primary)' }),
+        }}
+      />
       <button
         onClick={e => { e.preventDefault(); onIncrease() }}
-        className="w-5 h-5 rounded text-xs font-bold flex items-center justify-center"
+        className="w-5 h-5 rounded text-xs font-bold flex items-center justify-center shrink-0"
         style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--accent)', border: '1px solid var(--border)' }}
       >+</button>
     </div>
@@ -52,6 +73,7 @@ export default function CollectionGamePage() {
   const [groupBySet, setGroupBySet] = useState(false)
   const [collapsedSets, setCollapsedSets] = useState(new Set())
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [foilOnly, setFoilOnly] = useState(false)
   const filtersRef = useRef(null)
 
   useEffect(() => {
@@ -109,6 +131,20 @@ export default function CollectionGamePage() {
       })
     }
   }, [authFetch])
+
+  const handleSetQuantity = useCallback(async (card, newQty) => {
+    if (newQty < 1) { handleDecrease({ ...card, quantity: 1 }); return }
+    const res = await authFetch(`${API_URL}/api/users/me/collection/${card.printing_id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ quantity: newQty, finish: card.finish }),
+    })
+    if (!res.ok) return
+    const result = await res.json()
+    setGameData(prev => prev && {
+      ...prev,
+      cards: prev.cards.map(c => sameCard(c, card) ? { ...c, quantity: result.quantity } : c)
+    })
+  }, [authFetch, handleDecrease])
 
   async function handleUndo() {
     const undo = undoRef.current
@@ -185,6 +221,7 @@ export default function CollectionGamePage() {
     if (q) cards = cards.filter(c => c.card_name.toLowerCase().includes(q))
     if (setFilter) cards = cards.filter(c => c.set_name === setFilter)
     if (rarityFilter.length > 0) cards = cards.filter(c => rarityFilter.includes(c.rarity))
+    if (foilOnly) cards = cards.filter(c => c.finish !== 'normal')
     return [...cards].sort((a, b) => {
       switch (sort) {
         case 'name_desc':     return b.card_name.localeCompare(a.card_name)
@@ -197,7 +234,7 @@ export default function CollectionGamePage() {
         default:              return a.card_name.localeCompare(b.card_name)
       }
     })
-  }, [gameData, search, setFilter, rarityFilter, sort])
+  }, [gameData, search, setFilter, rarityFilter, foilOnly, sort])
 
   // Group foil + normal copies of the same printing into one tile
   const printingGroups = useMemo(() => {
@@ -326,7 +363,7 @@ export default function CollectionGamePage() {
         {/* Filters button */}
         <div className="relative">
           {(() => {
-            const activeCount = (setFilter ? 1 : 0) + (sort !== 'name_asc' ? 1 : 0) + rarityFilter.length + (pageSize !== 25 ? 1 : 0)
+            const activeCount = (setFilter ? 1 : 0) + (sort !== 'name_asc' ? 1 : 0) + rarityFilter.length + (foilOnly ? 1 : 0) + (pageSize !== 25 ? 1 : 0)
             return (
               <button
                 onClick={() => setFiltersOpen(o => !o)}
@@ -402,6 +439,17 @@ export default function CollectionGamePage() {
                 </div>
               )}
 
+              {/* Foil */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={foilOnly}
+                  onChange={() => { setFoilOnly(f => !f); resetPage() }}
+                  className="accent-[#0097a7]"
+                />
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Foil only</span>
+              </label>
+
               {/* Page size */}
               <div className="flex items-center justify-between gap-2 pt-1" style={{ borderTop: '1px solid var(--border)' }}>
                 <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Cards per page</span>
@@ -419,9 +467,9 @@ export default function CollectionGamePage() {
               </div>
 
               {/* Clear all */}
-              {(setFilter || sort !== 'name_asc' || rarityFilter.length > 0 || pageSize !== 25) && (
+              {(setFilter || sort !== 'name_asc' || rarityFilter.length > 0 || foilOnly || pageSize !== 25) && (
                 <button
-                  onClick={() => { setSetFilter(''); setSort('name_asc'); setRarityFilter([]); setPageSize(25); resetPage() }}
+                  onClick={() => { setSetFilter(''); setSort('name_asc'); setRarityFilter([]); setFoilOnly(false); setPageSize(25); resetPage() }}
                   className="text-xs py-1 rounded"
                   style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)', paddingTop: '0.5rem' }}
                 >
@@ -474,11 +522,14 @@ export default function CollectionGamePage() {
               {group.rarity && <span className="text-xs shrink-0 capitalize" style={{ color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}>{group.rarity}</span>}
             </div>
             {group.items.map(item => (
-              <div key={item.finish} className="flex items-center gap-1.5 mt-0.5">
-                <QuantityControl quantity={item.quantity} onIncrease={() => handleIncrease(item)} onDecrease={() => handleDecrease(item)} foil={item.finish === 'foil'} />
-                {item.finish !== 'normal' && (
-                  <span className={`text-xs font-bold${item.finish === 'foil' ? ' foil-rainbow' : ''}`}>{item.finish}</span>
-                )}
+              <div key={item.finish} className="mt-1">
+                <QuantityControl
+                  quantity={item.quantity}
+                  onIncrease={() => handleIncrease(item)}
+                  onDecrease={() => handleDecrease(item)}
+                  onSet={n => handleSetQuantity(item, n)}
+                  foil={item.finish === 'foil'}
+                />
               </div>
             ))}
           </div>
@@ -504,12 +555,14 @@ export default function CollectionGamePage() {
             </div>
             <div className="flex flex-col gap-1">
               {group.items.map(item => (
-                <div key={item.finish} className="flex items-center gap-1.5">
-                  <QuantityControl quantity={item.quantity} onIncrease={() => handleIncrease(item)} onDecrease={() => handleDecrease(item)} foil={item.finish === 'foil'} />
-                  {item.finish !== 'normal' && (
-                    <span className={`text-xs font-bold shrink-0${item.finish === 'foil' ? ' foil-rainbow' : ''}`}>{item.finish}</span>
-                  )}
-                </div>
+                <QuantityControl
+                  key={item.finish}
+                  quantity={item.quantity}
+                  onIncrease={() => handleIncrease(item)}
+                  onDecrease={() => handleDecrease(item)}
+                  onSet={n => handleSetQuantity(item, n)}
+                  foil={item.finish === 'foil'}
+                />
               ))}
             </div>
           </div>
