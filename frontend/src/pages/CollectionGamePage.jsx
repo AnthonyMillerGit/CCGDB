@@ -546,15 +546,14 @@ export default function CollectionGamePage() {
         )
 
         const listCard = group => (
-          <div key={group.printing_id} className="flex items-center gap-2 px-2 py-1.5 rounded" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+          <div key={group.printing_id} className="flex items-center gap-1.5 px-1.5 py-1 rounded" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
             <Link to={`/collection/${gameSlug}/cards/${group.card_id}`} className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }} title={group.card_name}>{group.card_name}</span>
+              <div className="flex items-center gap-1 min-w-0">
+                <span className="truncate" style={{ color: 'var(--text-primary)', fontSize: '0.7rem', fontWeight: 500 }} title={group.card_name}>{group.card_name}</span>
                 {group.rarity && (
-                  <span className="text-xs shrink-0 capitalize" style={{ color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}>· {group.rarity}</span>
+                  <span className="shrink-0 capitalize" style={{ color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)', fontSize: '0.65rem' }}>· {group.rarity}</span>
                 )}
               </div>
-              <p className="text-xs truncate" style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>{group.set_name}</p>
             </Link>
             <div className="flex flex-col gap-0.5 shrink-0">
               {group.items.map(item => (
@@ -602,7 +601,7 @@ export default function CollectionGamePage() {
         )
 
         const listGroup = cards => (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
             {cards.map(listCard)}
           </div>
         )
