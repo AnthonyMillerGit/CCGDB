@@ -19,11 +19,6 @@ function QuantityControl({ quantity, onIncrease, onDecrease, onSet, foil = false
 
   return (
     <div className="flex items-center justify-center gap-1 w-full">
-      <button
-        onClick={e => { e.preventDefault(); onDecrease() }}
-        className="w-5 h-5 rounded text-xs font-bold flex items-center justify-center shrink-0"
-        style={{ backgroundColor: 'var(--bg-surface)', color: '#e05c5c', border: '1px solid var(--border)' }}
-      >−</button>
       <input
         type="text"
         inputMode="numeric"
@@ -31,13 +26,13 @@ function QuantityControl({ quantity, onIncrease, onDecrease, onSet, foil = false
         onChange={e => setVal(e.target.value)}
         onBlur={commit}
         onKeyDown={e => e.key === 'Enter' && commit()}
-        className={`text-xs font-medium text-center rounded${foil ? ' foil-rainbow' : ''}`}
+        className="text-xs font-medium text-center rounded"
         style={{
           width: '2rem',
           backgroundColor: 'var(--bg-chip)',
           border: '1px solid var(--border)',
           outline: 'none',
-          ...(foil ? {} : { color: 'var(--text-primary)' }),
+          color: 'var(--text-primary)',
         }}
       />
       <button
@@ -45,6 +40,11 @@ function QuantityControl({ quantity, onIncrease, onDecrease, onSet, foil = false
         className="w-5 h-5 rounded text-xs font-bold flex items-center justify-center shrink-0"
         style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--accent)', border: '1px solid var(--border)' }}
       >+</button>
+      <button
+        onClick={e => { e.preventDefault(); onDecrease() }}
+        className="w-5 h-5 rounded text-xs font-bold flex items-center justify-center shrink-0"
+        style={{ backgroundColor: 'var(--bg-surface)', color: '#e05c5c', border: '1px solid var(--border)' }}
+      >−</button>
     </div>
   )
 }
@@ -503,6 +503,21 @@ export default function CollectionGamePage() {
 
         const gridCard = group => (
           <div key={group.printing_id} className="flex flex-col rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
+            {/* Name + rarity above image */}
+            <div className="flex items-center gap-1 p-1.5 pb-1">
+              <span
+                className="text-xs font-medium truncate rounded px-1.5 py-0.5 flex-1 min-w-0"
+                style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                title={group.card_name}
+              >{group.card_name}</span>
+              {group.rarity && (
+                <span
+                  className="text-xs shrink-0 capitalize rounded px-1.5 py-0.5"
+                  style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}
+                >{group.rarity}</span>
+              )}
+            </div>
+            {/* Card image */}
             <Link to={`/collection/${gameSlug}/cards/${group.card_id}`} className="block relative group">
               <div className="overflow-hidden transition-all duration-150 group-hover:opacity-90">
                 {group.image_url ? (
@@ -514,20 +529,8 @@ export default function CollectionGamePage() {
                 )}
               </div>
             </Link>
-            <div className="flex flex-col gap-1 p-1.5">
-              <div className="flex items-center gap-1 flex-wrap">
-                <span
-                  className="text-xs font-medium truncate rounded px-1.5 py-0.5 flex-1 min-w-0"
-                  style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-                  title={group.card_name}
-                >{group.card_name}</span>
-                {group.rarity && (
-                  <span
-                    className="text-xs shrink-0 capitalize rounded px-1.5 py-0.5"
-                    style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}
-                  >{group.rarity}</span>
-                )}
-              </div>
+            {/* Quantity below image */}
+            <div className="flex flex-col gap-1 p-1.5 pt-1">
               {group.items.map(item => (
                 <div key={item.finish} className="rounded px-1.5 py-1" style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}>
                   <QuantityControl
@@ -535,7 +538,6 @@ export default function CollectionGamePage() {
                     onIncrease={() => handleIncrease(item)}
                     onDecrease={() => handleDecrease(item)}
                     onSet={n => handleSetQuantity(item, n)}
-                    foil={item.finish === 'foil'}
                   />
                 </div>
               ))}
