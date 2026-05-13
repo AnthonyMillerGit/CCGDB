@@ -502,12 +502,9 @@ export default function CollectionGamePage() {
         const conditionColor = () => CONDITION_COLOR
 
         const gridCard = group => (
-          <div key={group.printing_id} className="flex flex-col">
+          <div key={group.printing_id} className="flex flex-col rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
             <Link to={`/collection/${gameSlug}/cards/${group.card_id}`} className="block relative group">
-              <div
-                className="rounded-lg overflow-hidden transition-all duration-150 group-hover:ring-1"
-                style={{ backgroundColor: 'var(--bg-surface)', ringColor: 'var(--accent)' }}
-              >
+              <div className="overflow-hidden transition-all duration-150 group-hover:opacity-90">
                 {group.image_url ? (
                   <img src={group.image_url} alt={group.card_name} className="w-full" />
                 ) : (
@@ -517,30 +514,32 @@ export default function CollectionGamePage() {
                 )}
               </div>
             </Link>
-            <div className="flex items-center gap-1 mt-1.5 flex-wrap">
-              <span
-                className="text-xs font-medium truncate rounded px-1.5 py-0.5 flex-1 min-w-0"
-                style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-                title={group.card_name}
-              >{group.card_name}</span>
-              {group.rarity && (
+            <div className="flex flex-col gap-1 p-1.5">
+              <div className="flex items-center gap-1 flex-wrap">
                 <span
-                  className="text-xs shrink-0 capitalize rounded px-1.5 py-0.5"
-                  style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}
-                >{group.rarity}</span>
-              )}
-            </div>
-            {group.items.map(item => (
-              <div key={item.finish} className="mt-1 rounded px-1.5 py-1" style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}>
-                <QuantityControl
-                  quantity={item.quantity}
-                  onIncrease={() => handleIncrease(item)}
-                  onDecrease={() => handleDecrease(item)}
-                  onSet={n => handleSetQuantity(item, n)}
-                  foil={item.finish === 'foil'}
-                />
+                  className="text-xs font-medium truncate rounded px-1.5 py-0.5 flex-1 min-w-0"
+                  style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                  title={group.card_name}
+                >{group.card_name}</span>
+                {group.rarity && (
+                  <span
+                    className="text-xs shrink-0 capitalize rounded px-1.5 py-0.5"
+                    style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}
+                  >{group.rarity}</span>
+                )}
               </div>
-            ))}
+              {group.items.map(item => (
+                <div key={item.finish} className="rounded px-1.5 py-1" style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}>
+                  <QuantityControl
+                    quantity={item.quantity}
+                    onIncrease={() => handleIncrease(item)}
+                    onDecrease={() => handleDecrease(item)}
+                    onSet={n => handleSetQuantity(item, n)}
+                    foil={item.finish === 'foil'}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         )
 
