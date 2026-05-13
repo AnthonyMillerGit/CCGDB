@@ -469,14 +469,12 @@ export default function CollectionGamePage() {
                 )}
               </div>
             </Link>
-            <p className="text-xs font-medium truncate mt-1" style={{ color: 'var(--text-primary)' }} title={group.card_name}>{group.card_name}</p>
-            <div className="flex items-center gap-1 mb-1 flex-wrap">
-              <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }} title={group.set_name}>{group.set_name}</p>
-              {group.card_type && <><span style={{ color: 'var(--border)' }}>·</span><span className="text-xs shrink-0" style={{ color: 'var(--text-muted)' }}>{group.card_type}</span></>}
-              {group.rarity && <><span style={{ color: 'var(--border)' }}>·</span><span className="text-xs shrink-0 capitalize" style={{ color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}>{group.rarity}</span></>}
+            <div className="flex items-baseline justify-between gap-1 mt-1">
+              <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }} title={group.card_name}>{group.card_name}</p>
+              {group.rarity && <span className="text-xs shrink-0 capitalize" style={{ color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}>{group.rarity}</span>}
             </div>
             {group.items.map(item => (
-              <div key={item.finish} className="flex items-center gap-2 mt-1">
+              <div key={item.finish} className="flex items-center gap-1.5 mt-0.5">
                 <QuantityControl quantity={item.quantity} onIncrease={() => handleIncrease(item)} onDecrease={() => handleDecrease(item)} foil={item.finish === 'foil'} />
                 <select
                   value={item.condition || 'NM'}
@@ -487,10 +485,11 @@ export default function CollectionGamePage() {
                 >
                   {Object.keys(CONDITION_LABELS).map(val => <option key={val} value={val}>{val}</option>)}
                 </select>
-                <span
-                  className={`text-xs font-bold shrink-0${item.finish === 'foil' ? ' foil-rainbow' : ''}`}
-                  style={item.finish === 'foil' ? {} : { color: '#9e836a' }}
-                >{item.finish === 'normal' ? '' : item.finish}</span>
+                {item.finish !== 'normal' && (
+                  <span className={`text-xs font-bold shrink-0${item.finish === 'foil' ? ' foil-rainbow' : ''}`}>
+                    {item.finish}
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -509,31 +508,29 @@ export default function CollectionGamePage() {
             </Link>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{group.card_name}</p>
-              <div className="flex items-center gap-1 flex-wrap">
+              <div className="flex items-center gap-1">
                 <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{group.set_name}</p>
-                {group.card_type && <><span style={{ color: 'var(--border)' }}>·</span><span className="text-xs shrink-0" style={{ color: 'var(--text-muted)' }}>{group.card_type}</span></>}
                 {group.rarity && <><span style={{ color: 'var(--border)' }}>·</span><span className="text-xs shrink-0 capitalize" style={{ color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}>{group.rarity}</span></>}
               </div>
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1">
               {group.items.map(item => (
-                <div key={item.finish} className="flex items-center gap-2">
+                <div key={item.finish} className="flex items-center gap-1.5">
+                  <QuantityControl quantity={item.quantity} onIncrease={() => handleIncrease(item)} onDecrease={() => handleDecrease(item)} foil={item.finish === 'foil'} />
                   <select
                     value={item.condition || 'NM'}
                     onChange={e => handleConditionChange(item, e.target.value)}
                     title={CONDITION_LABELS[item.condition || 'NM']}
-                    className="text-xs px-1.5 py-1 rounded font-medium shrink-0"
-                    style={{ width: '60px', backgroundColor: 'var(--bg-chip)', border: `1px solid ${conditionColor(item)}55`, color: conditionColor(item), outline: 'none' }}
+                    className="text-xs px-1 py-0.5 rounded font-medium shrink-0"
+                    style={{ backgroundColor: 'var(--bg-chip)', border: `1px solid ${conditionColor(item)}55`, color: conditionColor(item), outline: 'none' }}
                   >
-                    {Object.keys(CONDITION_LABELS).map(val => (
-                      <option key={val} value={val}>{val}</option>
-                    ))}
+                    {Object.keys(CONDITION_LABELS).map(val => <option key={val} value={val}>{val}</option>)}
                   </select>
-                  <span
-                    className={`text-xs font-bold shrink-0${item.finish === 'foil' ? ' foil-rainbow' : ''}`}
-                    style={item.finish === 'foil' ? {} : { color: '#9e836a' }}
-                  >{item.finish}</span>
-                  <QuantityControl quantity={item.quantity} onIncrease={() => handleIncrease(item)} onDecrease={() => handleDecrease(item)} foil={item.finish === 'foil'} />
+                  {item.finish !== 'normal' && (
+                    <span className={`text-xs font-bold shrink-0${item.finish === 'foil' ? ' foil-rainbow' : ''}`}>
+                      {item.finish}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
