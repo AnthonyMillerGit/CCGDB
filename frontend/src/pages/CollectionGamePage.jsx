@@ -7,6 +7,44 @@ import { RARITY_COLORS, normalizeRarity, rarityRank } from '../theme'
 const CONDITION_COLOR = 'var(--accent-maroon)'
 const CONDITION_LABELS = { NM: 'Near Mint', LP: 'Light Play', MP: 'Moderate Play', HP: 'Heavy Play', DM: 'Damaged' }
 
+function ListCardRow({ group, gameSlug, onIncrease, onDecrease, onSet }) {
+  const [preview, setPreview] = useState(false)
+  return (
+    <div className="relative flex items-center gap-1.5 px-1.5 py-1 rounded" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+      {/* Hover image preview */}
+      {preview && group.image_url && (
+        <div className="absolute bottom-full left-0 mb-1 z-50 pointer-events-none" style={{ filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.6))' }}>
+          <img src={group.image_url} alt={group.card_name} className="rounded-lg" style={{ width: '160px' }} />
+        </div>
+      )}
+      <Link
+        to={`/collection/${gameSlug}/cards/${group.card_id}`}
+        className="flex-1 min-w-0"
+        onMouseEnter={() => setPreview(true)}
+        onMouseLeave={() => setPreview(false)}
+      >
+        <div className="flex items-center gap-1 min-w-0">
+          <span className="truncate" style={{ color: 'var(--text-primary)', fontSize: '0.7rem', fontWeight: 500 }} title={group.card_name}>{group.card_name}</span>
+          {group.rarity && (
+            <span className="shrink-0 capitalize" style={{ color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)', fontSize: '0.65rem' }}>· {group.rarity}</span>
+          )}
+        </div>
+      </Link>
+      <div className="flex flex-col gap-0.5 shrink-0">
+        {group.items.map(item => (
+          <QuantityControl
+            key={item.finish}
+            quantity={item.quantity}
+            onIncrease={() => onIncrease(item)}
+            onDecrease={() => onDecrease(item)}
+            onSet={n => onSet(item, n)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function QuantityControl({ quantity, onIncrease, onDecrease, onSet, foil = false }) {
   const [val, setVal] = useState(String(quantity))
   useEffect(() => { setVal(String(quantity)) }, [quantity])
@@ -546,27 +584,14 @@ export default function CollectionGamePage() {
         )
 
         const listCard = group => (
-          <div key={group.printing_id} className="flex items-center gap-1.5 px-1.5 py-1 rounded" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-            <Link to={`/collection/${gameSlug}/cards/${group.card_id}`} className="flex-1 min-w-0">
-              <div className="flex items-center gap-1 min-w-0">
-                <span className="truncate" style={{ color: 'var(--text-primary)', fontSize: '0.7rem', fontWeight: 500 }} title={group.card_name}>{group.card_name}</span>
-                {group.rarity && (
-                  <span className="shrink-0 capitalize" style={{ color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)', fontSize: '0.65rem' }}>· {group.rarity}</span>
-                )}
-              </div>
-            </Link>
-            <div className="flex flex-col gap-0.5 shrink-0">
-              {group.items.map(item => (
-                <QuantityControl
-                  key={item.finish}
-                  quantity={item.quantity}
-                  onIncrease={() => handleIncrease(item)}
-                  onDecrease={() => handleDecrease(item)}
-                  onSet={n => handleSetQuantity(item, n)}
-                />
-              ))}
-            </div>
-          </div>
+          <ListCardRow
+            key={group.printing_id}
+            group={group}
+            gameSlug={gameSlug}
+            onIncrease={handleIncrease}
+            onDecrease={handleDecrease}
+            onSet={handleSetQuantity}
+          />
         )
 
         const toggleSet = (setName) => {
