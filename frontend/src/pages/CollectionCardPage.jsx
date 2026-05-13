@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
 import { RARITY_COLORS, normalizeRarity } from '../theme'
+
+const CONDITION_LABELS = { NM: 'Near Mint', LP: 'Light Play', MP: 'Moderate Play', HP: 'Heavy Play', DM: 'Damaged' }
+const CONDITION_COLORS = { NM: '#4ade80', LP: '#a3e635', MP: '#facc15', HP: '#fb923c', DM: '#f87171' }
+const FINISHES = ['normal', 'foil', 'special foil']
 
 export default function CollectionCardPage() {
   const { gameSlug, cardId } = useParams()
@@ -26,6 +30,69 @@ export default function CollectionCardPage() {
     }
     load()
   }, [cardId, authFetch])
+
+  const handleIncrease = useCallback(async (item) => {
+    const res = await authFetch(`${API_URL}/api/users/me/collection`, {
+      method: 'POST',
+      body: JSON.stringify({ printing_id: item.printing_id, quantity: 1, finish: item.finish }),
+    })
+    if (!res.ok) return
+    const result = await res.json()
+    setItems(prev => prev.map(i =>
+      i.printing_id === item.printing_id && i.finish === item.finish ? { ...i, quantity: result.quantity } : i
+    ))
+  }, [authFetch])
+
+  const handleDecrease = useCallback(async (item) => {
+    if (item.quantity === 1) {
+      const res = await authFetch(`${API_URL}/api/users/me/collection/${item.printing_id}?finish=${item.finish}`, { method: 'DELETE' })
+      if (!res.ok) return
+      setItems(prev => prev.filter(i => !(i.printing_id === item.printing_id && i.finish === item.finish)))
+      return
+    }
+    const res = await authFetch(`${API_URL}/api/users/me/collection`, {
+      method: 'POST',
+      body: JSON.stringify({ quantity: item.quantity - 1, finish: item.finish, printing_id: item.printing_id }),
+    })
+    if (!res.ok) return
+    const result = await res.json()
+    setItems(prev => prev.map(i =>
+      i.printing_id === item.printing_id && i.finish === item.finish ? { ...i, quantity: result.quantity } : i
+    ))
+  }, [authFetch])
+
+  const handleConditionChange = useCallback(async (item, newCondition) => {
+    const res = await authFetch(`${API_URL}/api/users/me/collection`, {
+      method: 'POST',
+      body: JSON.stringify({ printing_id: item.printing_id, quantity: item.quantity, finish: item.finish, condition: newCondition }),
+    })
+    if (!res.ok) return
+    setItems(prev => prev.map(i =>
+      i.printing_id === item.printing_id && i.finish === item.finish ? { ...i, condition: newCondition } : i
+    ))
+  }, [authFetch])
+
+  const handleFinishChange = useCallback(async (item, newFinish) => {
+    if (newFinish === item.finish) return
+    // Check if this finish already exists — if so, merge quantities
+    const existing = items.find(i => i.printing_id === item.printing_id && i.finish === newFinish)
+    await authFetch(`${API_URL}/api/users/me/collection/${item.printing_id}?finish=${item.finish}`, { method: 'DELETE' })
+    const res = await authFetch(`${API_URL}/api/users/me/collection`, {
+      method: 'POST',
+      body: JSON.stringify({
+        printing_id: item.printing_id,
+        quantity: item.quantity + (existing?.quantity ?? 0),
+        finish: newFinish,
+        condition: item.condition,
+      }),
+    })
+    if (!res.ok) return
+    const result = await res.json()
+    setItems(prev => {
+      const without = prev.filter(i => !(i.printing_id === item.printing_id && (i.finish === item.finish || i.finish === newFinish)))
+      return [...without, { ...item, finish: newFinish, quantity: result.quantity }]
+    })
+  }, [authFetch, items])
 
   if (loading) return (
     <div className="flex items-center justify-center py-20">
@@ -56,11 +123,7 @@ export default function CollectionCardPage() {
         <h1 className="text-3xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>{card.name}</h1>
         <div className="flex items-center gap-4">
           <p className="text-base" style={{ color: 'var(--text-muted)' }}>{card.card_type}</p>
-          <Link
-            to={`/cards/${card.id}`}
-            className="text-sm"
-            style={{ color: 'var(--accent)' }}
-          >
+          <Link to={`/cards/${card.id}`} className="text-sm" style={{ color: 'var(--accent)' }}>
             View full card details →
           </Link>
         </div>
@@ -81,7 +144,14 @@ export default function CollectionCardPage() {
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
             {items.map(item => (
-              <PrintingCard key={`${item.printing_id}-${item.finish}`} item={item} />
+              <PrintingCard
+                key={`${item.printing_id}-${item.finish}`}
+                item={item}
+                onIncrease={handleIncrease}
+                onDecrease={handleDecrease}
+                onConditionChange={handleConditionChange}
+                onFinishChange={handleFinishChange}
+              />
             ))}
           </div>
         </>
@@ -90,8 +160,9 @@ export default function CollectionCardPage() {
   )
 }
 
-function PrintingCard({ item }) {
+function PrintingCard({ item, onIncrease, onDecrease, onConditionChange, onFinishChange }) {
   const rarityColor = RARITY_COLORS[normalizeRarity(item.rarity)] || 'var(--text-muted)'
+  const conditionColor = CONDITION_COLORS[item.condition] || CONDITION_COLORS.NM
 
   return (
     <div className="flex flex-col rounded-xl overflow-hidden border"
@@ -100,37 +171,71 @@ function PrintingCard({ item }) {
       {item.image_url ? (
         <img src={item.image_url} alt={item.set_name} className="w-full" />
       ) : (
-        <div className="aspect-[2.5/3.5] flex items-center justify-center p-4"
-          style={{ backgroundColor: '#2e2e38' }}>
+        <div className="aspect-[2.5/3.5] flex items-center justify-center p-4" style={{ backgroundColor: '#2e2e38' }}>
           <span className="text-xs text-center leading-tight" style={{ color: 'var(--text-muted)' }}>{item.set_name}</span>
         </div>
       )}
 
-      {/* Info */}
-      <div className="p-3 flex flex-col gap-1.5">
-        <p className="text-sm font-semibold leading-tight truncate" style={{ color: 'var(--text-primary)' }}
-          title={item.set_name}>{item.set_name}</p>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {item.rarity && (
-              <span className="text-xs capitalize" style={{ color: rarityColor }}>{item.rarity}</span>
-            )}
-            {item.finish === 'foil' && (
-              <span className="text-xs font-semibold" style={{ color: '#facc15' }}>✦ Foil</span>
-            )}
+      <div className="p-3 flex flex-col gap-2.5">
+        {/* Set name + rarity */}
+        <div>
+          <p className="text-sm font-semibold leading-tight truncate" style={{ color: 'var(--text-primary)' }} title={item.set_name}>
+            {item.set_name}
+          </p>
+          <div className="flex items-center gap-2 mt-0.5">
+            {item.rarity && <span className="text-xs capitalize" style={{ color: rarityColor }}>{item.rarity}</span>}
+            {item.collector_number && <span className="text-xs" style={{ color: '#9e836a' }}>#{item.collector_number}</span>}
           </div>
-          <span
-            className={`text-sm font-bold px-2 py-0.5 rounded${item.finish === 'foil' ? ' foil-rainbow' : ''}`}
-            style={{ backgroundColor: 'var(--bg-chip)', ...(item.finish === 'foil' ? {} : { color: 'var(--accent)' }) }}
-          >
-            ×{item.quantity}
-          </span>
         </div>
 
-        {item.collector_number && (
-          <p className="text-xs" style={{ color: '#9e836a' }}>#{item.collector_number}</p>
-        )}
+        {/* Quantity */}
+        <div className="flex items-center justify-between">
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Quantity</span>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => onDecrease(item)}
+              className="w-6 h-6 rounded text-sm font-bold flex items-center justify-center"
+              style={{ backgroundColor: 'var(--bg-chip)', color: '#e05c5c', border: '1px solid var(--border)' }}
+            >−</button>
+            <span className={`text-sm font-bold w-6 text-center${item.finish === 'foil' ? ' foil-rainbow' : ''}`}
+              style={item.finish === 'foil' ? {} : { color: 'var(--text-primary)' }}>
+              {item.quantity}
+            </span>
+            <button
+              onClick={() => onIncrease(item)}
+              className="w-6 h-6 rounded text-sm font-bold flex items-center justify-center"
+              style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid var(--border)' }}
+            >+</button>
+          </div>
+        </div>
+
+        {/* Finish */}
+        <div className="flex items-center justify-between">
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Finish</span>
+          <select
+            value={item.finish || 'normal'}
+            onChange={e => onFinishChange(item, e.target.value)}
+            className="text-xs px-2 py-1 rounded capitalize"
+            style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)', outline: 'none' }}
+          >
+            {FINISHES.map(f => <option key={f} value={f}>{f}</option>)}
+          </select>
+        </div>
+
+        {/* Condition */}
+        <div className="flex items-center justify-between">
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Condition</span>
+          <select
+            value={item.condition || 'NM'}
+            onChange={e => onConditionChange(item, e.target.value)}
+            className="text-xs px-2 py-1 rounded font-medium"
+            style={{ backgroundColor: 'var(--bg-chip)', border: `1px solid ${conditionColor}55`, color: conditionColor, outline: 'none' }}
+          >
+            {Object.entries(CONDITION_LABELS).map(([val, label]) => (
+              <option key={val} value={val}>{val} — {label}</option>
+            ))}
+          </select>
+        </div>
       </div>
     </div>
   )

@@ -476,19 +476,8 @@ export default function CollectionGamePage() {
             {group.items.map(item => (
               <div key={item.finish} className="flex items-center gap-1.5 mt-0.5">
                 <QuantityControl quantity={item.quantity} onIncrease={() => handleIncrease(item)} onDecrease={() => handleDecrease(item)} foil={item.finish === 'foil'} />
-                <select
-                  value={item.condition || 'NM'}
-                  onChange={e => handleConditionChange(item, e.target.value)}
-                  title={CONDITION_LABELS[item.condition || 'NM']}
-                  className="text-xs px-1 py-0.5 rounded font-medium"
-                  style={{ backgroundColor: 'var(--bg-chip)', border: `1px solid ${conditionColor(item)}55`, color: conditionColor(item), outline: 'none' }}
-                >
-                  {Object.keys(CONDITION_LABELS).map(val => <option key={val} value={val}>{val}</option>)}
-                </select>
                 {item.finish !== 'normal' && (
-                  <span className={`text-xs font-bold shrink-0${item.finish === 'foil' ? ' foil-rainbow' : ''}`}>
-                    {item.finish}
-                  </span>
+                  <span className={`text-xs font-bold${item.finish === 'foil' ? ' foil-rainbow' : ''}`}>{item.finish}</span>
                 )}
               </div>
             ))}
@@ -517,19 +506,8 @@ export default function CollectionGamePage() {
               {group.items.map(item => (
                 <div key={item.finish} className="flex items-center gap-1.5">
                   <QuantityControl quantity={item.quantity} onIncrease={() => handleIncrease(item)} onDecrease={() => handleDecrease(item)} foil={item.finish === 'foil'} />
-                  <select
-                    value={item.condition || 'NM'}
-                    onChange={e => handleConditionChange(item, e.target.value)}
-                    title={CONDITION_LABELS[item.condition || 'NM']}
-                    className="text-xs px-1 py-0.5 rounded font-medium shrink-0"
-                    style={{ backgroundColor: 'var(--bg-chip)', border: `1px solid ${conditionColor(item)}55`, color: conditionColor(item), outline: 'none' }}
-                  >
-                    {Object.keys(CONDITION_LABELS).map(val => <option key={val} value={val}>{val}</option>)}
-                  </select>
                   {item.finish !== 'normal' && (
-                    <span className={`text-xs font-bold shrink-0${item.finish === 'foil' ? ' foil-rainbow' : ''}`}>
-                      {item.finish}
-                    </span>
+                    <span className={`text-xs font-bold shrink-0${item.finish === 'foil' ? ' foil-rainbow' : ''}`}>{item.finish}</span>
                   )}
                 </div>
               ))}
