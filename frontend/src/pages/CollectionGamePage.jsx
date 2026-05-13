@@ -517,12 +517,21 @@ export default function CollectionGamePage() {
                 )}
               </div>
             </Link>
-            <div className="flex items-baseline justify-between gap-1 mt-1">
-              <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }} title={group.card_name}>{group.card_name}</p>
-              {group.rarity && <span className="text-xs shrink-0 capitalize" style={{ color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}>{group.rarity}</span>}
+            <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+              <span
+                className="text-xs font-medium truncate rounded px-1.5 py-0.5 flex-1 min-w-0"
+                style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                title={group.card_name}
+              >{group.card_name}</span>
+              {group.rarity && (
+                <span
+                  className="text-xs shrink-0 capitalize rounded px-1.5 py-0.5"
+                  style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}
+                >{group.rarity}</span>
+              )}
             </div>
             {group.items.map(item => (
-              <div key={item.finish} className="mt-1">
+              <div key={item.finish} className="mt-1 rounded px-1.5 py-1" style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}>
                 <QuantityControl
                   quantity={item.quantity}
                   onIncrease={() => handleIncrease(item)}
