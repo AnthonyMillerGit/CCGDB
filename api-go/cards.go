@@ -69,13 +69,14 @@ func (a *App) searchCards(w http.ResponseWriter, r *http.Request) {
 	game := r.URL.Query().Get("game")
 
 	query := `
-		SELECT DISTINCT ON (c.id)
+		SELECT DISTINCT ON (c.id, s.id)
 		    c.id, c.name, c.card_type, c.rules_text,
 		    g.slug AS game, g.name AS game_name,
-		    p.image_url
+		    p.image_url, p.id AS printing_id, s.name AS set_name
 		FROM cards c
 		JOIN games g ON g.id = c.game_id
-		LEFT JOIN printings p ON p.card_id = c.id
+		JOIN printings p ON p.card_id = c.id
+		JOIN sets s ON s.id = p.set_id
 		WHERE c.name ILIKE $1`
 
 	args := []any{"%" + escapeLike(name) + "%"}
@@ -83,7 +84,7 @@ func (a *App) searchCards(w http.ResponseWriter, r *http.Request) {
 		query += " AND g.slug = $2"
 		args = append(args, game)
 	}
-	query += " ORDER BY c.id, p.image_url NULLS LAST LIMIT 50"
+	query += " ORDER BY c.id, s.id, p.image_url NULLS LAST LIMIT 150"
 
 	rows, err := a.db.Query(r.Context(), query, args...)
 	if err != nil {
@@ -96,7 +97,7 @@ func (a *App) searchCards(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var c CardSummary
 		if err := rows.Scan(&c.ID, &c.Name, &c.CardType, &c.RulesText,
-			&c.Game, &c.GameName, &c.ImageURL); err != nil {
+			&c.Game, &c.GameName, &c.ImageURL, &c.PrintingID, &c.SetName); err != nil {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}

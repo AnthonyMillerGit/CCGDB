@@ -13,6 +13,7 @@ type Game struct {
 	Slug          string  `json:"slug"`
 	Description   string  `json:"description"`
 	CardBackImage *string `json:"card_back_image"`
+	RulebookURL   *string `json:"rulebook_url"`
 }
 
 // ── Sets ──────────────────────────────────────────────────────────────────────
@@ -63,13 +64,15 @@ type SetCard struct {
 // ── Cards ─────────────────────────────────────────────────────────────────────
 
 type CardSummary struct {
-	ID       int     `json:"id"`
-	Name     string  `json:"name"`
-	CardType string  `json:"card_type"`
-	RulesText *string `json:"rules_text"`
-	Game     string  `json:"game"`
-	GameName string  `json:"game_name"`
-	ImageURL *string `json:"image_url"`
+	ID         int     `json:"id"`
+	Name       string  `json:"name"`
+	CardType   string  `json:"card_type"`
+	RulesText  *string `json:"rules_text"`
+	Game       string  `json:"game"`
+	GameName   string  `json:"game_name"`
+	ImageURL   *string `json:"image_url"`
+	PrintingID int     `json:"printing_id"`
+	SetName    string  `json:"set_name"`
 }
 
 type Printing struct {

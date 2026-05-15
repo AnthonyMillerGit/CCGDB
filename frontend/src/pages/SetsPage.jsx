@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { API_URL } from '../config'
 import { GAME_INFO } from '../data/gameInfo'
+import { useAuth } from '../context/AuthContext'
 
 const MTG_TABS = [
   { key: 'all', label: 'All' },
@@ -93,7 +94,18 @@ export default function SetsPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('all')
   const [featuredCard, setFeaturedCard] = useState(null)
+
+  // Card search state
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [addedIds, setAddedIds] = useState({})   // printing_id → true after add
+  const [addingIds, setAddingIds] = useState({}) // printing_id → true while adding
+  const searchRef = useRef(null)
+  const debounceRef = useRef(null)
+
   const navigate = useNavigate()
+  const { user, authFetch } = useAuth()
 
   useEffect(() => {
     Promise.all([
@@ -107,6 +119,44 @@ export default function SetsPage() {
       if (Array.isArray(cardData) && cardData[0]?.image_url) setFeaturedCard(cardData[0])
     })
   }, [slug])
+
+  // Debounced card search
+  useEffect(() => {
+    clearTimeout(debounceRef.current)
+    const q = searchQuery.trim()
+    if (q.length < 2) { setSearchResults([]); setSearchLoading(false); return }
+    setSearchLoading(true)
+    debounceRef.current = setTimeout(() => {
+      fetch(`${API_URL}/api/cards/search?name=${encodeURIComponent(q)}&game=${slug}`)
+        .then(r => r.json())
+        .then(data => { setSearchResults(Array.isArray(data) ? data : []); setSearchLoading(false) })
+        .catch(() => setSearchLoading(false))
+    }, 300)
+    return () => clearTimeout(debounceRef.current)
+  }, [searchQuery, slug])
+
+  // Close results when clicking outside
+  useEffect(() => {
+    if (!searchResults.length) return
+    const h = e => { if (searchRef.current && !searchRef.current.contains(e.target)) setSearchResults([]) }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [searchResults.length])
+
+  const handleAddToCollection = useCallback(async (card) => {
+    if (!user || !card.printing_id) return
+    setAddingIds(prev => ({ ...prev, [card.printing_id]: true }))
+    try {
+      await authFetch(`${API_URL}/api/users/me/collection`, {
+        method: 'POST',
+        body: JSON.stringify({ printing_id: card.printing_id, quantity: 1, finish: 'normal', condition: 'NM' }),
+      })
+      setAddedIds(prev => ({ ...prev, [card.printing_id]: true }))
+      setTimeout(() => setAddedIds(prev => { const n = { ...prev }; delete n[card.printing_id]; return n }), 2000)
+    } finally {
+      setAddingIds(prev => { const n = { ...prev }; delete n[card.printing_id]; return n })
+    }
+  }, [user, authFetch])
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
@@ -176,6 +226,91 @@ export default function SetsPage() {
             className="rounded-xl shadow-xl hidden sm:block"
             style={{ width: 180, flexShrink: 0 }}
           />
+        )}
+      </div>
+
+      {/* ── Card search ──────────────────────────────────────────────────── */}
+      <div className="relative mb-6" ref={searchRef}>
+        <div className="relative flex items-center">
+          <span className="absolute left-3 text-sm pointer-events-none" style={{ color: 'var(--text-muted)' }}>⌕</span>
+          <input
+            type="text"
+            placeholder={`Search cards in ${game?.name || 'this game'}…`}
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full text-sm pl-8 pr-8 py-2 rounded-lg"
+            style={{ backgroundColor: 'var(--bg-surface)', border: `1px solid ${searchQuery ? 'var(--accent)' : 'var(--border)'}`, color: 'var(--text-primary)', outline: 'none' }}
+          />
+          {searchQuery && (
+            <button onClick={() => { setSearchQuery(''); setSearchResults([]) }}
+              className="absolute right-2.5 text-base hover:opacity-80"
+              style={{ color: 'var(--text-muted)' }}>×</button>
+          )}
+        </div>
+
+        {/* Results dropdown — grouped by card */}
+        {(searchLoading || searchResults.length > 0) && searchQuery.trim().length >= 2 && (
+          <div className="absolute left-0 right-0 z-30 mt-1 rounded-xl shadow-2xl overflow-hidden"
+            style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', maxHeight: '480px', overflowY: 'auto' }}>
+            {searchLoading && (
+              <p className="text-sm px-4 py-3" style={{ color: 'var(--text-muted)' }}>Searching…</p>
+            )}
+            {!searchLoading && searchResults.length === 0 && (
+              <p className="text-sm px-4 py-3" style={{ color: 'var(--text-muted)' }}>No cards found</p>
+            )}
+            {!searchLoading && (() => {
+              // Group printings by card id
+              const groups = []
+              const seen = {}
+              for (const p of searchResults) {
+                if (!seen[p.id]) { seen[p.id] = groups.length; groups.push({ ...p, printings: [] }) }
+                groups[seen[p.id]].printings.push({ printing_id: p.printing_id, set_name: p.set_name })
+              }
+              return groups.map((card, gi) => (
+                <div key={card.id} className="border-b" style={{ borderColor: 'var(--border-panel)' }}>
+                  <div className="flex items-center gap-3 px-3 pt-2.5 pb-1.5">
+                    {/* Thumbnail */}
+                    <div className="shrink-0 cursor-pointer" onClick={() => navigate(`/cards/${card.id}`)}>
+                      {card.image_url
+                        ? <img src={card.image_url} alt={card.name} className="rounded" style={{ width: 36, height: 50, objectFit: 'cover' }} />
+                        : <div className="rounded flex items-center justify-center" style={{ width: 36, height: 50, backgroundColor: 'var(--bg-surface)' }}>
+                            <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.2 }}>{card.name.slice(0,6)}</span>
+                          </div>
+                      }
+                    </div>
+                    {/* Card name */}
+                    <p className="flex-1 text-sm font-semibold truncate cursor-pointer"
+                      style={{ color: 'var(--text-primary)' }}
+                      onClick={() => navigate(`/cards/${card.id}`)}>
+                      {card.name}
+                    </p>
+                  </div>
+                  {/* One row per printing */}
+                  <div className="flex flex-col pb-1.5 pl-14 pr-3 gap-1">
+                    {card.printings.map(p => (
+                      <div key={p.printing_id} className="flex items-center justify-between gap-2">
+                        <span className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{p.set_name}</span>
+                        {user && p.printing_id > 0 && (
+                          <button
+                            onClick={() => handleAddToCollection({ ...card, printing_id: p.printing_id })}
+                            disabled={!!addingIds[p.printing_id]}
+                            className="shrink-0 text-xs px-2 py-0.5 rounded font-medium"
+                            style={{
+                              backgroundColor: addedIds[p.printing_id] ? '#a5d6a7' : 'var(--accent)',
+                              color: '#fff',
+                              opacity: addingIds[p.printing_id] ? 0.6 : 1,
+                              minWidth: 56,
+                            }}>
+                            {addedIds[p.printing_id] ? '✓ Added' : addingIds[p.printing_id] ? '…' : '+ Add'}
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            })()}
+          </div>
         )}
       </div>
 

@@ -6,38 +6,36 @@ import { RARITY_COLORS, normalizeRarity, rarityRank } from '../theme'
 
 const isTouchDevice = window.matchMedia('(hover: none)').matches
 
-// Known game attribute fields that are worth sorting by, in preferred display order
-const ATTR_SORT_FIELDS = [
-  { key: 'cmc',        label: 'CMC'         },
-  { key: 'cost',       label: 'Cost'        },
-  { key: 'level',      label: 'Level'       },
-  { key: 'hp',         label: 'HP'          },
-  { key: 'life',       label: 'Life'        },
-  { key: 'lore',       label: 'Lore'        },
-  { key: 'power',      label: 'Power'       },
-  { key: 'attack',     label: 'Attack'      },
-  { key: 'atk',        label: 'ATK'         },
-  { key: 'defence',    label: 'Defence'     },
-  { key: 'def',        label: 'DEF'         },
-  { key: 'defense',    label: 'Defense'     },
-  { key: 'strength',   label: 'Strength'    },
-  { key: 'willpower',  label: 'Willpower'   },
-  { key: 'pitch',      label: 'Pitch'       },
-  { key: 'playCost',   label: 'Play Cost'   },
-  { key: 'dp',         label: 'DP'          },
-  { key: 'comboPower', label: 'Combo Power' },
-  { key: 'ap',         label: 'AP'          },
-  { key: 'bp',         label: 'BP'          },
-  { key: 'energyCost', label: 'Energy Cost' },
-  { key: 'might',      label: 'Might'       },
-  { key: 'lp',         label: 'Life Points' },
-]
-
-function attrNum(card, key) {
-  const raw = card.attributes?.[key]
-  if (raw == null || raw === '' || raw === '-') return null
-  const n = parseFloat(String(raw).replace(/[^0-9.-]/g, ''))
-  return isNaN(n) ? null : n
+// ── Attribute helpers ──────────────────────────────────────────────────────
+function parseAttrs(card) {
+  if (!card.attributes) return null
+  try { return typeof card.attributes === 'string' ? JSON.parse(card.attributes) : card.attributes }
+  catch { return null }
+}
+function getAttrVal(card, key) {
+  const attrs = parseAttrs(card)
+  return attrs ? (attrs[key] ?? null) : null
+}
+function attrValToSortable(val) {
+  if (val === null || val === undefined) return null
+  if (Array.isArray(val)) return val.map(String).sort().join(', ')
+  return String(val)
+}
+function compareAttrVals(av, bv) {
+  if (av === null && bv === null) return 0
+  if (av === null) return 1
+  if (bv === null) return -1
+  const an = parseFloat(av), bn = parseFloat(bv)
+  if (!isNaN(an) && !isNaN(bn)) return an - bn
+  return av.localeCompare(bv)
+}
+function formatAttrKey(key) {
+  return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+function isPrimitiveAttrVal(val) {
+  if (val === null || val === undefined) return true
+  if (Array.isArray(val)) return val.length === 0 || typeof val[0] !== 'object'
+  return typeof val !== 'object'
 }
 
 export default function CardsPage() {
@@ -49,8 +47,19 @@ export default function CardsPage() {
   const [tooltipPos, setTooltipPos]   = useState({ x: 0, y: 0 })
   const [owned, setOwned]       = useState({})   // printing_id → quantity
   const [addingSet, setAddingSet] = useState(false)
-  const [rarityOpen, setRarityOpen] = useState(false)
-  const rarityRef = useRef(null)
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [attrKeys, setAttrKeys] = useState([])
+  const [attrFilters, setAttrFilters] = useState({})
+  const [expandedAttrKeys, setExpandedAttrKeys] = useState(new Set())
+  const filtersRef = useRef(null)
+
+  // Cross-set search dropdown
+  const [searchDropResults, setSearchDropResults] = useState([])
+  const [searchDropLoading, setSearchDropLoading] = useState(false)
+  const [searchAddedIds, setSearchAddedIds] = useState({})
+  const [searchAddingIds, setSearchAddingIds] = useState({})
+  const searchDropRef = useRef(null)
+  const searchDebounceRef = useRef(null)
 
   // ── URL-persisted filter/sort/page state ──────────────────────────────────
   const [searchParams, setSearchParams] = useSearchParams()
@@ -95,11 +104,11 @@ export default function CardsPage() {
 
   // ── Click-outside handlers ────────────────────────────────────────────────
   useEffect(() => {
-    if (!rarityOpen) return
-    const h = e => { if (rarityRef.current && !rarityRef.current.contains(e.target)) setRarityOpen(false) }
+    if (!filtersOpen) return
+    const h = e => { if (filtersRef.current && !filtersRef.current.contains(e.target)) setFiltersOpen(false) }
     document.addEventListener('mousedown', h)
     return () => document.removeEventListener('mousedown', h)
-  }, [rarityOpen])
+  }, [filtersOpen])
 
   useEffect(() => {
     if (!bulkOpen) return
@@ -107,6 +116,47 @@ export default function CardsPage() {
     document.addEventListener('mousedown', h)
     return () => document.removeEventListener('mousedown', h)
   }, [bulkOpen])
+
+  // Cross-set search: debounce API call when user types in the search box
+  useEffect(() => {
+    clearTimeout(searchDebounceRef.current)
+    const q = search.trim()
+    if (q.length < 2 || !setInfo?.game_slug) { setSearchDropResults([]); return }
+    setSearchDropLoading(true)
+    searchDebounceRef.current = setTimeout(() => {
+      fetch(`${API_URL}/api/cards/search?name=${encodeURIComponent(q)}&game=${setInfo.game_slug}`)
+        .then(r => r.json())
+        .then(data => { setSearchDropResults(Array.isArray(data) ? data : []); setSearchDropLoading(false) })
+        .catch(() => setSearchDropLoading(false))
+    }, 300)
+    return () => clearTimeout(searchDebounceRef.current)
+  }, [search, setInfo?.game_slug])
+
+  // Close cross-set dropdown on outside click
+  useEffect(() => {
+    if (!searchDropResults.length) return
+    const h = e => { if (searchDropRef.current && !searchDropRef.current.contains(e.target)) setSearchDropResults([]) }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [searchDropResults.length])
+
+  const handleSearchAdd = useCallback(async (card) => {
+    if (!user || !card.printing_id) return
+    setSearchAddingIds(prev => ({ ...prev, [card.printing_id]: true }))
+    try {
+      await authFetch(`${API_URL}/api/users/me/collection`, {
+        method: 'POST',
+        body: JSON.stringify({ printing_id: card.printing_id, quantity: 1, finish: 'normal', condition: 'NM' }),
+      })
+      setSearchAddedIds(prev => ({ ...prev, [card.printing_id]: true }))
+      // Refresh owned for current set
+      const data = await authFetch(`${API_URL}/api/users/me/collection/set/${setId}`).then(r => r.json())
+      setOwned(data || {})
+      setTimeout(() => setSearchAddedIds(prev => { const n = { ...prev }; delete n[card.printing_id]; return n }), 2000)
+    } finally {
+      setSearchAddingIds(prev => { const n = { ...prev }; delete n[card.printing_id]; return n })
+    }
+  }, [user, authFetch, setId])
 
   // ── Data fetching ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -126,6 +176,14 @@ export default function CardsPage() {
       .then(r => r.json()).then(data => setOwned(data || {})).catch(() => setOwned({}))
   }, [user, setId, authFetch])
 
+  useEffect(() => {
+    if (!setInfo?.game_slug) return
+    fetch(`${API_URL}/api/games/${setInfo.game_slug}/attribute-keys`)
+      .then(r => r.ok ? r.json() : [])
+      .then(keys => setAttrKeys(Array.isArray(keys) ? keys : []))
+      .catch(() => {})
+  }, [setInfo?.game_slug])
+
   // ── Sorting / filtering / paging ──────────────────────────────────────────
   const allRarities = useMemo(() => {
     const seen = new Set()
@@ -135,16 +193,73 @@ export default function CardsPage() {
 
   const hasCardType = useMemo(() => cards.some(c => c.card_type), [cards])
 
-  const availableAttrSorts = useMemo(() => {
-    if (!cards.length) return []
-    return ATTR_SORT_FIELDS.filter(f => cards.some(c => attrNum(c, f.key) != null))
-  }, [cards])
+  const attrSortableKeys = useMemo(() => {
+    if (!cards.length || attrKeys.length === 0) return []
+    return attrKeys.filter(key => {
+      for (const card of cards) {
+        const val = getAttrVal(card, key)
+        if (val === null || val === undefined) continue
+        return isPrimitiveAttrVal(val)
+      }
+      return false
+    })
+  }, [cards, attrKeys])
+
+  const attrDistinctValues = useMemo(() => {
+    if (!cards.length || attrSortableKeys.length === 0) return {}
+    const result = {}
+    for (const key of attrSortableKeys) {
+      const vals = new Set()
+      for (const card of cards) {
+        const val = getAttrVal(card, key)
+        if (val === null || val === undefined) continue
+        if (Array.isArray(val)) val.forEach(v => vals.add(String(v)))
+        else vals.add(String(val))
+      }
+      if (vals.size > 0 && vals.size <= 30) {
+        result[key] = [...vals].sort((a, b) => {
+          const an = parseFloat(a), bn = parseFloat(b)
+          if (!isNaN(an) && !isNaN(bn)) return an - bn
+          return a.localeCompare(b)
+        })
+      }
+    }
+    return result
+  }, [cards, attrSortableKeys])
+
+  function toggleAttrFilter(key, val) {
+    setAttrFilters(prev => {
+      const existing = prev[key] ?? []
+      const next = existing.includes(val) ? existing.filter(v => v !== val) : [...existing, val]
+      return { ...prev, [key]: next }
+    })
+    setParam({ page: 1 })
+  }
+
+  function toggleAttrKeyExpanded(key) {
+    setExpandedAttrKeys(prev => {
+      const next = new Set(prev)
+      next.has(key) ? next.delete(key) : next.add(key)
+      return next
+    })
+  }
 
   const sortedCards = useMemo(() => {
     const q = search.trim().toLowerCase()
     let filtered = cards
-    if (q)                     filtered = filtered.filter(c => c.name.toLowerCase().includes(q))
+    if (q) filtered = filtered.filter(c => c.name.toLowerCase().includes(q))
     if (rarityFilter.length > 0) filtered = filtered.filter(c => rarityFilter.includes(c.rarity))
+
+    const activeAttrFilters = Object.entries(attrFilters).filter(([, vals]) => vals.length > 0)
+    if (activeAttrFilters.length > 0) {
+      filtered = filtered.filter(c => activeAttrFilters.every(([key, vals]) => {
+        const val = getAttrVal(c, key)
+        if (val === null || val === undefined) return false
+        if (Array.isArray(val)) return vals.some(v => val.map(String).includes(v))
+        return vals.includes(String(val))
+      }))
+    }
+
     return [...filtered].sort((a, b) => {
       if (sort === 'name_asc')    return a.name.localeCompare(b.name)
       if (sort === 'name_desc')   return b.name.localeCompare(a.name)
@@ -152,21 +267,19 @@ export default function CardsPage() {
       if (sort === 'rarity_asc')  return rarityRank(b.rarity) - rarityRank(a.rarity) || a.name.localeCompare(b.name)
       if (sort === 'type_asc')    return (a.card_type || '').localeCompare(b.card_type || '') || a.name.localeCompare(b.name)
       if (sort === 'type_desc')   return (b.card_type || '').localeCompare(a.card_type || '') || a.name.localeCompare(b.name)
-      // Dynamic attribute sorts: "attr_<key>_asc" / "attr_<key>_desc"
       const attrMatch = sort.match(/^attr_(.+)_(asc|desc)$/)
       if (attrMatch) {
         const [, key, dir] = attrMatch
-        const va = attrNum(a, key) ?? Infinity
-        const vb = attrNum(b, key) ?? Infinity
-        const cmp = va - vb
-        return dir === 'asc' ? (cmp || a.name.localeCompare(b.name)) : (-cmp || a.name.localeCompare(b.name))
+        const av = attrValToSortable(getAttrVal(a, key))
+        const bv = attrValToSortable(getAttrVal(b, key))
+        const cmp = compareAttrVals(av, bv)
+        return dir === 'asc' ? cmp : -cmp
       }
-      // Default: collector number
       const na = parseInt(a.collector_number) || 0
       const nb = parseInt(b.collector_number) || 0
       return na !== nb ? na - nb : a.name.localeCompare(b.name)
     })
-  }, [cards, sort, rarityFilter])
+  }, [cards, sort, rarityFilter, attrFilters])
 
   const showAll    = pageSize === 0
   const totalPages = showAll ? 1 : Math.max(1, Math.ceil(sortedCards.length / pageSize))
@@ -384,101 +497,230 @@ export default function CardsPage() {
       )}
 
       {/* ── Toolbar ──────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-3 mb-4 flex-wrap">
-        {/* Search */}
-        <div className="relative flex items-center w-full sm:w-auto">
-          <span className="absolute left-2.5 text-sm pointer-events-none" style={{ color: 'var(--text-muted)' }}>⌕</span>
-          <input
-            type="text"
-            placeholder="Search cards…"
-            value={search}
-            onChange={e => setParam({ q: e.target.value, page: 1 })}
-            className="text-sm pl-7 pr-8 py-1.5 rounded w-full sm:w-44"
-            style={{ backgroundColor: 'var(--bg-surface)', border: `1px solid ${search ? 'var(--accent)' : 'var(--border)'}`, color: 'var(--text-primary)', outline: 'none' }}
-          />
-          {search && (
-            <button onClick={() => setParam({ q: '', page: 1 })}
-              className="absolute right-2 text-sm hover:opacity-80"
-              style={{ color: 'var(--text-muted)' }}>×</button>
-          )}
-        </div>
+      {(() => {
+        const activeAttrFilterCount = Object.values(attrFilters).filter(v => v.length > 0).length
+        const activeCount = (sort !== 'name_asc' ? 1 : 0) + rarityFilter.length + (pageSize !== 25 ? 1 : 0) + activeAttrFilterCount
 
-        {/* Sort */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Sort By</span>
-          <select value={sort} onChange={e => setParam({ sort: e.target.value, page: 1 })}
-            className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
-            <option value="number_asc">Collector # ↑</option>
-            <option value="name_asc">Name A→Z</option>
-            <option value="name_desc">Name Z→A</option>
-            <option value="rarity_desc">Rarity: High→Low</option>
-            <option value="rarity_asc">Rarity: Low→High</option>
-            {hasCardType && <option value="type_asc">Type A→Z</option>}
-            {availableAttrSorts.map(f => (
-              <optgroup key={f.key} label={f.label}>
-                <option value={`attr_${f.key}_asc`}>{f.label} ↑</option>
-                <option value={`attr_${f.key}_desc`}>{f.label} ↓</option>
-              </optgroup>
-            ))}
-          </select>
-        </div>
+        return (
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            {/* Search — filters grid + shows cross-set dropdown */}
+            <div className="relative flex-1 min-w-0" ref={searchDropRef}>
+              <div className="relative flex items-center">
+                <span className="absolute left-2.5 text-sm pointer-events-none" style={{ color: 'var(--text-muted)' }}>⌕</span>
+                <input
+                  type="text"
+                  placeholder="Search cards…"
+                  value={search}
+                  onChange={e => setParam({ q: e.target.value, page: 1 })}
+                  className="text-sm pl-7 pr-8 py-1.5 rounded w-full"
+                  style={{ backgroundColor: 'var(--bg-surface)', border: `1px solid ${search ? 'var(--accent)' : 'var(--border)'}`, color: 'var(--text-primary)', outline: 'none' }}
+                />
+                {search && (
+                  <button onClick={() => { setParam({ q: '', page: 1 }); setSearchDropResults([]) }}
+                    className="absolute right-2 text-sm hover:opacity-80"
+                    style={{ color: 'var(--text-muted)' }}>×</button>
+                )}
+              </div>
 
-        {/* Filter Rarity */}
-        {allRarities.length > 0 && (
-          <div className="flex items-center gap-1.5" ref={rarityRef}>
-            <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Filter Rarity</span>
-            <div className="relative">
-              <button onClick={() => setRarityOpen(o => !o)}
-                className="text-sm px-3 py-1.5 rounded flex items-center gap-1.5"
-                style={{ backgroundColor: 'var(--bg-surface)', border: `1px solid ${rarityFilter.length > 0 ? 'var(--accent)' : 'var(--border)'}`, color: rarityFilter.length > 0 ? 'var(--accent)' : 'var(--text-primary)' }}>
-                {rarityFilter.length > 0 ? `${rarityFilter.length} selected` : 'All'} ▾
-              </button>
-              {rarityOpen && (
-                <div className="absolute z-20 mt-1 rounded-lg shadow-xl min-w-[160px]"
-                  style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}>
-                  <div className="p-1">
-                    {allRarities.map(r => (
-                      <label key={r} className="flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer hover:opacity-80"
-                        style={{ backgroundColor: rarityFilter.includes(r) ? 'var(--bg-surface)' : 'transparent' }}>
-                        <input type="checkbox" checked={rarityFilter.includes(r)}
-                          onChange={() => setParam({ rarity: rarityFilter.includes(r) ? rarityFilter.filter(x => x !== r) : [...rarityFilter, r], page: 1 })}
-                          className="accent-[#0097a7]" />
-                        <span className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(r)] || 'var(--text-muted)' }}>{r}</span>
-                      </label>
-                    ))}
-                    {rarityFilter.length > 0 && (
-                      <button onClick={() => setParam({ rarity: [], page: 1 })}
-                        className="w-full text-xs px-3 py-1.5 mt-1 rounded text-left"
-                        style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)' }}>
-                        Clear filter
-                      </button>
-                    )}
-                  </div>
+              {/* Cross-set results dropdown */}
+              {(searchDropLoading || searchDropResults.length > 0) && search.trim().length >= 2 && (
+                <div className="absolute left-0 right-0 z-30 mt-1 rounded-xl shadow-2xl overflow-hidden"
+                  style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', maxHeight: '480px', overflowY: 'auto' }}>
+                  {searchDropLoading && (
+                    <p className="text-sm px-4 py-3" style={{ color: 'var(--text-muted)' }}>Searching…</p>
+                  )}
+                  {!searchDropLoading && searchDropResults.length === 0 && (
+                    <p className="text-sm px-4 py-3" style={{ color: 'var(--text-muted)' }}>No cards found</p>
+                  )}
+                  {!searchDropLoading && (() => {
+                    const groups = []
+                    const seen = {}
+                    for (const p of searchDropResults) {
+                      if (!seen[p.id]) { seen[p.id] = groups.length; groups.push({ ...p, printings: [] }) }
+                      groups[seen[p.id]].printings.push({ printing_id: p.printing_id, set_name: p.set_name })
+                    }
+                    return groups.map(card => (
+                      <div key={card.id} className="border-b" style={{ borderColor: 'var(--border-panel)' }}>
+                        <div className="flex items-center gap-3 px-3 pt-2.5 pb-1.5">
+                          <div className="shrink-0 cursor-pointer" onClick={() => navigate(`/cards/${card.id}`)}>
+                            {card.image_url
+                              ? <img src={card.image_url} alt={card.name} className="rounded" style={{ width: 36, height: 50, objectFit: 'cover' }} />
+                              : <div className="rounded flex items-center justify-center" style={{ width: 36, height: 50, backgroundColor: 'var(--bg-surface)' }}>
+                                  <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.2 }}>{card.name.slice(0,6)}</span>
+                                </div>
+                            }
+                          </div>
+                          <p className="flex-1 text-sm font-semibold truncate cursor-pointer"
+                            style={{ color: 'var(--text-primary)' }}
+                            onClick={() => navigate(`/cards/${card.id}`)}>
+                            {card.name}
+                          </p>
+                        </div>
+                        <div className="flex flex-col pb-1.5 pl-14 pr-3 gap-1">
+                          {card.printings.map(p => (
+                            <div key={p.printing_id} className="flex items-center justify-between gap-2">
+                              <span className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{p.set_name}</span>
+                              {user && p.printing_id > 0 && (
+                                <button
+                                  onClick={() => handleSearchAdd({ ...card, printing_id: p.printing_id })}
+                                  disabled={!!searchAddingIds[p.printing_id]}
+                                  className="shrink-0 text-xs px-2 py-0.5 rounded font-medium"
+                                  style={{
+                                    backgroundColor: searchAddedIds[p.printing_id] ? '#a5d6a7' : 'var(--accent)',
+                                    color: '#fff',
+                                    opacity: searchAddingIds[p.printing_id] ? 0.6 : 1,
+                                    minWidth: 56,
+                                  }}>
+                                  {searchAddedIds[p.printing_id] ? '✓ Added' : searchAddingIds[p.printing_id] ? '…' : '+ Add'}
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  })()}
                 </div>
               )}
             </div>
+
+            {/* Unified Filters button */}
+            <div className="relative" ref={filtersRef}>
+              <button
+                onClick={() => setFiltersOpen(o => !o)}
+                className="text-sm px-3 py-1.5 rounded flex items-center gap-1.5 shrink-0"
+                style={{
+                  backgroundColor: 'var(--bg-surface)',
+                  border: `1px solid ${activeCount > 0 ? 'var(--accent)' : 'var(--border)'}`,
+                  color: activeCount > 0 ? 'var(--accent)' : 'var(--text-muted)',
+                }}
+              >
+                Filters{activeCount > 0 ? ` (${activeCount})` : ''} ▾
+              </button>
+
+              {filtersOpen && (
+                <div
+                  className="absolute right-0 z-20 mt-1 rounded-xl shadow-xl p-4 flex flex-col gap-3 overflow-y-auto"
+                  style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', minWidth: '240px', maxHeight: '80vh' }}
+                >
+                  {/* Sort */}
+                  <div>
+                    <p className="text-xs mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Sort</p>
+                    <select value={sort} onChange={e => setParam({ sort: e.target.value, page: 1 })}
+                      className="w-full text-sm px-2 py-1.5 rounded"
+                      style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
+                      <optgroup label="Standard">
+                        <option value="number_asc">Collector # ↑</option>
+                        <option value="name_asc">Name A→Z</option>
+                        <option value="name_desc">Name Z→A</option>
+                        <option value="rarity_desc">Rarity: High→Low</option>
+                        <option value="rarity_asc">Rarity: Low→High</option>
+                        {hasCardType && <option value="type_asc">Type A→Z</option>}
+                      </optgroup>
+                      {attrSortableKeys.length > 0 && (
+                        <optgroup label="Card Attributes">
+                          {attrSortableKeys.map(k => [
+                            <option key={`attr_${k}_asc`} value={`attr_${k}_asc`}>{formatAttrKey(k)} ↑</option>,
+                            <option key={`attr_${k}_desc`} value={`attr_${k}_desc`}>{formatAttrKey(k)} ↓</option>,
+                          ])}
+                        </optgroup>
+                      )}
+                    </select>
+                  </div>
+
+                  {/* Rarity */}
+                  {allRarities.length > 0 && (
+                    <div>
+                      <p className="text-xs mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Rarity</p>
+                      <div className="flex flex-col gap-0.5">
+                        {allRarities.map(r => (
+                          <label key={r} className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer"
+                            style={{ backgroundColor: rarityFilter.includes(r) ? 'var(--bg-surface)' : 'transparent' }}>
+                            <input type="checkbox" checked={rarityFilter.includes(r)}
+                              onChange={() => setParam({ rarity: rarityFilter.includes(r) ? rarityFilter.filter(x => x !== r) : [...rarityFilter, r], page: 1 })}
+                              className="accent-[#0097a7]" />
+                            <span className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(r)] || 'var(--text-muted)' }}>{r}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Dynamic attribute filters */}
+                  {Object.entries(attrDistinctValues).length > 0 && (
+                    <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.5rem' }}>
+                      <p className="text-xs mb-2 font-semibold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Attributes</p>
+                      <div className="flex flex-col gap-0.5">
+                        {Object.entries(attrDistinctValues).map(([key, vals]) => {
+                          const activeVals = attrFilters[key] ?? []
+                          const expanded = expandedAttrKeys.has(key)
+                          return (
+                            <div key={key} className="rounded" style={{ backgroundColor: expanded ? 'var(--bg-surface)' : 'transparent', border: expanded ? '1px solid var(--border)' : '1px solid transparent' }}>
+                              <button
+                                onClick={() => toggleAttrKeyExpanded(key)}
+                                className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded"
+                                style={{ color: activeVals.length > 0 ? 'var(--accent)' : 'var(--text-muted)' }}
+                              >
+                                <span className="font-medium">
+                                  {formatAttrKey(key)}{activeVals.length > 0 ? ` (${activeVals.length})` : ''}
+                                </span>
+                                <span style={{ fontSize: '0.6rem' }}>{expanded ? '▼' : '▶'}</span>
+                              </button>
+                              {expanded && (
+                                <div className="flex flex-col gap-0.5 pb-1.5 px-1">
+                                  {vals.map(val => {
+                                    const active = activeVals.includes(val)
+                                    return (
+                                      <label key={val} className="flex items-center gap-2 px-2 py-0.5 rounded cursor-pointer text-xs"
+                                        style={{ backgroundColor: active ? 'var(--bg-chip)' : 'transparent', color: 'var(--text-primary)' }}>
+                                        <input type="checkbox" className="accent-[#0097a7]" checked={active}
+                                          onChange={() => toggleAttrFilter(key, val)} />
+                                        {val}
+                                      </label>
+                                    )
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Page size */}
+                  <div className="flex items-center justify-between gap-2 pt-1" style={{ borderTop: '1px solid var(--border)' }}>
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Cards per page</span>
+                    <select value={pageSize} onChange={e => setParam({ per: e.target.value, page: 1 })}
+                      className="text-xs px-2 py-1 rounded"
+                      style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                      <option value={0}>All</option>
+                    </select>
+                  </div>
+
+                  {/* Reset */}
+                  {activeCount > 0 && (
+                    <button
+                      onClick={() => { setParam({ sort: null, rarity: [], per: null, page: 1 }); setAttrFilters({}) }}
+                      className="text-xs py-1 rounded text-left"
+                      style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)', paddingTop: '0.5rem' }}
+                    >
+                      Reset all filters
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              {sortedCards.length} cards{totalPages > 1 && ` · page ${safePage} of ${totalPages}`}
+            </span>
           </div>
-        )}
-
-        {/* Cards Per Page */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Cards Per Page</span>
-          <select value={pageSize} onChange={e => setParam({ per: e.target.value, page: 1 })}
-            className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-            <option value={0}>Show All</option>
-          </select>
-        </div>
-
-
-        <span className="text-xs ml-auto" style={{ color: 'var(--text-muted)' }}>
-          {sortedCards.length} cards{totalPages > 1 && ` · page ${safePage} of ${totalPages}`}
-        </span>
-      </div>
+        )
+      })()}
 
       {/* ── Bulk mode bar ────────────────────────────────────────────────── */}
       {isBulkActive && (

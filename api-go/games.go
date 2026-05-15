@@ -15,11 +15,11 @@ func (a *App) getGames(w http.ResponseWriter, r *http.Request) {
 	)
 	if q != "" {
 		rows, err = a.db.Query(r.Context(),
-			"SELECT id, name, slug, description, card_back_image FROM games WHERE name ILIKE $1 ORDER BY name",
+			"SELECT id, name, slug, description, card_back_image, rulebook_url FROM games WHERE name ILIKE $1 ORDER BY name",
 			"%"+escapeLike(q)+"%")
 	} else {
 		rows, err = a.db.Query(r.Context(),
-			"SELECT id, name, slug, description, card_back_image FROM games ORDER BY name")
+			"SELECT id, name, slug, description, card_back_image, rulebook_url FROM games ORDER BY name")
 	}
 	if err != nil {
 		jsonError(w, "Database error", http.StatusInternalServerError)
@@ -30,7 +30,7 @@ func (a *App) getGames(w http.ResponseWriter, r *http.Request) {
 	games := []Game{}
 	for rows.Next() {
 		var g Game
-		if err := rows.Scan(&g.ID, &g.Name, &g.Slug, &g.Description, &g.CardBackImage); err != nil {
+		if err := rows.Scan(&g.ID, &g.Name, &g.Slug, &g.Description, &g.CardBackImage, &g.RulebookURL); err != nil {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}
@@ -95,8 +95,8 @@ func (a *App) getGame(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 	var g Game
 	err := a.db.QueryRow(r.Context(),
-		"SELECT id, name, slug, description FROM games WHERE slug = $1", slug,
-	).Scan(&g.ID, &g.Name, &g.Slug, &g.Description)
+		"SELECT id, name, slug, description, card_back_image, rulebook_url FROM games WHERE slug = $1", slug,
+	).Scan(&g.ID, &g.Name, &g.Slug, &g.Description, &g.CardBackImage, &g.RulebookURL)
 	if err != nil {
 		jsonError(w, "Game not found", http.StatusNotFound)
 		return
