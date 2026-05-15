@@ -201,9 +201,9 @@ export default function SetsPage() {
             </p>
           )}
 
-          {gameInfo?.links?.length > 0 && (
+          {(gameInfo?.links?.length > 0 || game?.rulebook_url) && (
             <div className="flex flex-wrap gap-3 mb-6">
-              {gameInfo.links.map(link => (
+              {gameInfo?.links?.map(link => (
                 <a
                   key={link.url}
                   href={link.url}
@@ -215,6 +215,17 @@ export default function SetsPage() {
                   {link.label} ↗
                 </a>
               ))}
+              {game?.rulebook_url && (
+                <a
+                  href={game.rulebook_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm px-3 py-1.5 rounded-lg border transition-all duration-150 hover:opacity-80"
+                  style={{ color: 'var(--accent)', borderColor: 'var(--accent)', textDecoration: 'none' }}
+                >
+                  📖 Official Rulebook ↗
+                </a>
+              )}
             </div>
           )}
         </div>
