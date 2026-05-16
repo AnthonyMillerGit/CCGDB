@@ -63,8 +63,9 @@ export function normalizeRarity(raw) {
        'starlight rare', 'special illustration rare', 'ffr', 'premium gold rare',
        'ofr', 'rare secret', 'r+', 'unique'].includes(r)) return 'ultra'
 
-  // Ultra Rare cont. — Lorcana enchanted (alternate art chase)
-  if (['enchanted', 'epic', 'iconic'].includes(r)) return 'ultra'
+  // Lorcana chase tiers — enchanted/epic are ultra, iconic is rarest (promo slot)
+  if (['enchanted', 'epic'].includes(r)) return 'ultra'
+  if (r === 'iconic') return 'promo'
 
   // Promo / Special — rarest tier (chase cards, avatars, etc.)
   if (['p', 'pr', 'promo', 'm', 'premium', 'hero', 'avatar',
