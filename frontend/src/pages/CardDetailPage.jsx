@@ -25,6 +25,7 @@ import MetaZooCardInfo       from '../components/card-templates/MetaZooCardInfo'
 import RiftboundCardInfo     from '../components/card-templates/RiftboundCardInfo'
 import GundamCardInfo        from '../components/card-templates/GundamCardInfo'
 import UnionArenaCardInfo    from '../components/card-templates/UnionArenaCardInfo'
+import AniMayhemCardInfo    from '../components/card-templates/AniMayhemCardInfo'
 import GenericCardInfo       from '../components/card-templates/GenericCardInfo'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
@@ -654,11 +655,13 @@ export default function CardDetailPage() {
           {card.game_slug === 'riftbound'            && <RiftboundCardInfo card={card} />}
           {card.game_slug === 'gundam'               && <GundamCardInfo card={card} />}
           {card.game_slug === 'union-arena'          && <UnionArenaCardInfo card={card} />}
+          {card.game_slug === 'ani-mayhem-ccg'       && <AniMayhemCardInfo card={card} />}
           {!['mtg','pokemon','middle-earth-ccg','yugioh','weissschwarz','seventhsea',
              'vampire-the-eternal-struggle-ccg','world-of-warcraft-tcg','naruto-mythos-tcg',
              'sorcery','swu','starwars_decipher','startrek_1e','startrek_2e',
              'lorcana','digimon','onepiece','fftcg','fab','dragon-ball-fusion',
-             'grand-archive','metazoo','riftbound','gundam','union-arena'].includes(card.game_slug) && (
+             'grand-archive','metazoo','riftbound','gundam','union-arena',
+             'ani-mayhem-ccg'].includes(card.game_slug) && (
             <GenericCardInfo card={card} />
           )}
 
