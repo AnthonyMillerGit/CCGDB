@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
-import { RARITY_COLORS, normalizeRarity, rarityRank } from '../theme'
+import { rarityColor, rarityRank } from '../theme'
 
 const isTouchDevice = window.matchMedia('(hover: none)').matches
 
@@ -188,7 +188,7 @@ export default function CardsPage() {
   const allRarities = useMemo(() => {
     const seen = new Set()
     for (const c of cards) if (c.rarity) seen.add(c.rarity)
-    return [...seen].sort((a, b) => rarityRank(a) - rarityRank(b))
+    return [...seen].sort((a, b) => rarityRank(a, setInfo?.game_slug) - rarityRank(b, setInfo?.game_slug))
   }, [cards])
 
   const hasCardType = useMemo(() => cards.some(c => c.card_type), [cards])
@@ -263,8 +263,8 @@ export default function CardsPage() {
     return [...filtered].sort((a, b) => {
       if (sort === 'name_asc')    return a.name.localeCompare(b.name)
       if (sort === 'name_desc')   return b.name.localeCompare(a.name)
-      if (sort === 'rarity_desc') return rarityRank(a.rarity) - rarityRank(b.rarity) || a.name.localeCompare(b.name)
-      if (sort === 'rarity_asc')  return rarityRank(b.rarity) - rarityRank(a.rarity) || a.name.localeCompare(b.name)
+      if (sort === 'rarity_desc') return rarityRank(a.rarity, setInfo?.game_slug) - rarityRank(b.rarity, setInfo?.game_slug) || a.name.localeCompare(b.name)
+      if (sort === 'rarity_asc')  return rarityRank(b.rarity, setInfo?.game_slug) - rarityRank(a.rarity, setInfo?.game_slug) || a.name.localeCompare(b.name)
       if (sort === 'type_asc')    return (a.card_type || '').localeCompare(b.card_type || '') || a.name.localeCompare(b.name)
       if (sort === 'type_desc')   return (b.card_type || '').localeCompare(a.card_type || '') || a.name.localeCompare(b.name)
       const attrMatch = sort.match(/^attr_(.+)_(asc|desc)$/)
@@ -639,7 +639,7 @@ export default function CardsPage() {
                             <input type="checkbox" checked={rarityFilter.includes(r)}
                               onChange={() => setParam({ rarity: rarityFilter.includes(r) ? rarityFilter.filter(x => x !== r) : [...rarityFilter, r], page: 1 })}
                               className="accent-[#0097a7]" />
-                            <span className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(r)] || 'var(--text-muted)' }}>{r}</span>
+                            <span className="text-xs capitalize" style={{ color: rarityColor(r, setInfo?.game_slug) }}>{r}</span>
                           </label>
                         ))}
                       </div>
@@ -785,7 +785,7 @@ export default function CardsPage() {
                 </div>
                 <div className="p-2 flex items-end justify-between gap-1">
                   <p className="text-xs font-medium leading-tight" style={{ color: 'var(--text-primary)' }}>{card.name}</p>
-                  <p className="text-xs capitalize shrink-0" style={{ color: RARITY_COLORS[normalizeRarity(card.rarity)] || 'var(--text-muted)' }}>{card.rarity}</p>
+                  <p className="text-xs capitalize shrink-0" style={{ color: rarityColor(card.rarity, setInfo?.game_slug) }}>{card.rarity}</p>
                 </div>
                 {isBulkActive && (
                   <div className="px-2 pb-2 flex items-center gap-1" onClick={e => e.stopPropagation()}>
@@ -814,7 +814,7 @@ export default function CardsPage() {
             const quantity    = owned[card.printing_id]
             const isOwned     = quantity > 0
             const bulkQty     = bulkQtys[card.printing_id] || 0
-            const rarityColor = RARITY_COLORS[normalizeRarity(card.rarity)] || 'var(--text-muted)'
+            const cardRarityColor = rarityColor(card.rarity, setInfo?.game_slug)
             return (
               <div key={card.id}
                 onClick={() => !isBulkActive && navigate(`/cards/${card.id}?printing=${card.printing_id}`)}
@@ -828,7 +828,7 @@ export default function CardsPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs capitalize" style={{ color: rarityColor }}>{card.rarity}</span>
+                  <span className="text-xs capitalize" style={{ color: cardRarityColor }}>{card.rarity}</span>
                   {isBulkActive && (
                     <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
                       <button onClick={() => adjustQty(card.printing_id, -1)}

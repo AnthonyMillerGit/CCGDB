@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
-import { RARITY_COLORS, normalizeRarity } from '../theme'
+import { rarityColor } from '../theme'
 
 const CONDITION_LABELS = { NM: 'Near Mint', LP: 'Light Play', MP: 'Moderate Play', HP: 'Heavy Play', DM: 'Damaged' }
 const CONDITION_COLORS = { NM: '#4ade80', LP: '#a3e635', MP: '#facc15', HP: '#fb923c', DM: '#f87171' }
@@ -147,6 +147,7 @@ export default function CollectionCardPage() {
               <PrintingCard
                 key={`${item.printing_id}-${item.finish}`}
                 item={item}
+                gameSlug={gameSlug}
                 onIncrease={handleIncrease}
                 onDecrease={handleDecrease}
                 onConditionChange={handleConditionChange}
@@ -160,8 +161,8 @@ export default function CollectionCardPage() {
   )
 }
 
-function PrintingCard({ item, onIncrease, onDecrease, onConditionChange, onFinishChange }) {
-  const rarityColor = RARITY_COLORS[normalizeRarity(item.rarity)] || 'var(--text-muted)'
+function PrintingCard({ item, gameSlug, onIncrease, onDecrease, onConditionChange, onFinishChange }) {
+  const itemRarityColor = rarityColor(item.rarity, gameSlug)
   const conditionColor = CONDITION_COLORS[item.condition] || CONDITION_COLORS.NM
 
   return (
@@ -183,7 +184,7 @@ function PrintingCard({ item, onIncrease, onDecrease, onConditionChange, onFinis
             {item.set_name}
           </p>
           <div className="flex items-center gap-2 mt-0.5">
-            {item.rarity && <span className="text-xs capitalize" style={{ color: rarityColor }}>{item.rarity}</span>}
+            {item.rarity && <span className="text-xs capitalize" style={{ color: itemRarityColor }}>{item.rarity}</span>}
             {item.collector_number && <span className="text-xs" style={{ color: '#9e836a' }}>#{item.collector_number}</span>}
           </div>
         </div>

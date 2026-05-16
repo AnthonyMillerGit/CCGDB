@@ -29,7 +29,7 @@ import AniMayhemCardInfo    from '../components/card-templates/AniMayhemCardInfo
 import GenericCardInfo       from '../components/card-templates/GenericCardInfo'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
-import { RARITY_COLORS, normalizeRarity } from '../theme'
+import { rarityColor } from '../theme'
 
 const CONDITIONS = ['NM', 'LP', 'MP', 'HP', 'DM']
 const FINISHES   = ['normal', 'foil', 'other']
@@ -500,7 +500,7 @@ export default function CardDetailPage() {
 
   const attrs = card.attributes || {}
   const isDoubleFaced = (attrs.card_faces || []).length > 0
-  const rarityColor = RARITY_COLORS[normalizeRarity(selectedPrinting?.rarity)] || 'var(--text-muted)'
+  const printingRarityColor = rarityColor(selectedPrinting?.rarity, card.game_slug)
 
   const ownedForPrinting = cardCollectionItems.filter(i => i.printing_id === selectedPrinting?.id)
   const totalOwnedForPrinting = ownedForPrinting.reduce((s, i) => s + i.quantity, 0)
@@ -623,7 +623,7 @@ export default function CardDetailPage() {
                 {selectedPrinting.set_name}
               </button>
               <span style={{ color: 'var(--border)' }}>•</span>
-              <span className="text-lg font-semibold capitalize" style={{ color: rarityColor }}>
+              <span className="text-lg font-semibold capitalize" style={{ color: printingRarityColor }}>
                 {selectedPrinting.rarity}
               </span>
             </div>
@@ -746,7 +746,7 @@ export default function CardDetailPage() {
                 <div className="p-2">
                   <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>{printing.set_name}</p>
                   <p className="text-xs capitalize"
-                    style={{ color: RARITY_COLORS[normalizeRarity(printing.rarity)] || 'var(--text-muted)' }}>
+                    style={{ color: rarityColor(printing.rarity, card.game_slug) }}>
                     {printing.rarity}
                   </p>
                   {user && (() => {

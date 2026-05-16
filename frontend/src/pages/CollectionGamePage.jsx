@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
-import { RARITY_COLORS, normalizeRarity, rarityRank } from '../theme'
+import { rarityColor, rarityRank } from '../theme'
 
 // ── Attribute helpers ──────────────────────────────────────────────────────────
 
@@ -66,7 +66,7 @@ function ListCardRow({ group, gameSlug, onIncrease, onDecrease, onSet }) {
         <div className="flex items-center gap-1 min-w-0">
           <span className="truncate" style={{ color: 'var(--text-primary)', fontSize: '0.7rem', fontWeight: 500 }} title={group.card_name}>{group.card_name}</span>
           {group.rarity && (
-            <span className="shrink-0 capitalize" style={{ color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)', fontSize: '0.65rem' }}>· {group.rarity}</span>
+            <span className="shrink-0 capitalize" style={{ color: rarityColor(group.rarity, gameSlug), fontSize: '0.65rem' }}>· {group.rarity}</span>
           )}
         </div>
       </Link>
@@ -311,7 +311,7 @@ export default function CollectionGamePage() {
     if (!gameData) return []
     const seen = new Set()
     for (const c of gameData.cards) if (c.rarity) seen.add(c.rarity)
-    return [...seen].sort((a, b) => rarityRank(a) - rarityRank(b))
+    return [...seen].sort((a, b) => rarityRank(a, gameSlug) - rarityRank(b, gameSlug))
   }, [gameData])
 
   // Attribute keys that have primitive (sortable/filterable) values — excludes card_faces, legalities, etc.
@@ -387,8 +387,8 @@ export default function CollectionGamePage() {
         case 'set_asc':     return a.set_name.localeCompare(b.set_name) || a.card_name.localeCompare(b.card_name)
         case 'qty_desc':    return b.quantity - a.quantity || a.card_name.localeCompare(b.card_name)
         case 'qty_asc':     return a.quantity - b.quantity || a.card_name.localeCompare(b.card_name)
-        case 'rarity_desc': return rarityRank(a.rarity) - rarityRank(b.rarity) || a.card_name.localeCompare(b.card_name)
-        case 'rarity_asc':  return rarityRank(b.rarity) - rarityRank(a.rarity) || a.card_name.localeCompare(b.card_name)
+        case 'rarity_desc': return rarityRank(a.rarity, gameSlug) - rarityRank(b.rarity, gameSlug) || a.card_name.localeCompare(b.card_name)
+        case 'rarity_asc':  return rarityRank(b.rarity, gameSlug) - rarityRank(a.rarity, gameSlug) || a.card_name.localeCompare(b.card_name)
         case 'type_asc':    return (a.card_type || '').localeCompare(b.card_type || '') || a.card_name.localeCompare(b.card_name)
         default:            return a.card_name.localeCompare(b.card_name)
       }
@@ -605,7 +605,7 @@ export default function CollectionGamePage() {
                           onChange={() => { setRarityFilter(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]); setPage(1) }}
                           className="accent-[#0097a7]"
                         />
-                        <span className="text-xs capitalize" style={{ color: RARITY_COLORS[normalizeRarity(r)] || 'var(--text-muted)' }}>{r}</span>
+                        <span className="text-xs capitalize" style={{ color: rarityColor(r, gameSlug) }}>{r}</span>
                       </label>
                     ))}
                   </div>
@@ -730,7 +730,7 @@ export default function CollectionGamePage() {
               {group.rarity && (
                 <span
                   className="text-xs shrink-0 capitalize rounded px-1.5 py-0.5"
-                  style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: RARITY_COLORS[normalizeRarity(group.rarity)] || 'var(--text-muted)' }}
+                  style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: rarityColor(group.rarity, gameSlug) }}
                 >{group.rarity}</span>
               )}
             </div>
