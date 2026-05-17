@@ -32,13 +32,12 @@ func (a *App) getSetCards(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rows, err := a.db.Query(r.Context(), `
-		SELECT DISTINCT ON (c.name)
-		       c.id, c.name, c.card_type, c.rules_text, c.attributes,
+		SELECT c.id, c.name, c.card_type, c.rules_text, c.attributes,
 		       p.id AS printing_id, p.collector_number, p.rarity, p.image_url, p.artist
 		FROM cards c
 		JOIN printings p ON p.card_id = c.id
 		WHERE p.set_id = $1
-		ORDER BY c.name, p.image_url NULLS LAST, p.id
+		ORDER BY p.collector_number, c.id
 	`, setID)
 	if err != nil {
 		jsonError(w, "Database error", http.StatusInternalServerError)
