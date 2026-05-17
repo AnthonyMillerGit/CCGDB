@@ -95,11 +95,11 @@ export default function GamesPage() {
           <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>
             ✦ Recently Released
           </p>
-          <div className="flex gap-3 overflow-x-auto pb-1">
+          <div className="flex gap-3 overflow-x-auto pb-1 snap-x snap-mandatory">
             {recentSets.map(set => (
               <div
                 key={set.set_id}
-                className="flex-shrink-0 flex items-center gap-3 px-3 py-2.5 rounded-xl w-40 sm:w-[220px]"
+                className="flex-shrink-0 flex items-center gap-3 px-3 py-2.5 rounded-xl w-40 sm:w-[220px] snap-start"
                 style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
               >
                 {set.card_back_image ? (

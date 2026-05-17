@@ -89,8 +89,8 @@ export default function SearchBar() {
 
       {showSuggestions && suggestions.length > 0 && (
         <div
-          className="absolute top-full right-0 mt-1 rounded-lg overflow-hidden z-50 border max-h-96 overflow-y-auto"
-          style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)', minWidth: '420px', boxShadow: '0 8px 32px var(--shadow)' }}
+          className="absolute top-full left-0 mt-1 rounded-lg overflow-hidden z-50 border max-h-96 overflow-y-auto"
+          style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)', width: '420px', maxWidth: 'calc(100vw - 1rem)', boxShadow: '0 8px 32px var(--shadow)' }}
         >
           {suggestions.map((card, i) => (
             <div

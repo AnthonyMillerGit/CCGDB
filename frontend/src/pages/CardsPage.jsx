@@ -601,7 +601,7 @@ export default function CardsPage() {
               {filtersOpen && (
                 <div
                   className="absolute right-0 z-20 mt-1 rounded-xl shadow-xl p-4 flex flex-col gap-3 overflow-y-auto"
-                  style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', minWidth: '240px', maxHeight: '80vh' }}
+                  style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', minWidth: '240px', maxWidth: 'calc(100vw - 2rem)', maxHeight: '80vh' }}
                 >
                   {/* Sort */}
                   <div>

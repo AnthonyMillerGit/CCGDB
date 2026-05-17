@@ -330,7 +330,7 @@ export default function DeckBuilderPage() {
 
         {/* Left — deck list */}
         <div className="lg:w-72 flex-shrink-0">
-          <div className="rounded-xl overflow-hidden sticky top-4" style={{ border: '1px solid var(--border)' }}>
+          <div className="rounded-xl overflow-hidden lg:sticky lg:top-4" style={{ border: '1px solid var(--border)' }}>
             <div className="px-3 py-2.5"
               style={{ backgroundColor: 'var(--bg-surface)', borderBottom: '1px solid var(--border)' }}>
               <div className="flex items-center justify-between">
@@ -340,15 +340,16 @@ export default function DeckBuilderPage() {
                   {totalCards}
                 </span>
               </div>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-xs mt-1 hidden lg:block" style={{ color: 'var(--text-muted)' }}>
                 Hover a card and click
                 <svg viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 inline mx-1 align-middle" style={{ color: 'var(--accent)' }}>
                   <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                 </svg>
                 to set the deck cover.
               </p>
+              <p className="text-xs mt-1 lg:hidden" style={{ color: 'var(--text-muted)' }}>Tap a card to set the deck cover.</p>
             </div>
-            <div className="overflow-y-auto" style={{ backgroundColor: 'var(--bg-chip)', maxHeight: 'calc(100vh - 220px)' }}>
+            <div className="overflow-y-auto max-h-64 lg:max-h-[calc(100vh-220px)]" style={{ backgroundColor: 'var(--bg-chip)' }}>
               {deck.cards.length === 0 ? (
                 <p className="text-xs text-center py-8 px-4" style={{ color: 'var(--text-muted)' }}>
                   Search for cards on the right to add them.

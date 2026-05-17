@@ -195,7 +195,7 @@ function PrintingCard({ item, gameSlug, onIncrease, onDecrease, onConditionChang
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => onDecrease(item)}
-              className="w-6 h-6 rounded text-sm font-bold flex items-center justify-center"
+              className="w-8 h-8 rounded text-sm font-bold flex items-center justify-center"
               style={{ backgroundColor: 'var(--bg-chip)', color: '#e05c5c', border: '1px solid var(--border)' }}
             >−</button>
             <span className={`text-sm font-bold w-6 text-center${item.finish === 'foil' ? ' foil-rainbow' : ''}`}
@@ -204,7 +204,7 @@ function PrintingCard({ item, gameSlug, onIncrease, onDecrease, onConditionChang
             </span>
             <button
               onClick={() => onIncrease(item)}
-              className="w-6 h-6 rounded text-sm font-bold flex items-center justify-center"
+              className="w-8 h-8 rounded text-sm font-bold flex items-center justify-center"
               style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid var(--border)' }}
             >+</button>
           </div>
