@@ -98,7 +98,7 @@ function ListCardRow({ group, gameSlug, onIncrease, onDecrease, onSet, editMode,
             <select
               value={item.finish}
               onChange={e => onFinishChange(item, e.target.value)}
-              className="text-xs px-1.5 py-0.5 rounded capitalize"
+              className="text-xs px-1.5 py-1.5 rounded capitalize"
               style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)', outline: 'none', flex: 1 }}
             >
               {FINISHES.map(f => <option key={f} value={f}>{f}</option>)}
@@ -106,7 +106,7 @@ function ListCardRow({ group, gameSlug, onIncrease, onDecrease, onSet, editMode,
             <select
               value={item.condition || 'NM'}
               onChange={e => onConditionChange(item, e.target.value)}
-              className="text-xs px-1.5 py-0.5 rounded font-medium"
+              className="text-xs px-1.5 py-1.5 rounded font-medium"
               style={{ backgroundColor: 'var(--bg-chip)', border: `1px solid ${condColor}55`, color: condColor, outline: 'none', flex: 1 }}
             >
               {Object.entries(CONDITION_LABELS).map(([val, label]) => (
@@ -146,12 +146,12 @@ function QuantityControl({ quantity, onIncrease, onDecrease, onSet, finish }) {
       />
       <button
         onClick={e => { e.preventDefault(); onIncrease() }}
-        className="w-5 h-5 rounded text-xs font-bold flex items-center justify-center shrink-0"
+        className="w-7 h-7 rounded text-xs font-bold flex items-center justify-center shrink-0"
         style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--accent)', border: '1px solid var(--border)' }}
       >+</button>
       <button
         onClick={e => { e.preventDefault(); onDecrease() }}
-        className="w-5 h-5 rounded text-xs font-bold flex items-center justify-center shrink-0"
+        className="w-7 h-7 rounded text-xs font-bold flex items-center justify-center shrink-0"
         style={{ backgroundColor: 'var(--bg-surface)', color: '#e05c5c', border: '1px solid var(--border)' }}
       >−</button>
     </div>
@@ -827,7 +827,7 @@ export default function CollectionGamePage() {
                         <select
                           value={item.finish || 'normal'}
                           onChange={e => handleFinishChange(item, e.target.value)}
-                          className="text-xs px-1.5 py-0.5 rounded w-full capitalize"
+                          className="text-xs px-1.5 py-1.5 rounded w-full capitalize"
                           style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', outline: 'none' }}
                         >
                           {FINISHES.map(f => <option key={f} value={f}>{f}</option>)}
@@ -835,7 +835,7 @@ export default function CollectionGamePage() {
                         <select
                           value={item.condition || 'NM'}
                           onChange={e => handleConditionChange(item, e.target.value)}
-                          className="text-xs px-1.5 py-0.5 rounded w-full font-medium"
+                          className="text-xs px-1.5 py-1.5 rounded w-full font-medium"
                           style={{ backgroundColor: 'var(--bg-surface)', border: `1px solid ${condColor}55`, color: condColor, outline: 'none' }}
                         >
                           {Object.entries(CONDITION_LABELS).map(([val, label]) => (
