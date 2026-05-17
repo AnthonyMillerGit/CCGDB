@@ -182,6 +182,111 @@ function ConfirmModal({ message, confirmLabel = 'Delete', onConfirm, onCancel })
   )
 }
 
+// ── Card avatar picker modal ──────────────────────────────────────────────────
+
+function CardAvatarPicker({ authFetch, onSelect, onClose }) {
+  const [games, setGames] = useState([])
+  const [selectedGame, setSelectedGame] = useState('')
+  const [search, setSearch] = useState('')
+  const [results, setResults] = useState([])
+  const [searching, setSearching] = useState(false)
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/games`)
+      .then(r => r.json())
+      .then(data => setGames(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (search.trim().length < 2) { setResults([]); setSearching(false); return }
+    setSearching(true)
+    const url = `${API_URL}/api/cards/search?name=${encodeURIComponent(search.trim())}${selectedGame ? `&game=${encodeURIComponent(selectedGame)}` : ''}`
+    const timer = setTimeout(() => {
+      fetch(url)
+        .then(r => r.json())
+        .then(data => { setResults(Array.isArray(data) ? data : []); setSearching(false) })
+        .catch(() => setSearching(false))
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [search, selectedGame])
+
+  const inputStyle = { backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+      onClick={onClose}
+    >
+      <div
+        className="rounded-xl w-full mx-4 flex flex-col"
+        style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', maxWidth: '520px', maxHeight: '80vh' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 pt-5 pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
+          <h2 className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>Choose Card Avatar</h2>
+          <button onClick={onClose} className="text-lg leading-none" style={{ color: 'var(--text-muted)' }}>✕</button>
+        </div>
+
+        <div className="px-5 pt-4 pb-3 flex flex-col gap-3">
+          <select
+            value={selectedGame}
+            onChange={e => setSelectedGame(e.target.value)}
+            className="w-full px-3 py-2 rounded text-sm"
+            style={inputStyle}
+          >
+            <option value="">All games</option>
+            {games.map(g => <option key={g.id} value={g.slug}>{g.name}</option>)}
+          </select>
+          <input
+            type="text"
+            placeholder="Search for a card…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            autoFocus
+            className="w-full px-3 py-2 rounded text-sm outline-none"
+            style={{ ...inputStyle, borderColor: search.length >= 2 ? 'var(--accent)' : 'var(--border)' }}
+          />
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 pb-5">
+          {searching && (
+            <p className="text-sm text-center py-6" style={{ color: 'var(--text-muted)' }}>Searching…</p>
+          )}
+          {!searching && search.trim().length < 2 && (
+            <p className="text-sm text-center py-6" style={{ color: 'var(--text-muted)' }}>Type at least 2 characters to search.</p>
+          )}
+          {!searching && search.trim().length >= 2 && results.length === 0 && (
+            <p className="text-sm text-center py-6" style={{ color: 'var(--text-muted)' }}>No cards found.</p>
+          )}
+          {results.length > 0 && (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-1">
+              {results.map(card => (
+                <button
+                  key={`${card.id}-${card.printing_id}`}
+                  onClick={() => onSelect(card.printing_id)}
+                  className="rounded-lg overflow-hidden transition-transform hover:scale-105 focus:outline-none"
+                  style={{ border: '2px solid var(--border)' }}
+                  title={card.name}
+                >
+                  {card.image_url ? (
+                    <img src={card.image_url} alt={card.name} className="w-full block" />
+                  ) : (
+                    <div className="aspect-[2.5/3.5] flex items-center justify-center p-1" style={{ backgroundColor: 'var(--bg-chip)' }}>
+                      <span className="text-xs text-center leading-tight" style={{ color: 'var(--text-muted)' }}>{card.name}</span>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Collection stats tab ──────────────────────────────────────────────────────
 
 function ProgressBar({ pct }) {
@@ -977,6 +1082,7 @@ export default function ProfilePage() {
   const [editingDisplayName, setEditingDisplayName] = useState(false)
   const [displayNameInput, setDisplayNameInput] = useState('')
   const [showColorPicker, setShowColorPicker] = useState(false)
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false)
   const colorPickerRef = useRef(null)
 
   useEffect(() => {
@@ -1000,6 +1106,29 @@ export default function ProfilePage() {
     setFullUser(updated)
     updateUser({ display_name: trimmed })
     setEditingDisplayName(false)
+  }
+
+  async function handleAvatarSelect(printingId) {
+    setShowAvatarPicker(false)
+    const res = await authFetch(`${API_URL}/api/auth/me`, {
+      method: 'PATCH',
+      body: JSON.stringify({ avatar_printing_id: printingId }),
+    })
+    if (!res.ok) return
+    const updated = await res.json()
+    setFullUser(updated)
+    updateUser({ avatar_image_url: updated.avatar_image_url })
+  }
+
+  async function handleClearAvatar() {
+    const res = await authFetch(`${API_URL}/api/auth/me`, {
+      method: 'PATCH',
+      body: JSON.stringify({ clear_avatar: true }),
+    })
+    if (!res.ok) return
+    const updated = await res.json()
+    setFullUser(updated)
+    updateUser({ avatar_image_url: '' })
   }
 
   async function handleColorChange(color) {
@@ -1076,34 +1205,65 @@ export default function ProfilePage() {
         style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
       >
         <div className="flex items-center gap-4">
-          {/* Avatar — click to change color */}
-          <div className="relative flex-shrink-0" ref={colorPickerRef}>
-            <div
-              className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold cursor-pointer select-none"
-              style={{ backgroundColor: fullUser?.avatar_color || 'var(--accent)', color: 'var(--bg-page)' }}
-              onClick={() => setShowColorPicker(o => !o)}
-              title="Change avatar color"
-            >
-              {initials}
+          {/* Avatar */}
+          <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
+            <div className="relative" ref={colorPickerRef}>
+              {fullUser?.avatar_image_url ? (
+                <img
+                  src={fullUser.avatar_image_url}
+                  alt="Card avatar"
+                  className="rounded-lg object-cover cursor-pointer"
+                  style={{ width: '70px', height: '98px', border: '2px solid var(--border)' }}
+                  onClick={() => setShowAvatarPicker(true)}
+                  title="Change card avatar"
+                />
+              ) : (
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold cursor-pointer select-none"
+                  style={{ backgroundColor: fullUser?.avatar_color || 'var(--accent)', color: 'var(--bg-page)' }}
+                  onClick={() => setShowColorPicker(o => !o)}
+                  title="Change avatar color"
+                >
+                  {initials}
+                </div>
+              )}
+              {showColorPicker && (
+                <div
+                  className="absolute left-0 top-16 z-20 p-2 rounded-xl shadow-xl grid gap-2"
+                  style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', gridTemplateColumns: 'repeat(5, 1fr)' }}
+                >
+                  {AVATAR_COLORS.map(color => (
+                    <button
+                      key={color}
+                      className="w-7 h-7 rounded-full border-2 transition-transform hover:scale-110"
+                      style={{
+                        backgroundColor: color,
+                        borderColor: (fullUser?.avatar_color || 'var(--accent)') === color ? '#fff' : 'transparent',
+                      }}
+                      onClick={() => handleColorChange(color)}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-            {showColorPicker && (
-              <div
-                className="absolute left-0 top-16 z-20 p-2 rounded-xl shadow-xl grid gap-2"
-                style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', gridTemplateColumns: 'repeat(5, 1fr)' }}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowAvatarPicker(true)}
+                className="text-xs"
+                style={{ color: 'var(--text-muted)' }}
               >
-                {AVATAR_COLORS.map(color => (
-                  <button
-                    key={color}
-                    className="w-7 h-7 rounded-full border-2 transition-transform hover:scale-110"
-                    style={{
-                      backgroundColor: color,
-                      borderColor: (fullUser?.avatar_color || 'var(--accent)') === color ? '#fff' : 'transparent',
-                    }}
-                    onClick={() => handleColorChange(color)}
-                  />
-                ))}
-              </div>
-            )}
+                {fullUser?.avatar_image_url ? 'Change card' : 'Choose card'}
+              </button>
+              {fullUser?.avatar_image_url && (
+                <button
+                  onClick={handleClearAvatar}
+                  className="text-xs"
+                  style={{ color: 'var(--accent-maroon)' }}
+                >
+                  Remove
+                </button>
+              )}
+            </div>
           </div>
           {/* Info */}
           <div>
@@ -1276,6 +1436,14 @@ export default function ProfilePage() {
       {/* Wishlist tab */}
       {activeTab === 'wishlist' && <MyWishlistTab authFetch={authFetch} />}
       {activeTab === 'stats' && <CollectionStatsTab authFetch={authFetch} />}
+
+      {showAvatarPicker && (
+        <CardAvatarPicker
+          authFetch={authFetch}
+          onSelect={handleAvatarSelect}
+          onClose={() => setShowAvatarPicker(false)}
+        />
+      )}
     </div>
   )
 }

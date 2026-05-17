@@ -124,19 +124,23 @@ type PrintingDetail struct {
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 type User struct {
-	ID          int       `json:"id"`
-	Username    string    `json:"username"`
-	Email       string    `json:"email"`
-	DisplayName string    `json:"display_name"`
-	AvatarColor string    `json:"avatar_color"`
-	IsVerified  bool      `json:"is_verified"`
-	IsAdmin     bool      `json:"is_admin"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID               int       `json:"id"`
+	Username         string    `json:"username"`
+	Email            string    `json:"email"`
+	DisplayName      string    `json:"display_name"`
+	AvatarColor      string    `json:"avatar_color"`
+	AvatarPrintingID *int      `json:"avatar_printing_id"`
+	AvatarImageURL   string    `json:"avatar_image_url"`
+	IsVerified       bool      `json:"is_verified"`
+	IsAdmin          bool      `json:"is_admin"`
+	CreatedAt        time.Time `json:"created_at"`
 }
 
 type UpdateProfileRequest struct {
-	DisplayName *string `json:"display_name"`
-	AvatarColor *string `json:"avatar_color"`
+	DisplayName      *string `json:"display_name"`
+	AvatarColor      *string `json:"avatar_color"`
+	AvatarPrintingID *int    `json:"avatar_printing_id"`
+	ClearAvatar      bool    `json:"clear_avatar"`
 }
 
 type AuthResponse struct {

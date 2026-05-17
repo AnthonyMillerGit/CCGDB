@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -60,6 +61,7 @@ func (a *App) register(w http.ResponseWriter, r *http.Request) {
 		"INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email, display_name, avatar_color, is_verified, is_admin, created_at",
 		username, email, hash,
 	).Scan(&user.ID, &user.Username, &user.Email, &user.DisplayName, &user.AvatarColor, &user.IsVerified, &user.IsAdmin, &user.CreatedAt)
+	// avatar_printing_id is NULL for new users, no join needed
 	if err != nil {
 		jsonError(w, "Server error", http.StatusInternalServerError)
 		return
@@ -100,13 +102,23 @@ func (a *App) login(w http.ResponseWriter, r *http.Request) {
 
 	var user User
 	var passwordHash string
+	var rawAvatarURL *string
 	err := a.db.QueryRow(r.Context(),
-		"SELECT id, username, email, password_hash, display_name, avatar_color, is_verified, is_admin, created_at FROM users WHERE email = $1",
+		`SELECT u.id, u.username, u.email, u.password_hash, u.display_name, u.avatar_color,
+		        u.avatar_printing_id, p.image_url, u.is_verified, u.is_admin, u.created_at
+		 FROM users u LEFT JOIN printings p ON p.id = u.avatar_printing_id
+		 WHERE u.email = $1`,
 		strings.ToLower(strings.TrimSpace(body.Email)),
-	).Scan(&user.ID, &user.Username, &user.Email, &passwordHash, &user.DisplayName, &user.AvatarColor, &user.IsVerified, &user.IsAdmin, &user.CreatedAt)
+	).Scan(&user.ID, &user.Username, &user.Email, &passwordHash, &user.DisplayName, &user.AvatarColor,
+		&user.AvatarPrintingID, &rawAvatarURL, &user.IsVerified, &user.IsAdmin, &user.CreatedAt)
 	if err != nil || !verifyPassword(body.Password, passwordHash) {
 		jsonError(w, "Invalid email or password", http.StatusUnauthorized)
 		return
+	}
+	if rawAvatarURL != nil {
+		if u := a.imgURL(rawAvatarURL); u != nil {
+			user.AvatarImageURL = *u
+		}
 	}
 
 	authToken, err := a.createToken(user.ID)
@@ -296,12 +308,33 @@ func (a *App) updateProfile(w http.ResponseWriter, r *http.Request) {
 		a.db.Exec(r.Context(), "UPDATE users SET avatar_color = $1 WHERE id = $2", color, user.ID)
 	}
 
+	if body.ClearAvatar {
+		if _, err := a.db.Exec(r.Context(), "UPDATE users SET avatar_printing_id = NULL WHERE id = $1", user.ID); err != nil {
+			jsonError(w, "Server error", http.StatusInternalServerError)
+			return
+		}
+	} else if body.AvatarPrintingID != nil {
+		if _, err := a.db.Exec(r.Context(), "UPDATE users SET avatar_printing_id = $1 WHERE id = $2", *body.AvatarPrintingID, user.ID); err != nil {
+			log.Printf("updateProfile: avatar_printing_id update failed for user %d: %v", user.ID, err)
+			jsonError(w, "Server error", http.StatusInternalServerError)
+			return
+		}
+	}
+
 	var updated User
+	var rawAvatarURL *string
 	a.db.QueryRow(r.Context(),
-		"SELECT id, username, email, display_name, avatar_color, is_verified, is_admin, created_at FROM users WHERE id = $1",
+		`SELECT u.id, u.username, u.email, u.display_name, u.avatar_color, u.avatar_printing_id,
+		        p.image_url, u.is_verified, u.is_admin, u.created_at
+		 FROM users u LEFT JOIN printings p ON p.id = u.avatar_printing_id WHERE u.id = $1`,
 		user.ID,
 	).Scan(&updated.ID, &updated.Username, &updated.Email, &updated.DisplayName, &updated.AvatarColor,
-		&updated.IsVerified, &updated.IsAdmin, &updated.CreatedAt)
+		&updated.AvatarPrintingID, &rawAvatarURL, &updated.IsVerified, &updated.IsAdmin, &updated.CreatedAt)
+	if rawAvatarURL != nil {
+		if u := a.imgURL(rawAvatarURL); u != nil {
+			updated.AvatarImageURL = *u
+		}
+	}
 
 	jsonResponse(w, updated, http.StatusOK)
 }

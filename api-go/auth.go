@@ -74,10 +74,19 @@ func (a *App) requireAuth(next http.Handler) http.Handler {
 			return
 		}
 		var user User
+		var rawAvatarURL *string
 		err = a.db.QueryRow(r.Context(),
-			"SELECT id, username, email, display_name, avatar_color, is_verified, is_admin, created_at FROM users WHERE id = $1",
+			`SELECT u.id, u.username, u.email, u.display_name, u.avatar_color, u.avatar_printing_id,
+			        p.image_url, u.is_verified, u.is_admin, u.created_at
+			 FROM users u LEFT JOIN printings p ON p.id = u.avatar_printing_id WHERE u.id = $1`,
 			userID,
-		).Scan(&user.ID, &user.Username, &user.Email, &user.DisplayName, &user.AvatarColor, &user.IsVerified, &user.IsAdmin, &user.CreatedAt)
+		).Scan(&user.ID, &user.Username, &user.Email, &user.DisplayName, &user.AvatarColor,
+			&user.AvatarPrintingID, &rawAvatarURL, &user.IsVerified, &user.IsAdmin, &user.CreatedAt)
+		if rawAvatarURL != nil {
+			if u := a.imgURL(rawAvatarURL); u != nil {
+				user.AvatarImageURL = *u
+			}
+		}
 		if err != nil {
 			jsonError(w, "User not found", http.StatusUnauthorized)
 			return

@@ -66,12 +66,21 @@ function UserMenu({ user }) {
         className="text-sm font-medium px-3 py-1.5 rounded flex items-center gap-2"
         style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
       >
-        <span
-          className="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: 'var(--accent)', color: 'var(--bg-page)' }}
-        >
-          {user.username.slice(0, 1).toUpperCase()}
-        </span>
+        {user.avatar_image_url ? (
+          <img
+            src={user.avatar_image_url}
+            alt=""
+            className="rounded flex-shrink-0 object-cover"
+            style={{ width: '26px', height: '36px' }}
+          />
+        ) : (
+          <span
+            className="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: user.avatar_color || 'var(--accent)', color: 'var(--bg-page)' }}
+          >
+            {user.username.slice(0, 1).toUpperCase()}
+          </span>
+        )}
         <span className="hidden sm:inline">{user.username}</span>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{open ? '▲' : '▼'}</span>
       </button>
