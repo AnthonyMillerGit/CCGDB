@@ -4,6 +4,10 @@ import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
 import { rarityColor, rarityRank } from '../theme'
 
+const CONDITION_LABELS = { NM: 'Near Mint', LP: 'Light Play', MP: 'Moderate Play', HP: 'Heavy Play', DM: 'Damaged' }
+const CONDITION_COLORS = { NM: '#4ade80', LP: '#a3e635', MP: '#facc15', HP: '#fb923c', DM: '#f87171' }
+const FINISHES = ['normal', 'foil', 'special foil']
+
 // ── Attribute helpers ──────────────────────────────────────────────────────────
 
 function parseAttrs(card) {
@@ -48,39 +52,69 @@ function isPrimitiveAttrVal(val) {
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function ListCardRow({ group, gameSlug, onIncrease, onDecrease, onSet }) {
+function ListCardRow({ group, gameSlug, onIncrease, onDecrease, onSet, editMode, onFinishChange, onConditionChange }) {
   const [preview, setPreview] = useState(false)
   return (
-    <div className="relative flex items-center gap-1.5 px-1.5 py-1 rounded" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+    <div className="relative flex flex-col gap-1 px-1.5 py-1 rounded" style={{ backgroundColor: 'var(--bg-surface)', border: `1px solid ${editMode ? 'var(--accent)' : 'var(--border)'}` }}>
       {preview && group.image_url && (
         <div className="absolute bottom-full left-0 mb-1 z-50 pointer-events-none" style={{ filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.6))' }}>
           <img src={group.image_url} alt={group.card_name} className="rounded-lg" style={{ width: '160px' }} />
         </div>
       )}
-      <Link
-        to={`/collection/${gameSlug}/cards/${group.card_id}`}
-        className="flex-1 min-w-0"
-        onMouseEnter={() => setPreview(true)}
-        onMouseLeave={() => setPreview(false)}
-      >
-        <div className="flex items-center gap-1 min-w-0">
-          <span className="truncate" style={{ color: 'var(--text-primary)', fontSize: '0.7rem', fontWeight: 500 }} title={group.card_name}>{group.card_name}</span>
-          {group.rarity && (
-            <span className="shrink-0 capitalize" style={{ color: rarityColor(group.rarity, gameSlug), fontSize: '0.65rem' }}>· {group.rarity}</span>
-          )}
+      <div className="flex items-center gap-1.5">
+        <Link
+          to={`/collection/${gameSlug}/cards/${group.card_id}`}
+          className="flex-1 min-w-0"
+          onMouseEnter={() => setPreview(true)}
+          onMouseLeave={() => setPreview(false)}
+        >
+          <div className="flex items-center gap-1 min-w-0">
+            <span className="truncate" style={{ color: 'var(--text-primary)', fontSize: '0.7rem', fontWeight: 500 }} title={group.card_name}>{group.card_name}</span>
+            {group.rarity && (
+              <span className="shrink-0 capitalize" style={{ color: rarityColor(group.rarity, gameSlug), fontSize: '0.65rem' }}>· {group.rarity}</span>
+            )}
+          </div>
+        </Link>
+        <div className="flex flex-col gap-0.5 shrink-0">
+          {group.items.map(item => (
+            <QuantityControl
+              key={item.finish}
+              quantity={item.quantity}
+              onIncrease={() => onIncrease(item)}
+              onDecrease={() => onDecrease(item)}
+              onSet={n => onSet(item, n)}
+            />
+          ))}
         </div>
-      </Link>
-      <div className="flex flex-col gap-0.5 shrink-0">
-        {group.items.map(item => (
-          <QuantityControl
-            key={item.finish}
-            quantity={item.quantity}
-            onIncrease={() => onIncrease(item)}
-            onDecrease={() => onDecrease(item)}
-            onSet={n => onSet(item, n)}
-          />
-        ))}
       </div>
+      {editMode && group.items.map(item => {
+        const condColor = CONDITION_COLORS[item.condition] || CONDITION_COLORS.NM
+        return (
+          <div key={item.finish} className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-xs shrink-0" style={{ color: 'var(--text-muted)', minWidth: '2.5rem' }}>
+              {item.finish === 'normal' ? 'Normal' : item.finish === 'foil' ? '✦ Foil' : '✦ Spec.'}
+            </span>
+            <select
+              value={item.finish}
+              onChange={e => onFinishChange(item, e.target.value)}
+              className="text-xs px-1.5 py-0.5 rounded capitalize"
+              style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)', outline: 'none', flex: 1 }}
+            >
+              {FINISHES.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+            <select
+              value={item.condition || 'NM'}
+              onChange={e => onConditionChange(item, e.target.value)}
+              className="text-xs px-1.5 py-0.5 rounded font-medium"
+              style={{ backgroundColor: 'var(--bg-chip)', border: `1px solid ${condColor}55`, color: condColor, outline: 'none', flex: 1 }}
+            >
+              {Object.entries(CONDITION_LABELS).map(([val, label]) => (
+                <option key={val} value={val}>{val} — {label}</option>
+              ))}
+            </select>
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -146,6 +180,7 @@ export default function CollectionGamePage() {
   const [pageSize, setPageSize] = useState(100)
   const [viewMode, setViewMode] = useState('grid')
   const [groupBySet, setGroupBySet] = useState(false)
+  const [editMode, setEditMode] = useState(false)
   const [collapsedSets, setCollapsedSets] = useState(new Set())
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [foilOnly, setFoilOnly] = useState(false)
@@ -486,7 +521,7 @@ export default function CollectionGamePage() {
             {isFiltered && <span> / {totalCopies}</span>} cards
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
           {!setFilter && (
             <button
               onClick={() => setGroupBySet(g => !g)}
@@ -500,6 +535,17 @@ export default function CollectionGamePage() {
               Group by set
             </button>
           )}
+          <button
+            onClick={() => setEditMode(m => !m)}
+            className="text-xs px-3 py-1.5 rounded font-medium"
+            style={{
+              backgroundColor: editMode ? '#b86a00' : 'var(--bg-surface)',
+              color: editMode ? '#fff' : 'var(--text-muted)',
+              border: `1px solid ${editMode ? '#b86a00' : 'var(--border)'}`,
+            }}
+          >
+            {editMode ? 'Done Editing' : 'Edit'}
+          </button>
           <div className="flex rounded overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             <button
               onClick={() => setViewMode('grid')}
@@ -711,6 +757,18 @@ export default function CollectionGamePage() {
         )}
       </div>
 
+      {/* Edit mode banner */}
+      {editMode && (
+        <div className="flex items-center justify-between gap-3 mb-4 px-4 py-2.5 rounded-lg"
+          style={{ backgroundColor: '#3d2600', border: '1px solid #b86a0066' }}>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold" style={{ color: '#f59e0b' }}>Edit Mode</span>
+            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>— change finish and condition inline. Saves instantly.</span>
+          </div>
+          <button onClick={() => setEditMode(false)} className="text-xs hover:opacity-80" style={{ color: 'var(--text-muted)' }}>✕ Done</button>
+        </div>
+      )}
+
       {/* No results */}
       {printingGroups.length === 0 && (
         <p className="text-center py-12" style={{ color: 'var(--text-muted)' }}>No cards match your filters.</p>
@@ -719,7 +777,8 @@ export default function CollectionGamePage() {
       {/* Cards */}
       {printingGroups.length > 0 && (() => {
         const gridCard = group => (
-          <div key={group.printing_id} className="flex flex-col rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
+          <div key={group.printing_id} className="flex flex-col rounded-xl overflow-hidden"
+            style={{ border: `1px solid ${editMode ? '#b86a0066' : 'var(--border)'}`, backgroundColor: 'var(--bg-surface)' }}>
             {/* Name + rarity above image */}
             <div className="flex items-center gap-1 p-1.5 pb-1">
               <span
@@ -746,18 +805,44 @@ export default function CollectionGamePage() {
                 )}
               </div>
             </Link>
-            {/* Quantity below image */}
-            <div className="flex flex-col gap-1 p-1.5 pt-1">
-              {group.items.map(item => (
-                <div key={item.finish} className="rounded px-1.5 py-1" style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}>
-                  <QuantityControl
-                    quantity={item.quantity}
-                    onIncrease={() => handleIncrease(item)}
-                    onDecrease={() => handleDecrease(item)}
-                    onSet={n => handleSetQuantity(item, n)}
-                  />
-                </div>
-              ))}
+            {/* Controls below image */}
+            <div className="flex flex-col gap-1.5 p-1.5 pt-1">
+              {group.items.map(item => {
+                const condColor = CONDITION_COLORS[item.condition] || CONDITION_COLORS.NM
+                return (
+                  <div key={item.finish} className="flex flex-col gap-1 rounded px-1.5 py-1"
+                    style={{ backgroundColor: 'var(--bg-chip)', border: `1px solid ${editMode ? '#b86a0033' : 'var(--border)'}` }}>
+                    <QuantityControl
+                      quantity={item.quantity}
+                      onIncrease={() => handleIncrease(item)}
+                      onDecrease={() => handleDecrease(item)}
+                      onSet={n => handleSetQuantity(item, n)}
+                    />
+                    {editMode && (
+                      <div className="flex flex-col gap-1 pt-0.5" style={{ borderTop: '1px solid var(--border)' }}>
+                        <select
+                          value={item.finish || 'normal'}
+                          onChange={e => handleFinishChange(item, e.target.value)}
+                          className="text-xs px-1.5 py-0.5 rounded w-full capitalize"
+                          style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', outline: 'none' }}
+                        >
+                          {FINISHES.map(f => <option key={f} value={f}>{f}</option>)}
+                        </select>
+                        <select
+                          value={item.condition || 'NM'}
+                          onChange={e => handleConditionChange(item, e.target.value)}
+                          className="text-xs px-1.5 py-0.5 rounded w-full font-medium"
+                          style={{ backgroundColor: 'var(--bg-surface)', border: `1px solid ${condColor}55`, color: condColor, outline: 'none' }}
+                        >
+                          {Object.entries(CONDITION_LABELS).map(([val, label]) => (
+                            <option key={val} value={val}>{val} — {label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         )
@@ -770,6 +855,9 @@ export default function CollectionGamePage() {
             onIncrease={handleIncrease}
             onDecrease={handleDecrease}
             onSet={handleSetQuantity}
+            editMode={editMode}
+            onFinishChange={handleFinishChange}
+            onConditionChange={handleConditionChange}
           />
         )
 
