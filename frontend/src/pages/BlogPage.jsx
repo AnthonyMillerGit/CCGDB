@@ -3,6 +3,13 @@ import { Link } from 'react-router-dom'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
 
+const POST_TYPE_LABELS = {
+  'deck-tech':  { label: 'Deck Tech',          color: '#a78bfa' },
+  'set-review': { label: 'Set Review',          color: '#4ade80' },
+  'tournament': { label: 'Tournament Report',   color: '#fb923c' },
+  'news':       { label: 'News',                color: '#60a5fa' },
+}
+
 const PAGE_SIZE = 20
 
 export default function BlogPage() {
@@ -74,7 +81,19 @@ export default function BlogPage() {
             className="p-6 rounded-xl transition-colors hover:border-[#0097a7]"
             style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
           >
-            <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{post.title}</h2>
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{post.title}</h2>
+              {POST_TYPE_LABELS[post.post_type] && (
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+                  style={{
+                    backgroundColor: POST_TYPE_LABELS[post.post_type].color + '22',
+                    color: POST_TYPE_LABELS[post.post_type].color,
+                    border: `1px solid ${POST_TYPE_LABELS[post.post_type].color}44`,
+                  }}>
+                  {POST_TYPE_LABELS[post.post_type].label}
+                </span>
+              )}
+            </div>
             {post.excerpt && (
               <p className="text-sm mb-3 line-clamp-3" style={{ color: 'var(--text-muted)' }}>{post.excerpt}</p>
             )}

@@ -71,7 +71,7 @@ func (a *App) searchMentions(w http.ResponseWriter, r *http.Request) {
 		FROM cards c
 		JOIN games g ON g.id = c.game_id
 		WHERE c.name ILIKE $1
-		ORDER BY c.name LIMIT 8
+		ORDER BY c.name LIMIT 20
 	`, pattern)
 	if err == nil {
 		defer cardRows.Close()

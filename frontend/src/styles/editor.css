@@ -38,3 +38,35 @@
   pointer-events: none;
   height: 0;
 }
+
+/* Deck list block */
+.editor-content pre[data-type="deckBlock"] {
+  background: linear-gradient(135deg, #0f1a2a 0%, #1a0a2e 100%);
+  border: 1px solid rgba(0, 151, 167, 0.4);
+  border-radius: 10px;
+  padding: 0 1.25em 1em;
+  margin: 1em 0;
+  overflow-x: auto;
+}
+.editor-content pre[data-type="deckBlock"]::before {
+  content: '🃏  Deck List';
+  display: block;
+  font-family: sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #0097a7;
+  padding: 0.6em 0 0.5em;
+  border-bottom: 1px solid rgba(0, 151, 167, 0.2);
+  margin-bottom: 0.75em;
+}
+.editor-content pre[data-type="deckBlock"] code {
+  background: none;
+  padding: 0;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.875rem;
+  color: #d4c4a8;
+  white-space: pre;
+  line-height: 1.7;
+}

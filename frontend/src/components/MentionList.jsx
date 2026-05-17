@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 
 const TYPE_STYLES = {
   game: { bg: '#1a3a2a', color: 'var(--accent)' },
@@ -8,8 +8,13 @@ const TYPE_STYLES = {
 
 const MentionList = forwardRef(({ items, command }, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const itemRefs = useRef([])
 
   useEffect(() => setSelectedIndex(0), [items])
+
+  useEffect(() => {
+    itemRefs.current[selectedIndex]?.scrollIntoView({ block: 'nearest' })
+  }, [selectedIndex])
 
   function selectItem(index) {
     const item = items[index]
@@ -43,12 +48,13 @@ const MentionList = forwardRef(({ items, command }, ref) => {
   }
 
   return (
-    <div style={{ minWidth: 220, maxWidth: 'min(360px, 90vw)' }}>
+    <div style={{ minWidth: 220, maxWidth: 'min(360px, 90vw)', maxHeight: 320, overflowY: 'auto' }}>
       {items.map((item, index) => {
         const ts = TYPE_STYLES[item.type] || TYPE_STYLES.card
         return (
           <button
             key={`${item.type}-${item.id}`}
+            ref={el => { itemRefs.current[index] = el }}
             type="button"
             onClick={() => selectItem(index)}
             className="w-full text-left px-3 py-2 flex items-center gap-2 transition-colors"
@@ -57,6 +63,7 @@ const MentionList = forwardRef(({ items, command }, ref) => {
               color: 'var(--text-primary)',
               borderBottom: index < items.length - 1 ? '1px solid #d4c4a8' : 'none',
             }}
+            onMouseEnter={() => setSelectedIndex(index)}
           >
             <span
               className="text-xs px-1.5 py-0.5 rounded flex-shrink-0 font-medium"

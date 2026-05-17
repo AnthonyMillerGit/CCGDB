@@ -6,7 +6,7 @@ import { API_URL } from '../config'
 
 export const mentionSuggestion = {
   char: '@',
-  allowSpaces: false,
+  allowSpaces: true,
 
   items: async ({ query }) => {
     if (query.length < 2) return []
