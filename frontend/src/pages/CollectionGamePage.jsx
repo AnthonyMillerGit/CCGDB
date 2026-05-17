@@ -80,6 +80,7 @@ function ListCardRow({ group, gameSlug, onIncrease, onDecrease, onSet, editMode,
             <QuantityControl
               key={item.finish}
               quantity={item.quantity}
+              finish={item.finish}
               onIncrease={() => onIncrease(item)}
               onDecrease={() => onDecrease(item)}
               onSet={n => onSet(item, n)}
@@ -119,9 +120,10 @@ function ListCardRow({ group, gameSlug, onIncrease, onDecrease, onSet, editMode,
   )
 }
 
-function QuantityControl({ quantity, onIncrease, onDecrease, onSet }) {
+function QuantityControl({ quantity, onIncrease, onDecrease, onSet, finish }) {
   const [val, setVal] = useState(String(quantity))
   useEffect(() => { setVal(String(quantity)) }, [quantity])
+  const isFoil = finish && finish !== 'normal'
 
   function commit() {
     const n = parseInt(val, 10)
@@ -131,6 +133,7 @@ function QuantityControl({ quantity, onIncrease, onDecrease, onSet }) {
 
   return (
     <div className="flex items-center justify-center gap-1 w-full">
+      {isFoil && <span style={{ fontSize: '0.7rem', lineHeight: 1 }}>✨</span>}
       <input
         type="text"
         inputMode="numeric"
@@ -814,6 +817,7 @@ export default function CollectionGamePage() {
                     style={{ backgroundColor: 'var(--bg-chip)', border: `1px solid ${editMode ? '#b86a0033' : 'var(--border)'}` }}>
                     <QuantityControl
                       quantity={item.quantity}
+                      finish={item.finish}
                       onIncrease={() => handleIncrease(item)}
                       onDecrease={() => handleDecrease(item)}
                       onSet={n => handleSetQuantity(item, n)}
