@@ -133,7 +133,7 @@ function QuantityControl({ quantity, onIncrease, onDecrease, onSet, finish }) {
 
   return (
     <div className="flex items-center justify-center gap-1 w-full">
-      {isFoil && <span style={{ fontSize: '0.7rem', lineHeight: 1 }}>✨</span>}
+      {isFoil && <span className="foil-rainbow" style={{ fontSize: '0.65rem', fontWeight: 700, lineHeight: 1 }}>◆</span>}
       <input
         type="text"
         inputMode="numeric"
