@@ -19,20 +19,28 @@ export const mentionSuggestion = {
     }
   },
 
-  // Insert a real hyperlink instead of a mention node
   command: ({ editor, range, props }) => {
-    editor
-      .chain()
-      .focus()
-      .deleteRange(range)
-      .insertContent({
-        type: 'text',
-        marks: [{ type: 'link', attrs: { href: props.url } }],
-        text: props.name,
-      })
-      .insertContent(' ')
-      .unsetLink()
-      .run()
+    if (props.type === 'card') {
+      editor.chain().focus().deleteRange(range).insertCardImage({
+        cardId: String(props.id),
+        cardName: props.name,
+        imageUrl: props.image_url || '',
+        cardUrl: props.url,
+      }).run()
+    } else {
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertContent({
+          type: 'text',
+          marks: [{ type: 'link', attrs: { href: props.url } }],
+          text: props.name,
+        })
+        .insertContent(' ')
+        .unsetLink()
+        .run()
+    }
   },
 
   render: () => {
