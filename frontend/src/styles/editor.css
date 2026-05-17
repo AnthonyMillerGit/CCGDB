@@ -39,7 +39,135 @@
   height: 0;
 }
 
-/* Deck list block */
+/* ── Card Image Block (reader) ─────────────────────────────────────── */
+.editor-content .card-image-block {
+  display: inline-block;
+  float: left;
+  margin: 0 1.5rem 1.5rem 0;
+  max-width: 180px;
+}
+.editor-content .card-image-block::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+.editor-content .card-image-block img {
+  width: 180px;
+  border-radius: 10px;
+  display: block;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.55);
+  margin: 0;
+}
+.editor-content .card-image-block figcaption {
+  text-align: center;
+  font-size: 12px;
+  color: #8e8e9e;
+  margin-top: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Deck Box (reader + editor) ────────────────────────────────────── */
+.deckbox-block {
+  background: linear-gradient(135deg, #0f1520 0%, #1a0d24 100%);
+  border: 1px solid rgba(0, 151, 167, 0.35);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 1.5rem 0;
+  font-family: sans-serif;
+}
+.deckbox-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(0, 151, 167, 0.2);
+  background: rgba(0, 151, 167, 0.08);
+}
+.deckbox-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #0097a7;
+  flex: 1;
+}
+.deckbox-count {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+.deckbox-delete {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 0.25rem;
+  opacity: 0.6;
+}
+.deckbox-delete:hover { opacity: 1; color: #ef4444; }
+
+.deckbox-body {
+  padding: 0.5rem 0;
+}
+.deckbox-section-header {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6b7280;
+  padding: 0.5rem 1rem 0.25rem;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  margin-top: 0.25rem;
+}
+.deckbox-section-header:first-child { border-top: none; margin-top: 0; }
+
+.deckbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 1rem;
+  position: relative;
+  cursor: default;
+}
+.deckbox-row:hover { background: rgba(255,255,255,0.04); }
+
+.deckbox-qty {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0097a7;
+  min-width: 2rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+.deckbox-name {
+  font-size: 0.875rem;
+  color: #d4c4a8;
+}
+.deckbox-hover-indicator {
+  font-size: 0.6rem;
+  color: #4b5563;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Hover card image popup (reader — pure CSS) */
+.deckbox-hover-img {
+  display: none;
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 200px;
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+  z-index: 50;
+  pointer-events: none;
+}
+.deckbox-row:hover .deckbox-hover-img { display: block; }
+
+/* Deck list block (old plain-text style, kept for back-compat) */
 .editor-content pre[data-type="deckBlock"] {
   background: linear-gradient(135deg, #0f1a2a 0%, #1a0a2e 100%);
   border: 1px solid rgba(0, 151, 167, 0.4);

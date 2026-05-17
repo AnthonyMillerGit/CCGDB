@@ -8,15 +8,55 @@ import DOMPurify from 'dompurify'
 import { API_URL } from '../config'
 import '../styles/editor.css'
 import { useAuth } from '../context/AuthContext'
+import { CardImageBlock } from '../extensions/CardImageBlock.jsx'
+import { DeckBoxBlock } from '../extensions/DeckBoxBlock.jsx'
 
 function renderBody(body) {
   if (!body || Object.keys(body).length === 0) return ''
   try {
-    const html = generateHTML(body, [StarterKit, TiptapImage, TiptapLink])
-    return DOMPurify.sanitize(html)
+    const html = generateHTML(body, [StarterKit, TiptapImage, TiptapLink, CardImageBlock, DeckBoxBlock])
+    return DOMPurify.sanitize(html, { ADD_ATTR: ['data-type', 'data-card-id', 'data-card-name', 'data-image-url', 'data-card-url', 'data-title', 'data-cards', 'data-game'] })
   } catch {
     return ''
   }
+}
+
+function esc(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+function buildDeckBoxHTML(cards, title) {
+  const total = cards.reduce((s, c) => s + c.quantity, 0)
+  const sections = []
+  let current = { name: '', cards: [] }
+  for (const card of cards) {
+    const sec = card.section || ''
+    if (sec !== current.name) {
+      if (current.cards.length) sections.push(current)
+      current = { name: sec, cards: [] }
+    }
+    current.cards.push(card)
+  }
+  if (current.cards.length) sections.push(current)
+
+  const rowsHTML = sections.map(section => {
+    const header = section.name ? `<div class="deckbox-section-header">${esc(section.name)}</div>` : ''
+    const rows = section.cards.map(card => {
+      const hoverImg = card.imageUrl
+        ? `<img class="deckbox-hover-img" src="${esc(card.imageUrl)}" alt="${esc(card.name)}" />`
+        : ''
+      return `<div class="deckbox-row">${hoverImg}<span class="deckbox-qty">×${card.quantity}</span><span class="deckbox-name">${esc(card.name)}</span></div>`
+    }).join('')
+    return header + rows
+  }).join('')
+
+  return `<div class="deckbox-block">
+    <div class="deckbox-header">
+      <span class="deckbox-title">🃏 ${esc(title)}</span>
+      <span class="deckbox-count">${total} cards</span>
+    </div>
+    <div class="deckbox-body">${rowsHTML}</div>
+  </div>`
 }
 
 // Find the direct child of `root` that contains `node`
@@ -75,6 +115,62 @@ export default function PostPage() {
     el.addEventListener('click', handleClick)
     return () => el.removeEventListener('click', handleClick)
   }, [post, navigate])
+
+  // Hydrate CardImageBlock nodes
+  useEffect(() => {
+    const el = bodyRef.current
+    if (!el) return
+    el.querySelectorAll('figure[data-type="card-image"]').forEach(fig => {
+      const imageUrl = fig.dataset.imageUrl
+      const cardName = fig.dataset.cardName || ''
+      const cardUrl  = fig.dataset.cardUrl || ''
+      if (!imageUrl && !cardName) return
+
+      fig.className = 'card-image-block'
+      fig.style.cssText = 'display:inline-block;float:left;margin:0 1.5rem 1.5rem 0;max-width:180px;'
+
+      const a = document.createElement('a')
+      a.href = cardUrl
+
+      if (imageUrl) {
+        const img = document.createElement('img')
+        img.src = imageUrl
+        img.alt = cardName
+        img.style.cssText = 'width:180px;border-radius:10px;display:block;box-shadow:0 4px 24px rgba(0,0,0,0.55);'
+        a.appendChild(img)
+      } else {
+        const placeholder = document.createElement('div')
+        placeholder.textContent = cardName
+        placeholder.style.cssText = 'width:180px;height:252px;border-radius:10px;background:#2e2e38;display:flex;align-items:center;justify-content:center;padding:1rem;text-align:center;font-size:13px;color:#8e8e9e;'
+        a.appendChild(placeholder)
+      }
+
+      const caption = document.createElement('figcaption')
+      caption.textContent = cardName
+      caption.style.cssText = 'text-align:center;font-size:12px;color:#8e8e9e;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;'
+
+      fig.innerHTML = ''
+      fig.appendChild(a)
+      fig.appendChild(caption)
+    })
+  }, [post])
+
+  // Hydrate DeckBoxBlock nodes
+  useEffect(() => {
+    const el = bodyRef.current
+    if (!el) return
+    el.querySelectorAll('div[data-type="deck-box"]').forEach(deckEl => {
+      const title = deckEl.dataset.title || 'Deck List'
+      const cardsJson = deckEl.dataset.cards || '[]'
+      try {
+        const cards = JSON.parse(cardsJson)
+        deckEl.innerHTML = buildDeckBoxHTML(cards, title)
+        deckEl.removeAttribute('data-type')
+        deckEl.removeAttribute('data-cards')
+        deckEl.removeAttribute('data-title')
+      } catch { /* malformed JSON — leave as-is */ }
+    })
+  }, [post])
 
   // Inject card images above the section heading where each card is first mentioned
   useEffect(() => {
