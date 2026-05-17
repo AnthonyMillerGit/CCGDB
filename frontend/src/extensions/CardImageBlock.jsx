@@ -4,14 +4,15 @@ import { ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react'
 function CardImageView({ node, deleteNode }) {
   const { cardName, imageUrl, cardUrl } = node.attrs
   return (
-    <NodeViewWrapper contentEditable={false} style={{ display: 'block' }}>
+    <NodeViewWrapper
+      as="span"
+      contentEditable={false}
+      style={{ display: 'inline-block', verticalAlign: 'top', margin: '0 0.75rem 0.75rem 0' }}
+    >
       <figure
         className="card-image-block-editor"
         data-drag-handle
-        style={{
-          display: 'inline-block', float: 'left', margin: '0 1.5rem 1.5rem 0',
-          position: 'relative', cursor: 'default', maxWidth: 180,
-        }}
+        style={{ display: 'inline-block', position: 'relative', cursor: 'default', maxWidth: 180, margin: 0 }}
       >
         {imageUrl ? (
           <img
@@ -44,15 +45,14 @@ function CardImageView({ node, deleteNode }) {
           }}
         >×</button>
       </figure>
-      {/* Clearfix so next content doesn't wrap oddly in editor */}
-      <div style={{ clear: 'both' }} />
     </NodeViewWrapper>
   )
 }
 
 export const CardImageBlock = Node.create({
   name: 'cardImageBlock',
-  group: 'block',
+  group: 'inline',
+  inline: true,
   atom: true,
   draggable: true,
 

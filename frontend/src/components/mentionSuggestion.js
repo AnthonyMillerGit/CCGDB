@@ -26,7 +26,7 @@ export const mentionSuggestion = {
         cardName: props.name,
         imageUrl: props.image_url || '',
         cardUrl: props.url,
-      }).run()
+      }).insertContent(' ').run()
     } else {
       editor
         .chain()
