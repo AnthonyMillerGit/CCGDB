@@ -65,12 +65,20 @@ const MentionList = forwardRef(({ items, command }, ref) => {
             }}
             onMouseEnter={() => setSelectedIndex(index)}
           >
-            <span
-              className="text-xs px-1.5 py-0.5 rounded flex-shrink-0 font-medium"
-              style={{ backgroundColor: ts.bg, color: ts.color }}
-            >
-              {item.type}
-            </span>
+            {item.image_url ? (
+              <img
+                src={item.image_url}
+                alt={item.name}
+                style={{ width: 28, height: 39, borderRadius: 3, objectFit: 'cover', flexShrink: 0 }}
+              />
+            ) : (
+              <span
+                className="text-xs px-1.5 py-0.5 rounded flex-shrink-0 font-medium"
+                style={{ backgroundColor: ts.bg, color: ts.color }}
+              >
+                {item.type}
+              </span>
+            )}
             <span className="truncate text-sm">{item.name}</span>
             {item.subtitle && (
               <span className="text-xs flex-shrink-0 ml-auto" style={{ color: 'var(--text-muted)' }}>

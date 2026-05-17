@@ -6,11 +6,12 @@ import (
 )
 
 type MentionResult struct {
-	Type     string `json:"type"`
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	URL      string `json:"url"`
-	Subtitle string `json:"subtitle,omitempty"`
+	Type     string  `json:"type"`
+	ID       int     `json:"id"`
+	Name     string  `json:"name"`
+	URL      string  `json:"url"`
+	Subtitle string  `json:"subtitle,omitempty"`
+	ImageURL *string `json:"image_url,omitempty"`
 }
 
 func (a *App) searchMentions(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +68,10 @@ func (a *App) searchMentions(w http.ResponseWriter, r *http.Request) {
 
 	// Cards
 	cardRows, err := a.db.Query(r.Context(), `
-		SELECT DISTINCT ON (c.name) c.id, c.name, g.name AS game_name
+		SELECT DISTINCT ON (c.name) c.id, c.name, g.name AS game_name,
+		       (SELECT p.image_url FROM printings p
+		        WHERE p.card_id = c.id AND p.image_url IS NOT NULL
+		        ORDER BY p.id LIMIT 1) AS image_url
 		FROM cards c
 		JOIN games g ON g.id = c.game_id
 		WHERE c.name ILIKE $1
@@ -78,11 +82,16 @@ func (a *App) searchMentions(w http.ResponseWriter, r *http.Request) {
 		for cardRows.Next() {
 			var id int
 			var name, gameName string
-			if cardRows.Scan(&id, &name, &gameName) == nil {
+			var rawImageURL *string
+			if cardRows.Scan(&id, &name, &gameName, &rawImageURL) == nil {
+				imgURL := a.imgURL(rawImageURL)
 				results = append(results, MentionResult{
-					Type: "card", ID: id, Name: name,
-					URL: "/cards/" + strconv.Itoa(id),
+					Type:     "card",
+					ID:       id,
+					Name:     name,
+					URL:      "/cards/" + strconv.Itoa(id),
 					Subtitle: gameName,
+					ImageURL: imgURL,
 				})
 			}
 		}
