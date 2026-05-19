@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Silky Doll Gambit — Ani-Mayhem Deck Tech</title>
+<style>
+  :root {
+    --bg: #0d0d14;
+    --bg-surface: #16161f;
+    --bg-card: #1e1e2a;
+    --border: #2e2e3e;
+    --accent: #f472b6;
+    --accent2: #c084fc;
+    --accent3: #fb7185;
+    --accent4: #6a7efc;
+    --text: #edf2f6;
+    --text-muted: #8e8e9e;
+    --gold: #d4c4a8;
+    --disaster-color: #ef4444;
+    --item-color: #f59e0b;
+    --power-color: #8b5cf6;
+    --combat-color: #f472b6;
+    --char-color: #c084fc;
+    --location-color: #10b981;
+    --haven-color: #f472b6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.7;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 6rem;
+  }
+
+  /* ── Hero ─────────────────────────────── */
+  .hero {
+    text-align: center;
+    padding: 4rem 2rem 3rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 3rem;
+    background: radial-gradient(ellipse at 50% 0%, rgba(244,114,182,0.14) 0%, rgba(192,132,252,0.06) 50%, transparent 70%);
+  }
+  .hero .game-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.2rem, 6vw, 3.8rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fdf4f8 0%, #f472b6 45%, #c084fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+  .hero .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    max-width: 640px;
+    margin: 0 auto 2rem;
+  }
+  .hero .tags { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+  .tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid;
+  }
+  .tag-set { background: rgba(244,114,182,0.12); border-color: rgba(244,114,182,0.4); color: var(--accent); }
+  .tag-format { background: rgba(192,132,252,0.1); border-color: rgba(192,132,252,0.35); color: var(--accent2); }
+  .tag-theme { background: rgba(251,113,133,0.1); border-color: rgba(251,113,133,0.35); color: var(--accent3); }
+
+  /* ── Deck Summary Box ─────────────────── */
+  .deck-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 3rem;
+  }
+  .summary-cell {
+    background: var(--bg-surface);
+    padding: 1.25rem;
+    text-align: center;
+  }
+  .summary-cell .num { font-size: 2rem; font-weight: 900; color: var(--accent); line-height: 1; }
+  .summary-cell .label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-top: 0.4rem; }
+
+  /* ── Section Headers ──────────────────── */
+  .section { margin-bottom: 3.5rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .section-icon.char { background: rgba(192,132,252,0.15); }
+  .section-icon.haven { background: rgba(244,114,182,0.15); }
+  .section-icon.location { background: rgba(16,185,129,0.15); }
+  .section-icon.item { background: rgba(245,158,11,0.15); }
+  .section-icon.disaster { background: rgba(239,68,68,0.15); }
+  .section-icon.power { background: rgba(139,92,246,0.15); }
+  .section-icon.combat { background: rgba(244,114,182,0.15); }
+  .section-icon.strategy { background: rgba(251,113,133,0.15); }
+  .section-icon.math { background: rgba(106,126,252,0.15); }
+  .section-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.01em; }
+  .section-count {
+    margin-left: auto;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  /* ── Card Entry ───────────────────────── */
+  .card-entry {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+  }
+  .card-entry:hover { border-color: rgba(244,114,182,0.4); }
+  .card-img-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+  .card-img {
+    width: 140px;
+    border-radius: 8px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+    display: block;
+  }
+  .card-qty-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .card-body { min-width: 0; }
+  .card-name {
+    font-size: 1.05rem;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .card-set-badge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .set0 { background: rgba(244,114,182,0.15); color: var(--accent); }
+  .set1 { background: rgba(192,132,252,0.15); color: var(--accent2); }
+  .card-stats {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+  }
+  .stat-pill {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--gold);
+    white-space: nowrap;
+  }
+  .stat-pill.highlight { background: rgba(244,114,182,0.12); border-color: rgba(244,114,182,0.4); color: var(--accent); }
+  .stat-pill.phys { background: rgba(106,126,252,0.12); border-color: rgba(106,126,252,0.35); color: var(--accent4); }
+  .stat-pill.skill { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: #10b981; }
+  .card-rules {
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-style: italic;
+    margin-bottom: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(244,114,182,0.06);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+  }
+  .card-analysis { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+  .card-analysis strong { color: var(--text); }
+
+  /* ── Card Grid ─────────────────────────── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .card-grid-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    transition: border-color 0.2s;
+    cursor: default;
+  }
+  .card-grid-item:hover { border-color: rgba(244,114,182,0.4); }
+  .card-grid-item img {
+    width: 110px;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.55);
+  }
+  .card-grid-name { font-size: 0.72rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+  .card-grid-sub { font-size: 0.62rem; color: var(--text-muted); }
+  .card-grid-qty { font-size: 0.62rem; font-weight: 700; color: var(--accent); }
+
+  /* ── Prose ─────────────────────────────── */
+  .prose { font-size: 0.95rem; color: var(--text-muted); line-height: 1.75; margin-bottom: 1.5rem; }
+  .prose strong { color: var(--text); }
+  .prose em { color: var(--gold); font-style: normal; }
+
+  /* ── Callouts ──────────────────────────── */
+  .callout {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: 1rem 1.25rem;
+    margin: 1.25rem 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .callout.warning { border-left-color: var(--item-color); }
+  .callout.danger { border-left-color: var(--disaster-color); }
+  .callout.tip { border-left-color: var(--accent3); }
+  .callout.charm { border-left-color: var(--accent2); }
+  .callout strong { display: block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.4rem; color: var(--accent); }
+  .callout.warning strong { color: var(--item-color); }
+  .callout.danger strong { color: var(--disaster-color); }
+  .callout.tip strong { color: var(--accent3); }
+  .callout.charm strong { color: var(--accent2); }
+
+  /* ── Math Breakdown ───────────────────── */
+  .math-box {
+    background: linear-gradient(135deg, #0f0d20 0%, #1a0d24 100%);
+    border: 1px solid rgba(244,114,182,0.3);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.25rem 0;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+  }
+  .math-box .math-title {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(244,114,182,0.2);
+    padding-bottom: 0.5rem;
+  }
+  .math-row { display: flex; justify-content: space-between; align-items: center; padding: 0.25rem 0; color: var(--gold); }
+  .math-row.subtotal { color: var(--text); font-weight: 700; border-top: 1px dashed rgba(244,114,182,0.2); margin-top: 0.3rem; padding-top: 0.4rem; }
+  .math-row.total { color: #fff; font-weight: 900; font-size: 1.05rem; border-top: 2px solid rgba(244,114,182,0.4); margin-top: 0.4rem; padding-top: 0.6rem; }
+  .math-row.total span:last-child { color: var(--accent); font-size: 1.4rem; }
+
+  /* ── Combat Dual Card ─────────────────── */
+  .combat-dual {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+  }
+  .combat-dual:hover { border-color: rgba(244,114,182,0.4); }
+  .combat-sides {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .combat-side {
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+  }
+  .combat-side.charm-side {
+    background: rgba(244,114,182,0.08);
+    border: 1px solid rgba(244,114,182,0.25);
+  }
+  .combat-side.phys-side {
+    background: rgba(106,126,252,0.08);
+    border: 1px solid rgba(106,126,252,0.25);
+  }
+  .combat-side-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+  .combat-side.charm-side .combat-side-label { color: var(--accent); }
+  .combat-side.phys-side .combat-side-label { color: var(--accent4); }
+  .combat-side-name { font-weight: 800; color: var(--text); font-size: 0.88rem; margin-bottom: 0.2rem; }
+  .combat-side-effect { color: var(--text-muted); font-size: 0.8rem; }
+
+  /* ── Deck List ─────────────────────────── */
+  .decklist {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .decklist-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .decklist-section-header {
+    padding: 0.6rem 1rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .decklist-section-header.char { background: rgba(192,132,252,0.12); color: var(--char-color); }
+  .decklist-section-header.haven { background: rgba(244,114,182,0.12); color: var(--haven-color); }
+  .decklist-section-header.location { background: rgba(16,185,129,0.12); color: var(--location-color); }
+  .decklist-section-header.item { background: rgba(245,158,11,0.12); color: var(--item-color); }
+  .decklist-section-header.disaster { background: rgba(239,68,68,0.12); color: var(--disaster-color); }
+  .decklist-section-header.power { background: rgba(139,92,246,0.12); color: var(--power-color); }
+  .decklist-section-header.combat { background: rgba(244,114,182,0.12); color: var(--combat-color); }
+  .decklist-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.82rem;
+  }
+  .decklist-row:last-child { border-bottom: none; }
+  .dl-qty { font-weight: 700; color: var(--accent); min-width: 1.5rem; font-size: 0.75rem; }
+  .dl-name { flex: 1; color: var(--gold); }
+  .dl-set { font-size: 0.6rem; font-weight: 700; padding: 0.1rem 0.35rem; border-radius: 3px; flex-shrink: 0; }
+
+  /* ── Strategy Tips ─────────────────────── */
+  .tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+  .tip-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .tip-card strong { display: block; color: var(--accent); font-size: 0.8rem; font-weight: 700; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tip-card b { color: var(--text); }
+
+  /* ── Phase Divider ─────────────────────── */
+  .phase-header {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 0.4rem 0;
+    margin: 1.5rem 0 0.75rem;
+    border-bottom: 1px solid rgba(244,114,182,0.2);
+  }
+
+  /* ── Responsive ────────────────────────── */
+  @media (max-width: 600px) {
+    .card-entry, .combat-dual { grid-template-columns: 1fr; }
+    .card-img-wrap { flex-direction: row; align-items: flex-start; }
+    .card-img { width: 100px; }
+    .combat-sides { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="game-label">Ani-Mayhem CCG · Deck Tech</div>
+  <h1>The Silky Doll Gambit</h1>
+  <p class="subtitle">A pure Seduction-based control deck built around four characters who each carry the Seduction skill natively — the only deck in the format where every starting Character has Charm as both a stat and a skill.</p>
+  <div class="tags">
+    <span class="tag tag-set">Set 0</span>
+    <span class="tag tag-set">Set 1</span>
+    <span class="tag tag-format">86 Cards</span>
+    <span class="tag tag-format">Standard Format</span>
+    <span class="tag tag-theme">Charm / Seduction</span>
+    <span class="tag tag-theme">All-Female Roster</span>
+  </div>
+</div>
+
+<!-- DECK SUMMARY -->
+<div class="deck-summary">
+  <div class="summary-cell"><div class="num">4</div><div class="label">Characters</div></div>
+  <div class="summary-cell"><div class="num">1</div><div class="label">Haven</div></div>
+  <div class="summary-cell"><div class="num">7</div><div class="label">Locations</div></div>
+  <div class="summary-cell"><div class="num">11</div><div class="label">Items</div></div>
+  <div class="summary-cell"><div class="num">21</div><div class="label">Disasters</div></div>
+  <div class="summary-cell"><div class="num">21</div><div class="label">Power Cards</div></div>
+  <div class="summary-cell"><div class="num">21</div><div class="label">Combat Cards</div></div>
+  <div class="summary-cell"><div class="num" style="color:var(--accent2);">86</div><div class="label">Total Cards</div></div>
+</div>
+
+<!-- DECK PHILOSOPHY -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon strategy">&#10022;</div>
+    <div class="section-title">Deck Philosophy</div>
+  </div>
+
+  <p class="prose">The Silky Doll Gambit is built on a mechanical fact that most decks cannot replicate: <strong>every single starting Character already has the Seduction skill printed on their card.</strong> This matters more than it appears. In most Seduction-themed decks, Lingerie serves as the unlock — it grants Seduction to a character who does not have it. Here, all four characters already have Seduction natively, so Lingerie does not unlock the skill, it <em>stacks on top of an existing skill instance</em>, pushing the stat higher. Servant's number of uses equals the equipping character's Charm — and when that character has native Seduction, every Charm buff on the board feeds directly into how many times Servant fires. This is the engine: native skill ownership means every item, enhancement, and global effect compounds instead of merely enabling.</p>
+
+  <p class="prose">The structural foundation rests on two characters. <strong>Sylvie</strong> is the Charm anchor — CHR:6 is the highest confirmed Charm stat among the deck's characters, and she carries Pilot, Acrobatics, Computer, Driving, and Strength in addition to Seduction. Her immunity to the 33-S Sexaroid Disaster (which this deck runs in its own disaster suite) means she can safely engage that particular android threat without risk. <strong>Washu</strong> is the sustain engine — Energy:5 fuels expensive power effects, her passive grants +1 Health to every other character in the party, and Genius×2 plus Computer unlock dimensional and tech-gated locations. Together they form a core that is both hard to remove and continuously generating advantage.</p>
+
+  <p class="prose"><strong>Annapuna and Unipuma</strong> are the parallel combat axis. Neither one is particularly threatening alone at ATK:3/DEF:3, but the moment they occupy the same Location, Anna's DEF rises to 4 and Uni's ATK rises to 4. They become a DEF:4/ATK:4 pair who share identical skill profiles — Acrobatics, Streetwise, Seduction, Music — meaning they can access the same locations and scavenge the same Items. The Music skill opens concert and entertainment venues like Tokyo Mega Dome directly. Deploy them together, always, and the synergy activates immediately. This frees Sylvie to operate as a solo Charm engine while the pair handles physical combat on a second front.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-top:1.5rem;">
+    <div class="callout charm"><strong>Pillar 1 — Native Seduction Stack</strong>All four characters have Seduction built in. Lingerie stacks on existing skill instances rather than unlocking. Servant scales with Charm. Every buff compounds.</div>
+    <div class="callout charm"><strong>Pillar 2 — Sylvie Charm Ceiling</strong>CHR:6 base. Stack Dollies, Jewels, Compact, Haven bonus to reach CHR:22. Enchanted View doubles it to 44. No opponent survives a resolved ×2 on a pre-stacked Charm total.</div>
+    <div class="callout charm"><strong>Pillar 3 — Disaster Asymmetry</strong>Angry Schoolgirls, Akane's Rage, and Miss Hinako all target males or specific characters. Your all-female team is entirely immune. Your own disasters roam freely on the opponent's side.</div>
+  </div>
+</div>
+
+<!-- STARTING CHARACTERS -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon char">&#9670;</div>
+    <div class="section-title">Starting Characters</div>
+    <div class="section-count">4 cards — all with native Seduction</div>
+  </div>
+
+  <!-- Sylvie -->
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/gexkmqhesoowwos0.jpg" alt="Sylvie" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×1</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Sylvie <span class="card-set-badge set0">Set 0</span> <span class="card-set-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;">Rare</span></div>
+      <div class="card-stats">
+        <span class="stat-pill highlight">CHR 6</span>
+        <span class="stat-pill">ATK 2</span>
+        <span class="stat-pill">DEF 2</span>
+        <span class="stat-pill">MOV 2</span>
+        <span class="stat-pill skill">Pilot</span>
+        <span class="stat-pill skill">Acrobatics</span>
+        <span class="stat-pill skill">Seduction</span>
+        <span class="stat-pill skill">Computer</span>
+        <span class="stat-pill skill">Driving</span>
+        <span class="stat-pill skill">Strength</span>
+      </div>
+      <div class="card-rules">"Can not be attacked by the 33-S Disaster. An escaped 33-S Sexaroid Boomer."</div>
+      <div class="card-analysis">Sylvie is the primary Charm combat engine. <strong>CHR:6 is the highest confirmed Charm stat among the four starting characters</strong>, and it is the number every item and enhancement in this deck is trying to multiply. Her physical stats are deliberately thin (ATK:2/DEF:2) — a signal that she was designed to win through Charm, and every card in this deck is built to let her do that. The immunity to the 33-S Sexaroid Disaster is a genuine tactical advantage: <strong>this deck runs the 33-S in its own disaster suite</strong>, so Sylvie can safely work around it while opposing physical characters get harassed by it. Her six-skill breadth — Pilot, Acrobatics, Computer, Driving, Strength, Seduction — opens more location access routes than any other character in the roster. Stack three Cute Little Dollies and three Wedding Jewels on her and she reaches CHR:18 before the Haven bonus or any combat card.</div>
+    </div>
+  </div>
+
+  <!-- Washu -->
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/64d157um9iwww8sc.jpg" alt="Washu" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×1</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Washu <span class="card-set-badge set0">Set 0</span> <span class="card-set-badge" style="background:rgba(99,102,241,0.15);color:#818cf8;">Uncommon</span></div>
+      <div class="card-stats">
+        <span class="stat-pill highlight">CHR 4</span>
+        <span class="stat-pill">ATK 3</span>
+        <span class="stat-pill">DEF 3</span>
+        <span class="stat-pill">MOV 3</span>
+        <span class="stat-pill phys">Energy 5</span>
+        <span class="stat-pill skill">Computer</span>
+        <span class="stat-pill skill">Genius ×2</span>
+        <span class="stat-pill skill">Teacher</span>
+        <span class="stat-pill skill">Medical</span>
+        <span class="stat-pill skill">Seduction</span>
+      </div>
+      <div class="card-rules">"All other characters in party are +1 Health."</div>
+      <div class="card-analysis">Washu is the sustain engine the rest of the roster depends on. Her passive +1 Health keeps Sylvie alive despite Sylvie's DEF:2 — without Washu in the party, Sylvie is fragile to any ATK:3+ Disaster. <strong>Energy:5 is the highest Energy value in the deck</strong>, enabling expensive power card effects and Energy-cost items. Genius×2 and Computer unlock dimensional and tech-gated locations that would otherwise be inaccessible. Teacher opens school locations, doubling the value of running both Furinkan High and Shinonome High School. As the deck's Medical skill holder, she extends the effectiveness of Medical Treatment by keeping characters at higher baseline Health before healing is even needed. Her CHR:4 participates meaningfully in Charm combat once Tender Moment and the Silky Doll Haven bonus are active.</div>
+    </div>
+  </div>
+
+  <!-- Annapuna -->
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/25lehyoqidk0gsk8.jpg" alt="Annapuna" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×1</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Annapuna <span class="card-set-badge set1">Set 1</span> <span class="card-set-badge" style="background:rgba(156,163,175,0.15);color:#9ca3af;">Common</span></div>
+      <div class="card-stats">
+        <span class="stat-pill">CHR 4</span>
+        <span class="stat-pill">ATK 3</span>
+        <span class="stat-pill highlight">DEF 3 → 4</span>
+        <span class="stat-pill">MOV 3</span>
+        <span class="stat-pill skill">Acrobatics</span>
+        <span class="stat-pill skill">Streetwise</span>
+        <span class="stat-pill skill">Seduction</span>
+        <span class="stat-pill skill">Music</span>
+      </div>
+      <div class="card-rules">"When at same Location with Unipuma, add one to Anna's Defense."</div>
+      <div class="card-analysis">Annapuna is the defensive half of the synergy pair. At DEF:3 she is survivable but unremarkable; the moment she shares a Location with Unipuma she becomes a <strong>DEF:4 wall</strong> — one of the highest DEF values available to the deck's characters. Music skill is a natural fit for Tokyo Mega Dome, making her and Uni the designated scavengers for that location. Android-type character with Seduction built in means she never needs Lingerie to access Seduction-gated content. <strong>As the deck's femme fatale enforcer</strong>, she draws the physical combat that Sylvie should be avoiding, soaking hits with DEF:4 while Sylvie builds Charm totals safely. Always deploy her alongside Unipuma — solo Anna is significantly weaker than paired Anna.</div>
+    </div>
+  </div>
+
+  <!-- Unipuma -->
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/rq2k3gqckzkw80wc.jpg" alt="Unipuma" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×1</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Unipuma <span class="card-set-badge set1">Set 1</span> <span class="card-set-badge" style="background:rgba(156,163,175,0.15);color:#9ca3af;">Common</span></div>
+      <div class="card-stats">
+        <span class="stat-pill">CHR 4</span>
+        <span class="stat-pill highlight">ATK 3 → 4</span>
+        <span class="stat-pill">DEF 3</span>
+        <span class="stat-pill">MOV 3</span>
+        <span class="stat-pill skill">Acrobatics</span>
+        <span class="stat-pill skill">Streetwise</span>
+        <span class="stat-pill skill">Seduction</span>
+        <span class="stat-pill skill">Music</span>
+      </div>
+      <div class="card-rules">"When at same Location with Annapuna, add 1 to Uni's Attack."</div>
+      <div class="card-analysis">Unipuma is the offensive half of the pair. ATK:4 when paired with Annapuna makes her <strong>the deck's best raw physical attacker</strong> — capable of contesting Disasters that Sylvie's ATK:2 cannot engage without Combat Training assistance. The identical skill profile to Annapuna (Acrobatics, Streetwise, Seduction, Music) means they can access the exact same locations, scavenge the same Items, and never need to split up to cover different territory. <strong>This is a feature, not a limitation</strong> — it means you always want them together, and since that is already the correct play for the synergy bonus, you never face a trade-off decision. Her Music skill alongside Anna's ensures both have native access to Tokyo Mega Dome without requiring any skill-granting equipment.</div>
+    </div>
+  </div>
+</div>
+
+<!-- HAVEN -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon haven">&#9733;</div>
+    <div class="section-title">Haven — The Silky Doll</div>
+    <div class="section-count">1 card</div>
+  </div>
+
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/2soiaeqy0dmog8sg.jpg" alt="The Silky Doll" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×1</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">The Silky Doll <span class="card-set-badge set0">Set 0</span> <span class="card-set-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;">Rare</span></div>
+      <div class="card-stats">
+        <span class="stat-pill highlight">Haven</span>
+        <span class="stat-pill" style="background:rgba(244,114,182,0.1);border-color:rgba(244,114,182,0.3);color:var(--accent);">Bubblegum Crisis</span>
+      </div>
+      <div class="card-rules">"All Characters from this Haven may add +1 to Charm any given turn."</div>
+      <div class="card-analysis">The Silky Doll is mechanically the only correct Haven for this deck. The +1 Charm bonus applies <strong>every turn to every Character</strong> — not once, not conditionally, but as a permanent structural uplift that compounds over the course of a game. Unlike Items (destroyable by Disasters) or Enhancements (occupy slots and can be targeted), the Haven's bonus is baseline. It cannot be stolen, discarded, or disrupted. Combined with Compact (+1 for females), Cute Little Dolly (+2 per copy), and Wedding Jewels (+2 per Enhancement), the Haven is the invisible foundation that makes the Charm mathematics possible. <strong>Over six turns across four characters, the Haven alone contributes 24 Charm to your board state</strong> that opponents never had to deal with. The thematic resonance with Sylvie — a Bubblegum Crisis android whose home bar this literally is — elevates the deck's coherence from mechanical to narrative.</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOCATIONS -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon location">&#9670;</div>
+    <div class="section-title">Locations</div>
+    <div class="section-count">7 cards</div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/d2i165jaecgkco4c.jpg" alt="Hot Legs" onerror="this.style.display='none'">
+      <div class="card-grid-name">Hot Legs</div>
+      <div class="card-grid-sub">Set 0 · Common</div>
+      <div class="card-grid-sub" style="color:var(--text-muted);font-size:0.6rem;margin-top:0.2rem;">High-DEF femme fatale location. Sylvie's Strength covers the physical entry requirement; any character with Seduction walks in free.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/cixpq73fmn4gkgwo.jpg" alt="Furinkan High" onerror="this.style.display='none'">
+      <div class="card-grid-name">Furinkan High</div>
+      <div class="card-grid-sub">Set 0 · Common</div>
+      <div class="card-grid-sub" style="color:var(--text-muted);font-size:0.6rem;margin-top:0.2rem;">School location. Washu's Teacher skill opens student-blocked paths. Strong item density in the Ranma cluster.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/mzp40eni38gks44g.jpg" alt="Island Restaurant" onerror="this.style.display='none'">
+      <div class="card-grid-name">Island Restaurant</div>
+      <div class="card-grid-sub">Set 0 · Rare</div>
+      <div class="card-grid-sub" style="color:var(--text-muted);font-size:0.6rem;margin-top:0.2rem;">Social setting. Seduction and Survival skills useful here. Item density justifies the Rare slot.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/90sub1qyvqckk84k.jpg" alt="Ukyo's Restaurant" onerror="this.style.display='none'">
+      <div class="card-grid-name">Ukyo's Restaurant</div>
+      <div class="card-grid-sub">Set 0 · Common</div>
+      <div class="card-grid-sub" style="color:var(--text-muted);font-size:0.6rem;margin-top:0.2rem;">Food and social hub. Priss and the Replicants Disaster placed here creates thematic irony.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/j0sfr8xll5kckgc0.jpg" alt="Tokyo Mega Dome" onerror="this.style.display='none'">
+      <div class="card-grid-name">Tokyo Mega Dome</div>
+      <div class="card-grid-sub">Set 0 · Common</div>
+      <div class="card-grid-sub" style="color:var(--text-muted);font-size:0.6rem;margin-top:0.2rem;">Concert venue. Annapuna and Unipuma's Music skill grants natural access. Primary pair scavenging location.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/c3sfpxd91k0g0og0.jpg" alt="Shinonome High School" onerror="this.style.display='none'">
+      <div class="card-grid-name">Shinonome High School</div>
+      <div class="card-grid-sub">Set 0 · Uncommon</div>
+      <div class="card-grid-sub" style="color:var(--text-muted);font-size:0.6rem;margin-top:0.2rem;">Second school. Washu's Teacher skill doubles its value. Gives the deck two school-type location targets.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/crcabbnoi348sssw.jpg" alt="Ryugenzawa" onerror="this.style.display='none'">
+      <div class="card-grid-name">Ryugenzawa</div>
+      <div class="card-grid-sub">Set 0 · Uncommon</div>
+      <div class="card-grid-sub" style="color:var(--text-muted);font-size:0.6rem;margin-top:0.2rem;">Nature and forest location. Anna and Uni's Streetwise and Acrobatics cover traversal here without needing Survival.</div>
+    </div>
+  </div>
+</div>
+
+<!-- THE SEDUCTION PACKAGE -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon item">&#9670;</div>
+    <div class="section-title">The Seduction Package</div>
+    <div class="section-count">11 items</div>
+  </div>
+
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/icgd5bb60xwgg4cc.jpg" alt="Lingerie" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×2</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Lingerie <span class="card-set-badge set0">Set 0</span> <span class="card-set-badge" style="background:rgba(156,163,175,0.15);color:#9ca3af;">Common</span></div>
+      <div class="card-rules">Grants the Seduction skill. When a character already has Seduction, stacks the existing skill instance.</div>
+      <div class="card-analysis">In most decks, Lingerie is the Seduction unlock. <strong>In this deck, all four characters already have native Seduction, so Lingerie does something more valuable: it stacks on top of the existing skill instance</strong>, increasing the Seduction stat rather than merely unlocking it. The mechanical distinction matters — stacking pushes the skill level higher, which affects how Seduction-scaled interactions resolve. Two copies means any two characters can carry a stacked Seduction at once, making the entire roster more dangerous in Charm-contested locations.</div>
+    </div>
+  </div>
+
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/qkxv99wzieosww04.jpg" alt="Cute Little Dolly" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×3</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Cute Little Dolly <span class="card-set-badge set0">Set 0</span> <span class="card-set-badge" style="background:rgba(156,163,175,0.15);color:#9ca3af;">Common</span></div>
+      <div class="card-rules">+2 Charm.</div>
+      <div class="card-analysis">The deck's primary Charm item. Three copies on Sylvie adds +6 Charm to her base CHR:6, bringing her to CHR:12 before any other enhancement, Haven bonus, or combat card. At Common rarity, three copies are easy to acquire. <strong>Always stack all three on Sylvie first</strong> — she is the Enchanted View delivery vehicle and needs the highest Charm ceiling possible before the finisher lands.</div>
+    </div>
+  </div>
+
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/4dgyjsctji0wgs0w.jpg" alt="Servant" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×1</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Servant <span class="card-set-badge set0">Set 0</span> <span class="card-set-badge" style="background:rgba(99,102,241,0.15);color:#818cf8;">Uncommon</span></div>
+      <div class="card-rules">"Number of uses is equal to Characters Charm."</div>
+      <div class="card-analysis">Servant's power scales directly with the equipping character's Charm stat. With all four characters having native Seduction, <strong>any of them can equip Servant and immediately get uses equal to their current Charm total</strong>. On Sylvie at CHR:12+ mid-game, Servant becomes a massively efficient equipment fetcher — far more uses than any other character in the format could achieve. Equip it to whoever currently holds the highest Charm, and let it work. As the Charm stack builds through items and enhancements, Servant's use count climbs in lockstep.</div>
+    </div>
+  </div>
+
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/9usyfh9gt0ooc8sg.jpg" alt="Compact" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×2</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Compact <span class="card-set-badge set1">Set 1</span> <span class="card-set-badge" style="background:rgba(99,102,241,0.15);color:#818cf8;">Uncommon</span></div>
+      <div class="card-rules">+1 Charm for female characters.</div>
+      <div class="card-analysis">All four starting characters are female. Two Compacts means +2 Charm distributed across whoever needs it most. Low cost, reliable bonus, no conditional requirement beyond gender — which this deck satisfies entirely. Stack both on Sylvie for +2 more Charm toward the ceiling, or distribute one each to Washu and a Puma sister to make them more useful in Charm combat situations.</div>
+    </div>
+  </div>
+
+  <p class="prose" style="margin-top:1.5rem;"><strong>Supporting Equipment</strong></p>
+  <div class="card-grid">
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/enfvvjm48pw0s4ss.jpg" alt="K-12 Battlesuit" onerror="this.style.display='none'">
+      <div class="card-grid-name">K-12 Battlesuit</div>
+      <div class="card-grid-qty">×1 · Set 0 Uncommon</div>
+      <div class="card-grid-sub">Stats increase to card values; grants Flying and Strength. Fixes Sylvie's ATK:2/DEF:2 and adds Flying for location access. Strength she already has — Flying is the new unlock.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/brovrfha9k0ksk80.jpg" alt="Refreshing Drink" onerror="this.style.display='none'">
+      <div class="card-grid-name">Refreshing Drink</div>
+      <div class="card-grid-qty">×1 · Set 0 Uncommon</div>
+      <div class="card-grid-sub">Full heal on discard. Emergency sustain when Medical Treatment is burned. Hold it for the moment Sylvie drops low enough that losing her would collapse the Charm engine.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/4wtbns2simwwsowo.jpg" alt="Power Gem" onerror="this.style.display='none'">
+      <div class="card-grid-name">Power Gem</div>
+      <div class="card-grid-qty">×1 · Set 0 Rare</div>
+      <div class="card-grid-sub">+1 Energy. Feeds Washu's energy-cost abilities. Her Energy:5 base means she can already power expensive effects — Power Gem extends that to Energy:6 for the most demanding interactions.</div>
+    </div>
+  </div>
+</div>
+
+<!-- THE CHARM STACK ENGINE -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon math">&#10022;</div>
+    <div class="section-title">The Charm Stack Engine</div>
+    <div class="section-count">Sylvie's ceiling math</div>
+  </div>
+
+  <p class="prose">Every item, enhancement, and global effect in the deck feeds into a single Charm total on Sylvie. The math is not theoretical — every component listed below is a card actually in the deck, playable in a real game. The goal is to reach the Enchanted View trigger point, at which the doubler ends the combat outright.</p>
+
+  <div class="math-box">
+    <div class="math-title">Sylvie Maximum Charm Calculation — Pre-Combat</div>
+    <div class="math-row"><span>CHR base (Sylvie)</span><span>6</span></div>
+    <div class="math-row"><span>Silky Doll Haven (+1 per turn × assumed 6 turns)</span><span>+6</span></div>
+    <div class="math-row"><span>Cute Little Dolly ×3 (+2 each)</span><span>+6</span></div>
+    <div class="math-row"><span>Wedding Jewels ×3 (+2 each)</span><span>+6</span></div>
+    <div class="math-row"><span>Compact ×2 (+1 each, female)</span><span>+2</span></div>
+    <div class="math-row"><span>Tender Moment (+1, field-wide)</span><span>+1</span></div>
+    <div class="math-row subtotal"><span>Pre-Combat Charm Total</span><span>27</span></div>
+    <div class="math-row" style="color:var(--accent);"><span>Enchanted View (×2 multiplier)</span><span>×2</span></div>
+    <div class="math-row total"><span>Final Combat Charm</span><span>54</span></div>
+  </div>
+
+  <div class="callout charm"><strong>Note on Haven bonus accumulation</strong>The Silky Doll grants +1 Charm per turn, not a one-time bonus. The table above assumes 6 turns of accumulation (a realistic midgame scenario) for 6 total Haven Charm. In a longer game the number climbs further. Even at 3 turns of Haven bonus the pre-combat total is 24, and Enchanted View turns that into 48 — still an unreachable ceiling for any standard build.</div>
+
+  <p class="prose" style="margin-top:1.5rem;"><strong>The Finisher Cards</strong></p>
+
+  <div class="combat-dual">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/7b3xp9g2dccoc4c4.jpg" alt="Enchanted View / Panic" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×3</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Enchanted View / Panic <span class="card-set-badge set0">Set 0</span></div>
+      <div class="combat-sides">
+        <div class="combat-side charm-side">
+          <div class="combat-side-label">Charm Side</div>
+          <div class="combat-side-name">Enchanted View</div>
+          <div class="combat-side-effect">Multiply your Charm by ×2. THE finisher. With Sylvie pre-stacked to CHR:27, this produces a combat Charm of 54.</div>
+        </div>
+        <div class="combat-side phys-side">
+          <div class="combat-side-label">Physical Side</div>
+          <div class="combat-side-name">Panic</div>
+          <div class="combat-side-effect">Opponent's Charm reset to 2. Also excellent — strips any Charm build the opponent has assembled this round.</div>
+        </div>
+      </div>
+      <div class="card-analysis">Run three copies and sequence them to the top of the draw pile using Briefing. When Enchanted View resolves on a pre-stacked Sylvie, the combat ends immediately — no opponent in a standard game can match a CHR:50+ total.</div>
+    </div>
+  </div>
+
+  <div class="combat-dual">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/msb04qjirtccscwc.jpg" alt="Gas Attack / Incomparable Beauty" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×3</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Gas Attack / Incomparable Beauty <span class="card-set-badge set0">Set 0</span></div>
+      <div class="combat-sides">
+        <div class="combat-side charm-side">
+          <div class="combat-side-label">Charm Side</div>
+          <div class="combat-side-name">Incomparable Beauty</div>
+          <div class="combat-side-effect">Opponent's Defense = 0 this round. Win the Charm combat round outright regardless of their total.</div>
+        </div>
+        <div class="combat-side phys-side">
+          <div class="combat-side-label">Physical Side</div>
+          <div class="combat-side-name">Gas Attack</div>
+          <div class="combat-side-effect">Opponent's Charm = 0. Win the physical combat round if they were relying on Charm for defense.</div>
+        </div>
+      </div>
+      <div class="card-analysis"><strong>The most aggressive card in the arsenal.</strong> Either side wins a combat round outright. In a Charm combat, Incomparable Beauty zeroes their defense entirely — your total does not even matter. Three copies in a 21-card combat suite means you see at least one most games.</div>
+    </div>
+  </div>
+</div>
+
+<!-- POWER CARDS -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon power">&#9670;</div>
+    <div class="section-title">Power Cards</div>
+    <div class="section-count">21 cards</div>
+  </div>
+
+  <p class="prose">21 power cards split across Enhancements, Global Effects, and Flash Effects. Featured below are the cards with the highest strategic impact; the full list appears in the Deck List section.</p>
+
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/de8m2mtneqok4888.jpg" alt="Striptease" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×2</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Striptease <span class="card-set-badge set1">Set 1</span> <span class="card-set-badge" style="background:rgba(99,102,241,0.15);color:#818cf8;">Uncommon</span></div>
+      <div class="card-rules">"Males are unable to Scavenge or help in Combat."</div>
+      <div class="card-analysis"><strong>An all-female deck's secret weapon.</strong> Striptease locks every male character on the field out of scavenging and combat assistance for a full turn — and your team is entirely unaffected. Against male-heavy Physical decks this is a complete board stall: their attackers cannot engage in meaningful actions while your four female characters operate freely. Two copies means you can play this in consecutive turns against a deck that cannot recover. The card does not require a target — it is a field-wide effect that specifically exempts your roster.</div>
+    </div>
+  </div>
+
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/quvleuxtjaoswg0o.jpg" alt="Bad Reputation" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×2</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Bad Reputation <span class="card-set-badge set0">Set 0</span> <span class="card-set-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;">Rare</span></div>
+      <div class="card-rules">Reduce opponent's Charm by 2.</div>
+      <div class="card-analysis">Charm debuff while you are actively Charm stacking. Two copies means -4 Charm to any opponent trying to fight you in the Charm dimension. Against rival Charm decks, Bad Reputation is the primary counter: they are building their total, you are building your total and simultaneously reducing theirs. The net swing of two copies is significant enough to flip matchups that would otherwise be close.</div>
+    </div>
+  </div>
+
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/q03frwe04iok0gko.jpg" alt="Tender Moment" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×1</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Tender Moment <span class="card-set-badge set1">Set 1</span> <span class="card-set-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;">Rare</span></div>
+      <div class="card-rules">All Characters +1 Charm. Non-cumulative.</div>
+      <div class="card-analysis">Field-wide +1 Charm. Non-cumulative means you only run one, which is all you need. Every character on your side of the board benefits — Washu, Annapuna, and Unipuma all get closer to meaningful Charm combat participation, while Sylvie's total climbs another point toward the Enchanted View threshold.</div>
+    </div>
+  </div>
+
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/9i0d06bftickcsg0.jpg" alt="Following Orders" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×1</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Following Orders <span class="card-set-badge set1">Set 1</span> <span class="card-set-badge" style="background:rgba(99,102,241,0.15);color:#818cf8;">Uncommon</span></div>
+      <div class="card-rules">"Reverse the result of 1 Charm combat."</div>
+      <div class="card-analysis">Hold this as counterplay. If an opponent somehow out-charms you in a given round — through their own Enchanted View or a lucky combat card draw — Following Orders flips the result. It is a one-of because you should rarely need it, but when you do, it saves a character that would otherwise be eliminated. The mere knowledge that an opponent is running it changes how aggressively they commit to Charm combat finishers.</div>
+    </div>
+  </div>
+
+  <p class="prose" style="margin-top:1.5rem;"><strong>Enhancement and Flash Grid</strong></p>
+  <div class="card-grid">
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/rr7pwx64hmsg8kc8.jpg" alt="Combat Training" onerror="this.style.display='none'">
+      <div class="card-grid-name">Combat Training</div>
+      <div class="card-grid-qty">×3 · Set 0 Uncommon</div>
+      <div class="card-grid-sub">+1 ATK/DEF per copy in play, max +3/+3. Three copies bring Sylvie from ATK:2/DEF:2 to ATK:5/DEF:5.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/h8pz3cl5nzwckg0c.jpg" alt="Wedding Jewels" onerror="this.style.display='none'">
+      <div class="card-grid-name">Wedding Jewels</div>
+      <div class="card-grid-qty">×3 · Set 0 Common</div>
+      <div class="card-grid-sub">+2 Charm per copy. Three copies on Sylvie is +6 Charm — 33% of her base CHR again.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/ewe8k9ulixc8wosc.jpg" alt="Personal Training" onerror="this.style.display='none'">
+      <div class="card-grid-name">Personal Training</div>
+      <div class="card-grid-qty">×2 · Set 0 Uncommon</div>
+      <div class="card-grid-sub">+1 ATK/DEF non-cumulative. Secondary physical buffer for Annapuna/Unipuma when Combat Training is on Sylvie.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/ds6o9nhcpb4gsssc.jpg" alt="Loving You" onerror="this.style.display='none'">
+      <div class="card-grid-name">Loving You</div>
+      <div class="card-grid-qty">×1 · Set 1 Rare</div>
+      <div class="card-grid-sub">+3 Charm when combating Robots, Androids, or Cyborgs. Triggers when fighting the android-type disasters in our own disaster suite.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/ht26qc7sh5kcw0ws.jpg" alt="Briefing" onerror="this.style.display='none'">
+      <div class="card-grid-name">Briefing</div>
+      <div class="card-grid-qty">×2 · Set 0 Common</div>
+      <div class="card-grid-sub">View and reorder top 4 draw pile cards. Sequence Enchanted View to the top when you need the finisher.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/5rqg6skmpyg4sws0.jpg" alt="Medical Treatment" onerror="this.style.display='none'">
+      <div class="card-grid-name">Medical Treatment</div>
+      <div class="card-grid-qty">×2 · Set 0 Common</div>
+      <div class="card-grid-sub">Full heal any character. Washu's +1 Health passive extends the window; Medical Treatment resets it entirely.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/qv8jmg1urb4w4000.jpg" alt="Angel of Mercy" onerror="this.style.display='none'">
+      <div class="card-grid-name">Angel of Mercy</div>
+      <div class="card-grid-qty">×1 · Set 0 Rare</div>
+      <div class="card-grid-sub">Revive a killed Character OR reshuffle 2 discarded non-Character cards. Mid-to-late game safety net for the Charm engine.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/cvo07qosr1cgog0o.jpg" alt="Wrath of the Eye of God" onerror="this.style.display='none'">
+      <div class="card-grid-name">Wrath of the Eye of God</div>
+      <div class="card-grid-qty">×1 · Set 0 Rare</div>
+      <div class="card-grid-sub">Destroys any card in play except Havens. Nuclear reset for catastrophically large Disasters or opponent buff stacks that spiral out of control.</div>
+    </div>
+  </div>
+</div>
+
+<!-- COMBAT ARSENAL -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon combat">&#9670;</div>
+    <div class="section-title">Combat Arsenal</div>
+    <div class="section-count">21 combat cards</div>
+  </div>
+
+  <p class="prose">Every combat card in this deck is dual-sided, covering both Physical and Charm combat. The deck is built to always play the Charm side, but the Physical side options are not dead cards — they are emergency pivots available when circumstances require it. <strong>All four characters qualify for the female-specific +3 Charm bonus on Mournful Look</strong>, making it the most reliably powerful Charm card in the suite for this particular roster.</p>
+
+  <div class="combat-dual">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/r65pv1shrs0kk0kk.jpg" alt="Handsome Lad / Parry" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×3</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Handsome Lad / Parry <span class="card-set-badge set0">Set 0</span></div>
+      <div class="combat-sides">
+        <div class="combat-side charm-side">
+          <div class="combat-side-label">Charm Side — Featured</div>
+          <div class="combat-side-name">Handsome Lad</div>
+          <div class="combat-side-effect">+2 Charm AND reduces opponent's Charm by -1. Net swing of 3 in a single card.</div>
+        </div>
+        <div class="combat-side phys-side">
+          <div class="combat-side-label">Physical Side</div>
+          <div class="combat-side-name">Parry</div>
+          <div class="combat-side-effect">+2 Defense. Solid emergency defensive play if forced into physical combat.</div>
+        </div>
+      </div>
+      <div class="card-analysis"><strong>The best value card in the entire combat suite.</strong> You gain +2 Charm. They lose -1 Charm. That is a net swing of 3 Charm in one card play. Three copies of this card means a total swing potential of +9 before Enchanted View. Stack these early in a Charm combat exchange to open a gap that the opponent cannot close, then land Enchanted View on the doubled total.</div>
+    </div>
+  </div>
+
+  <div class="combat-dual">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/lk6nyyc3rdsk4s88.jpg" alt="Hammer / Lover's Kiss" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×3</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Hammer / Lover's Kiss <span class="card-set-badge set0">Set 0</span></div>
+      <div class="combat-sides">
+        <div class="combat-side phys-side">
+          <div class="combat-side-label">Physical Side — Featured</div>
+          <div class="combat-side-name">Hammer</div>
+          <div class="combat-side-effect">Instantly remove opponent's combat card and reduce their Defense by -1. Emergency eject for catastrophic opponent plays.</div>
+        </div>
+        <div class="combat-side charm-side">
+          <div class="combat-side-label">Charm Side</div>
+          <div class="combat-side-name">Lover's Kiss</div>
+          <div class="combat-side-effect">+2 Charm. Standard Charm booster when no emergency exists.</div>
+        </div>
+      </div>
+      <div class="card-analysis">The Hammer physical side is the emergency eject button. If an opponent plays a massive ATK boost or an Incomparable Beauty equivalent, Hammer discards it before it resolves and simultaneously drops their DEF by 1. <strong>This card saves characters that would otherwise be eliminated by a single devastating play</strong>. Play the Charm side (Lover's Kiss, +2 Charm) in any normal round — Hammer is the exception that makes you comfortable committing to big Charm builds, knowing you have an out if the opponent counters aggressively.</div>
+    </div>
+  </div>
+
+  <div class="combat-dual">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/hoyeaeo4lj40kws0.jpg" alt="Mournful Look / Southern Cross Fist" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×3</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Mournful Look / Southern Cross Fist <span class="card-set-badge set0">Set 0</span></div>
+      <div class="combat-sides">
+        <div class="combat-side charm-side">
+          <div class="combat-side-label">Charm Side — All Four Qualify</div>
+          <div class="combat-side-name">Mournful Look</div>
+          <div class="combat-side-effect">+3 Charm for female characters, otherwise +1. All four characters in this deck are female — +3 every time.</div>
+        </div>
+        <div class="combat-side phys-side">
+          <div class="combat-side-label">Physical Side</div>
+          <div class="combat-side-name">Southern Cross Fist</div>
+          <div class="combat-side-effect">+2 ATK with Strength skill. Sylvie has Strength — pivot here if she needs physical combat finishing power.</div>
+        </div>
+      </div>
+      <div class="card-analysis"><strong>Every character in this deck triggers the full +3 Charm bonus</strong> — Sylvie, Washu, Annapuna, Unipuma are all female. In a field where Mournful Look averages +2 Charm (because most decks include male characters who only get +1), this deck consistently extracts +3. Three copies at full value is +9 Charm across the suite, plus the Physical side gives Sylvie (with Strength) a genuine ATK:2+2=ATK:4 physical option when the K-12 Battlesuit is not yet equipped.</div>
+    </div>
+  </div>
+
+  <p class="prose" style="margin-top:1.5rem;"><strong>Combat Card Grid</strong></p>
+  <div class="card-grid">
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/ke9rr7o3slc0wsog.jpg" alt="Beautiful Queen / Face Slam" onerror="this.style.display='none'">
+      <div class="card-grid-name">Beautiful Queen / Face Slam</div>
+      <div class="card-grid-qty">×3 · Set 0</div>
+      <div class="card-grid-sub">Charm: +3 Charm. Always play the Charm side. Physical (-2 ATK) is a trap.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/m1n42qaanhsssg8s.jpg" alt="Gone Crazy / Lovely Ladies" onerror="this.style.display='none'">
+      <div class="card-grid-name">Gone Crazy / Lovely Ladies</div>
+      <div class="card-grid-qty">×3 · Set 0</div>
+      <div class="card-grid-sub">Charm: +3 Charm. Physical: +1 ATK, -1 DEF — even the Physical side has upside for Anna/Uni.</div>
+    </div>
+  </div>
+</div>
+
+<!-- DISASTER LINEUP -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon disaster">&#9670;</div>
+    <div class="section-title">Disaster Lineup</div>
+    <div class="section-count">21 disasters — 7 Major, 14 Minor</div>
+  </div>
+
+  <p class="prose">The disaster suite serves two purposes simultaneously: it pressures opponents through raw combat stats and targeting rules, and it maintains board state asymmetry through male-targeting disasters that never touch your all-female roster. <strong>Angry Schoolgirls, Akane's Rage, and Miss Hinako all either target males specifically or have exploitable targeting — your team is never their victim.</strong></p>
+
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/sa48tvsyr6s0gk0g.jpg" alt="Akane's Cooking" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×1</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Akane's Cooking <span class="card-set-badge set0">Set 0</span> <span class="card-set-badge" style="background:rgba(239,68,68,0.15);color:#ef4444;">Major</span></div>
+      <div class="card-rules">"All Characters overwhelmed and unable to do ANYTHING for 2 turns."</div>
+      <div class="card-analysis"><strong>The most disruptive single disaster card in the game.</strong> Two full turns of total inaction. Washu's Medical skill does not counter this — no one can act. Placed under a key location to stall an opponent's entire board for 2 turns while you build your Charm stack uncontested. Coordinate this with the Briefing power card to sequence your next two turns' draws before the opponent recovers.</div>
+    </div>
+  </div>
+
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/95rx6qxi6xc8sok4.jpg" alt="Angry Schoolgirls" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×2</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">Angry Schoolgirls <span class="card-set-badge set0">Set 0</span> <span class="card-set-badge" style="background:rgba(239,68,68,0.12);color:#ef4444;">Minor</span></div>
+      <div class="card-stats">
+        <span class="stat-pill">ATK 3</span>
+        <span class="stat-pill highlight">DEF 6</span>
+        <span class="stat-pill">MOV 5</span>
+      </div>
+      <div class="card-rules">"Pursue and attack nearest male Character." Steals Items if they win.</div>
+      <div class="card-analysis">DEF:6 makes them nearly impossible to defeat without a vehicle discard or concentrated effort. MOV:5 lets them chase across the board. <strong>Your all-female team is entirely ignored — these roam opponent's side of the field, stealing Items whenever they win combat.</strong> Stack two of them with Akane's Rage to create a full male-targeting disaster package that locks down male-character decks completely.</div>
+    </div>
+  </div>
+
+  <div class="card-entry">
+    <div class="card-img-wrap">
+      <img class="card-img" src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/jwuvguga8eo8ckg8.jpg" alt="33-S Sexaroid" onerror="this.style.display='none'">
+      <span class="card-qty-badge">×1</span>
+    </div>
+    <div class="card-body">
+      <div class="card-name">33-S Sexaroid <span class="card-set-badge set0">Set 0</span> <span class="card-set-badge" style="background:rgba(239,68,68,0.12);color:#ef4444;">Minor</span></div>
+      <div class="card-stats">
+        <span class="stat-pill">ATK 3</span>
+        <span class="stat-pill">DEF 3</span>
+        <span class="stat-pill">MOV 3</span>
+      </div>
+      <div class="card-rules">"Male Characters with charm &lt;7 can not Attack the 33-S."</div>
+      <div class="card-analysis"><strong>The thematic centerpiece of the disaster suite — and the reason Sylvie is in this deck at all.</strong> Any male character with Charm below 7 literally cannot attack the 33-S Sexaroid. In practice, that means almost every male character in the format is locked out of engaging her. Place her under a key opponent location and watch them scramble. Sylvie's immunity ("Can not be attacked by the 33-S Disaster") means she can safely engage and clear this disaster herself when needed — she has a unique pass-through that no other character in the deck, or most decks in the format, can replicate.</div>
+    </div>
+  </div>
+
+  <p class="prose" style="margin-top:1.5rem;"><strong>Major Disasters</strong></p>
+  <div class="card-grid">
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/n20bbii8bxwcscws.jpg" alt="DDJ1 Battlemover" onerror="this.style.display='none'">
+      <div class="card-grid-name">DDJ1 Battlemover</div>
+      <div class="card-grid-qty">×1 · Major</div>
+      <div class="card-grid-sub">ATK:6/DEF:6/MOV:3. Self-destructs at low health after 3 rounds, destroying everything at the Location.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/c5289xjztu04swog.jpg" alt="Dobermans" onerror="this.style.display='none'">
+      <div class="card-grid-name">Dobermans</div>
+      <div class="card-grid-qty">×2 · Major</div>
+      <div class="card-grid-sub">ATK:5/DEF:8/MOV:3. Discard 1 vehicle to defeat. DEF:8 is virtually impenetrable without a vehicle.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/ahkhera475csosgk.jpg" alt="GD-42 Crab Mech" onerror="this.style.display='none'">
+      <div class="card-grid-name">GD-42 Crab Mech</div>
+      <div class="card-grid-qty">×1 · Major</div>
+      <div class="card-grid-sub">ATK:6/DEF:5/MOV:3. Will not attack Vision. Strong all-around combat threat.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/m17mikrqheogo4k4.jpg" alt="Sahara Demon" onerror="this.style.display='none'">
+      <div class="card-grid-name">Sahara Demon</div>
+      <div class="card-grid-qty">×1 · Major</div>
+      <div class="card-grid-sub">ATK:6/DEF:6/MOV:3. Steals an Item, takes full move again, places Item under its landing Location.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/215x4mrhcem80gcw.jpg" alt="Space Pirate Attack" onerror="this.style.display='none'">
+      <div class="card-grid-name">Space Pirate Attack</div>
+      <div class="card-grid-qty">×1 · Major</div>
+      <div class="card-grid-sub">ATK:6/DEF:6/MOV:5. Discards ALL Equipment and non-Planetary Vehicles in play on arrival. Scorched earth.</div>
+    </div>
+  </div>
+
+  <p class="prose" style="margin-top:1.5rem;"><strong>Minor Disasters</strong></p>
+  <div class="card-grid">
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/lvs46osyuw0k0c80.jpg" alt="Akane's Rage" onerror="this.style.display='none'">
+      <div class="card-grid-name">Akane's Rage</div>
+      <div class="card-grid-qty">×2 · Minor</div>
+      <div class="card-grid-sub">ATK:3/DEF:2/MOV:2. Attacks nearest male Character. Second male-only targeting disaster. Stack with Angry Schoolgirls.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/1k6iyy6xs4cg0kg4.jpg" alt="Natsumi and Karume" onerror="this.style.display='none'">
+      <div class="card-grid-name">Natsumi and Karume</div>
+      <div class="card-grid-qty">×2 · Minor</div>
+      <div class="card-grid-sub">ATK:6/DEF:6/MOV:4. No access to Havens or Cooking Locations. Discard food to defeat — few decks run food.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/e8d2z7nvqlck4osw.jpg" alt="7 Lucky Gods Martial Artists" onerror="this.style.display='none'">
+      <div class="card-grid-name">7 Lucky Gods Martial Artists</div>
+      <div class="card-grid-qty">×2 · Minor</div>
+      <div class="card-grid-sub">ATK:4/DEF:4/MOV:3. Must defeat 3 times, +1 ATK/DEF each defeat. Steals Items as they travel.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/4hz3c1vmdh8gokog.jpg" alt="Class C Boomer" onerror="this.style.display='none'">
+      <div class="card-grid-name">Class C Boomer</div>
+      <div class="card-grid-qty">×2 · Minor</div>
+      <div class="card-grid-sub">ATK:4/DEF:4/MOV:2. Reliable standard threat. Still threatens all four team members equally — no immunity unlike 33-S.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/fb655a6ajvccgwck.jpg" alt="Miss Hinako" onerror="this.style.display='none'">
+      <div class="card-grid-name">Miss Hinako</div>
+      <div class="card-grid-qty">×1 · Minor</div>
+      <div class="card-grid-sub">1 Character unable to act for 2 turns. Steals 1 Item. Attacks Ranma first if in play — targeted incapacitation.</div>
+    </div>
+    <div class="card-grid-item">
+      <img src="https://assets.ccgvault.io/cards/ani-mayhem-ccg/fw5d6m62b484800w.jpg" alt="Funky Muggers" onerror="this.style.display='none'">
+      <div class="card-grid-name">Funky Muggers</div>
+      <div class="card-grid-qty">×2 · Minor</div>
+      <div class="card-grid-sub">ATK:4/DEF:3/MOV:2. Destroys 1 Clothing card carried by a Character they damage. Punishes Lingerie-heavy decks hard.</div>
+    </div>
+  </div>
+</div>
+
+<!-- STRATEGY GUIDE -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon strategy">&#10022;</div>
+    <div class="section-title">Strategy Guide</div>
+  </div>
+
+  <div class="phase-header">Opening — Establish the Engine</div>
+  <div class="tips-grid">
+    <div class="tip-card">
+      <strong>Priority 1 — Silky Doll Haven</strong>
+      Establish the Haven immediately. Every turn it is not in play is a missed +1 Charm per character. The Haven bonus is the invisible hand that makes all your math work — get it down before the first disaster hits.
+    </div>
+    <div class="tip-card">
+      <strong>Priority 2 — Stack Dollies on Sylvie</strong>
+      All three Cute Little Dollies go on Sylvie first. <b>CHR:6 + 6 = CHR:12</b> before any other enhancement fires. She is the Enchanted View delivery vehicle; everything else in the deck is building toward her pulling that trigger.
+    </div>
+    <div class="tip-card">
+      <strong>Priority 3 — Equip Servant Early</strong>
+      Equip Servant to whoever currently has the highest Charm. Washu's +1 Health passive is already active the moment she is in the party — the three other characters benefit from turn one. Use Servant's uses to fish for Wedding Jewels and Combat Training.
+    </div>
+  </div>
+
+  <div class="phase-header">Midgame — Deploy the Pair and Build the Stack</div>
+  <div class="tips-grid">
+    <div class="tip-card">
+      <strong>Anna + Uni — Always Together</strong>
+      Deploy Annapuna and Unipuma to the same Location every time. <b>Instant ATK:4/DEF:4</b> the moment they share a space. They handle physical combat on a second front while Sylvie builds Charm totals unopposed on the other side of the board.
+    </div>
+    <div class="tip-card">
+      <strong>Charm vs Physical Assignment</strong>
+      Sylvie handles all Charm combat. Anna and Uni handle lower-threat physical targets at ATK:4. Washu stays close to the party for the +1 Health passive and takes any Medical Treatment usage. Never send Sylvie into physical combat if Charm combat is available.
+    </div>
+    <div class="tip-card">
+      <strong>Disaster Placement</strong>
+      Place Angry Schoolgirls and Akane's Rage on opponent's side of the field near their male characters. They will roam toward male targets automatically — your team never gets chased. Place Akane's Cooking under a key location opponent needs.
+    </div>
+  </div>
+
+  <div class="phase-header">Endgame — Execute the Charm Finisher</div>
+  <div class="tips-grid">
+    <div class="tip-card">
+      <strong>Sylvie at CHR:20+ — Game-Ending Window</strong>
+      Once Sylvie reaches CHR:20 or higher, any Enchanted View play produces a CHR:40+ combat total. Use Briefing to sequence Enchanted View to the top of the draw pile. Play Handsome Lad first (+2/−1 swing), then Enchanted View. Combat ends.
+    </div>
+    <div class="tip-card">
+      <strong>Striptease + Disaster Lock</strong>
+      In the same turn you plan to execute the Charm finisher, play Striptease. Male opponents cannot scavenge or assist in combat for that turn — they cannot counter your Charm sequence. Your female team is unaffected. This is the full board stall window.
+    </div>
+    <div class="tip-card">
+      <strong>Following Orders as Insurance</strong>
+      Hold Following Orders until the Enchanted View turn. If the opponent somehow has an answer — their own Enchanted View, or a Panic that resets your Charm — Following Orders reverses the result after the fact. It is the insurance policy that makes aggressive commitment correct.
+    </div>
+  </div>
+
+  <div class="phase-header">Matchup Tips</div>
+  <div class="tips-grid">
+    <div class="tip-card">
+      <strong>vs Physical Decks</strong>
+      <b>Striptease shuts them down</b> if they run males. Gas Attack/Incomparable Beauty removes their physical defense entirely in any combat round. Combat Training on Sylvie brings her to ATK:5/DEF:5 if physical trades are unavoidable. Anna+Uni's ATK:4/DEF:4 pair handles cleanup.
+    </div>
+    <div class="tip-card">
+      <strong>vs Rival Charm Decks</strong>
+      Bad Reputation ×2 debuffs them for -4 Charm. Following Orders reverses their best Charm swing. Your Charm ceiling (CHR:54 with Enchanted View) is structurally higher than any standard Charm build that lacks the all-female Seduction-native roster. Outlast and out-stack.
+    </div>
+    <div class="tip-card">
+      <strong>vs Disruption Decks</strong>
+      Washu's +1 Health passive provides resilience before healing is needed. Medical Treatment ×2 and Refreshing Drink are the recovery tools. Angel of Mercy recovers lost key cards. Wrath of the Eye of God resets catastrophically large Disasters if the disruption deck snowballs a threat.
+    </div>
+  </div>
+</div>
+
+<!-- FULL DECK LIST -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon char">&#9670;</div>
+    <div class="section-title">Full Deck List</div>
+    <div class="section-count">86 total cards</div>
+  </div>
+
+  <div class="decklist">
+
+    <div class="decklist-section">
+      <div class="decklist-section-header char">Characters (4)</div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Sylvie</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Washu</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Annapuna</span><span class="dl-set set1">Set 1</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Unipuma</span><span class="dl-set set1">Set 1</span></div>
+    </div>
+
+    <div class="decklist-section">
+      <div class="decklist-section-header haven">Haven (1)</div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">The Silky Doll</span><span class="dl-set set0">Set 0</span></div>
+    </div>
+
+    <div class="decklist-section">
+      <div class="decklist-section-header location">Locations (7)</div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Hot Legs</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Furinkan High</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Island Restaurant</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Ukyo's Restaurant</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Tokyo Mega Dome</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Shinonome High School</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Ryugenzawa</span><span class="dl-set set0">Set 0</span></div>
+    </div>
+
+    <div class="decklist-section">
+      <div class="decklist-section-header item">Items (11)</div>
+      <div class="decklist-row"><span class="dl-qty">2</span><span class="dl-name">Lingerie</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">3</span><span class="dl-name">Cute Little Dolly</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">2</span><span class="dl-name">Compact</span><span class="dl-set set1">Set 1</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">K-12 Battlesuit</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Servant</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Refreshing Drink</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Power Gem</span><span class="dl-set set0">Set 0</span></div>
+    </div>
+
+    <div class="decklist-section">
+      <div class="decklist-section-header power">Power Cards — Enhancements (9)</div>
+      <div class="decklist-row"><span class="dl-qty">3</span><span class="dl-name">Combat Training</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">3</span><span class="dl-name">Wedding Jewels</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">2</span><span class="dl-name">Personal Training</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Loving You</span><span class="dl-set set1">Set 1</span></div>
+    </div>
+
+    <div class="decklist-section">
+      <div class="decklist-section-header power">Power Cards — Global / Flash (12)</div>
+      <div class="decklist-row"><span class="dl-qty">2</span><span class="dl-name">Bad Reputation</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Tender Moment</span><span class="dl-set set1">Set 1</span></div>
+      <div class="decklist-row"><span class="dl-qty">2</span><span class="dl-name">Briefing</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">2</span><span class="dl-name">Medical Treatment</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">2</span><span class="dl-name">Striptease</span><span class="dl-set set1">Set 1</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Angel of Mercy</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Wrath of the Eye of God</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Following Orders</span><span class="dl-set set1">Set 1</span></div>
+    </div>
+
+    <div class="decklist-section">
+      <div class="decklist-section-header combat">Combat Cards (21)</div>
+      <div class="decklist-row"><span class="dl-qty">3</span><span class="dl-name">Beautiful Queen / Face Slam</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">3</span><span class="dl-name">Enchanted View / Panic</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">3</span><span class="dl-name">Gas Attack / Incomparable Beauty</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">3</span><span class="dl-name">Gone Crazy / Lovely Ladies</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">3</span><span class="dl-name">Mournful Look / Southern Cross Fist</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">3</span><span class="dl-name">Handsome Lad / Parry</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">3</span><span class="dl-name">Hammer / Lover's Kiss</span><span class="dl-set set0">Set 0</span></div>
+    </div>
+
+    <div class="decklist-section">
+      <div class="decklist-section-header disaster">Disasters — Major (7)</div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Akane's Cooking</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">DDJ1 Battlemover</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">2</span><span class="dl-name">Dobermans</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">GD-42 Crab Mech</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Sahara Demon</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Space Pirate Attack</span><span class="dl-set set0">Set 0</span></div>
+    </div>
+
+    <div class="decklist-section">
+      <div class="decklist-section-header disaster">Disasters — Minor (14)</div>
+      <div class="decklist-row"><span class="dl-qty">2</span><span class="dl-name">Angry Schoolgirls</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">2</span><span class="dl-name">Akane's Rage</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">2</span><span class="dl-name">Natsumi and Karume</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">2</span><span class="dl-name">7 Lucky Gods Martial Artists</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">2</span><span class="dl-name">Class C Boomer</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">33-S Sexaroid</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">1</span><span class="dl-name">Miss Hinako</span><span class="dl-set set0">Set 0</span></div>
+      <div class="decklist-row"><span class="dl-qty">2</span><span class="dl-name">Funky Muggers</span><span class="dl-set set0">Set 0</span></div>
+    </div>
+
+  </div>
+
+  <div class="math-box">
+    <div class="math-title">Deck Count Verification</div>
+    <div class="math-row"><span>Characters</span><span>4</span></div>
+    <div class="math-row"><span>Haven</span><span>1</span></div>
+    <div class="math-row"><span>Locations</span><span>7</span></div>
+    <div class="math-row"><span>Items</span><span>11</span></div>
+    <div class="math-row"><span>Power Cards (Enhancements)</span><span>9</span></div>
+    <div class="math-row"><span>Power Cards (Global / Flash)</span><span>12</span></div>
+    <div class="math-row"><span>Combat Cards</span><span>21</span></div>
+    <div class="math-row"><span>Disasters (Major)</span><span>7</span></div>
+    <div class="math-row"><span>Disasters (Minor)</span><span>14</span></div>
+    <div class="math-row subtotal"><span>Power Cards Subtotal</span><span>21</span></div>
+    <div class="math-row subtotal"><span>Disasters Subtotal</span><span>21</span></div>
+    <div class="math-row total"><span>Total</span><span>86</span></div>
+  </div>
+
+</div>
+
+</body>
+</html>
