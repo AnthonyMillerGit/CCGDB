@@ -52,13 +52,14 @@ done
 
 echo ""
 echo "Step 2: Truncate all tables except users..."
-# users.avatar_printing_id → printings FK: NULL it out before truncate,
-# printing IDs are preserved through dump/restore so we restore them after.
+# users.avatar_printing_id FK references printings — must drop the constraint
+# before TRUNCATE (Postgres blocks truncating any FK-referenced table).
+# Printing IDs are preserved through dump/restore so the saved values stay valid.
 docker exec postgres psql -U ccgvault -d ccgdb -c "
   DROP TABLE IF EXISTS _avatar_backup;
   CREATE TABLE _avatar_backup AS
     SELECT id, avatar_printing_id FROM users WHERE avatar_printing_id IS NOT NULL;
-  UPDATE users SET avatar_printing_id = NULL;
+  ALTER TABLE users DROP CONSTRAINT users_avatar_printing_id_fkey;
   TRUNCATE
     deck_cards, decks, wishlists, user_collections, user_favorite_games,
     password_reset_tokens, post_card_tags, post_game_tags, post_set_tags,
@@ -82,6 +83,8 @@ echo "Step 3b: Restore avatar_printing_id values..."
 docker exec postgres psql -U ccgvault -d ccgdb -c "
   UPDATE users u SET avatar_printing_id = b.avatar_printing_id
   FROM _avatar_backup b WHERE u.id = b.id;
+  ALTER TABLE users ADD CONSTRAINT users_avatar_printing_id_fkey
+    FOREIGN KEY (avatar_printing_id) REFERENCES printings(id) ON DELETE SET NULL;
   SELECT 'avatar_printing_id restored for ' || COUNT(*) || ' users'
   FROM users WHERE avatar_printing_id IS NOT NULL;
   DROP TABLE _avatar_backup;
