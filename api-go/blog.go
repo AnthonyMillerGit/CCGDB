@@ -13,31 +13,33 @@ import (
 // ── Models ────────────────────────────────────────────────────────────────────
 
 type Post struct {
-	ID          int             `json:"id"`
-	AuthorID    int             `json:"author_id"`
-	AuthorName  string          `json:"author_name"`
-	Title       string          `json:"title"`
-	Slug        string          `json:"slug"`
-	Excerpt     *string         `json:"excerpt"`
-	Body        json.RawMessage `json:"body"`
-	PostType    string          `json:"post_type"`
-	PublishedAt *time.Time      `json:"published_at"`
-	CreatedAt   time.Time       `json:"created_at"`
-	UpdatedAt   time.Time       `json:"updated_at"`
-	GameTags    []PostGameTag   `json:"game_tags"`
-	SetTags     []PostSetTag    `json:"set_tags"`
-	CardTags    []PostCardTag   `json:"card_tags"`
+	ID             int             `json:"id"`
+	AuthorID       int             `json:"author_id"`
+	AuthorName     string          `json:"author_name"`
+	Title          string          `json:"title"`
+	Slug           string          `json:"slug"`
+	Excerpt        *string         `json:"excerpt"`
+	Body           json.RawMessage `json:"body"`
+	PostType       string          `json:"post_type"`
+	CoverImageURL  *string         `json:"cover_image_url"`
+	PublishedAt    *time.Time      `json:"published_at"`
+	CreatedAt      time.Time       `json:"created_at"`
+	UpdatedAt      time.Time       `json:"updated_at"`
+	GameTags       []PostGameTag   `json:"game_tags"`
+	SetTags        []PostSetTag    `json:"set_tags"`
+	CardTags       []PostCardTag   `json:"card_tags"`
 }
 
 type PostSummary struct {
-	ID          int        `json:"id"`
-	AuthorName  string     `json:"author_name"`
-	Title       string     `json:"title"`
-	Slug        string     `json:"slug"`
-	Excerpt     *string    `json:"excerpt"`
-	PostType    string     `json:"post_type"`
-	PublishedAt *time.Time `json:"published_at"`
-	CreatedAt   time.Time  `json:"created_at"`
+	ID            int        `json:"id"`
+	AuthorName    string     `json:"author_name"`
+	Title         string     `json:"title"`
+	Slug          string     `json:"slug"`
+	Excerpt       *string    `json:"excerpt"`
+	PostType      string     `json:"post_type"`
+	CoverImageURL *string    `json:"cover_image_url"`
+	PublishedAt   *time.Time `json:"published_at"`
+	CreatedAt     time.Time  `json:"created_at"`
 }
 
 type PostGameTag struct {
@@ -57,27 +59,29 @@ type PostCardTag struct {
 }
 
 type CreatePostRequest struct {
-	Title       string          `json:"title"`
-	Slug        string          `json:"slug"`
-	Excerpt     *string         `json:"excerpt"`
-	Body        json.RawMessage `json:"body"`
-	PostType    string          `json:"post_type"`
-	PublishedAt *time.Time      `json:"published_at"`
-	GameIDs     []int           `json:"game_ids"`
-	SetIDs      []int           `json:"set_ids"`
-	CardIDs     []int           `json:"card_ids"`
+	Title         string          `json:"title"`
+	Slug          string          `json:"slug"`
+	Excerpt       *string         `json:"excerpt"`
+	Body          json.RawMessage `json:"body"`
+	PostType      string          `json:"post_type"`
+	CoverImageURL *string         `json:"cover_image_url"`
+	PublishedAt   *time.Time      `json:"published_at"`
+	GameIDs       []int           `json:"game_ids"`
+	SetIDs        []int           `json:"set_ids"`
+	CardIDs       []int           `json:"card_ids"`
 }
 
 type UpdatePostRequest struct {
-	Title       *string         `json:"title"`
-	Slug        *string         `json:"slug"`
-	Excerpt     *string         `json:"excerpt"`
-	Body        json.RawMessage `json:"body"`
-	PostType    *string         `json:"post_type"`
-	PublishedAt *time.Time      `json:"published_at"`
-	GameIDs     *[]int          `json:"game_ids"`
-	SetIDs      *[]int          `json:"set_ids"`
-	CardIDs     *[]int          `json:"card_ids"`
+	Title         *string         `json:"title"`
+	Slug          *string         `json:"slug"`
+	Excerpt       *string         `json:"excerpt"`
+	Body          json.RawMessage `json:"body"`
+	PostType      *string         `json:"post_type"`
+	CoverImageURL *string         `json:"cover_image_url"`
+	PublishedAt   *time.Time      `json:"published_at"`
+	GameIDs       *[]int          `json:"game_ids"`
+	SetIDs        *[]int          `json:"set_ids"`
+	CardIDs       *[]int          `json:"card_ids"`
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -171,7 +175,7 @@ func scanPostSummaries(rows interface {
 	for rows.Next() {
 		var p PostSummary
 		if err := rows.Scan(&p.ID, &p.AuthorName, &p.Title, &p.Slug,
-			&p.Excerpt, &p.PostType, &p.PublishedAt, &p.CreatedAt); err != nil {
+			&p.Excerpt, &p.PostType, &p.CoverImageURL, &p.PublishedAt, &p.CreatedAt); err != nil {
 			continue
 		}
 		posts = append(posts, p)
@@ -187,7 +191,7 @@ func (a *App) listPosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := a.db.Query(r.Context(), `
-		SELECT p.id, u.username, p.title, p.slug, p.excerpt, p.post_type, p.published_at, p.created_at
+		SELECT p.id, u.username, p.title, p.slug, p.excerpt, p.post_type, p.cover_image_url, p.published_at, p.created_at
 		FROM posts p
 		JOIN users u ON u.id = p.author_id
 		WHERE p.published_at IS NOT NULL AND p.published_at <= NOW()
@@ -207,12 +211,12 @@ func (a *App) getPost(w http.ResponseWriter, r *http.Request) {
 	var p Post
 	err := a.db.QueryRow(r.Context(), `
 		SELECT p.id, p.author_id, u.username, p.title, p.slug, p.excerpt,
-		       p.body, p.post_type, p.published_at, p.created_at, p.updated_at
+		       p.body, p.post_type, p.cover_image_url, p.published_at, p.created_at, p.updated_at
 		FROM posts p
 		JOIN users u ON u.id = p.author_id
 		WHERE p.slug = $1 AND p.published_at IS NOT NULL AND p.published_at <= NOW()
 	`, slug).Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Slug,
-		&p.Excerpt, &p.Body, &p.PostType, &p.PublishedAt, &p.CreatedAt, &p.UpdatedAt)
+		&p.Excerpt, &p.Body, &p.PostType, &p.CoverImageURL, &p.PublishedAt, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		jsonError(w, "Post not found", http.StatusNotFound)
 		return
@@ -224,7 +228,7 @@ func (a *App) getPost(w http.ResponseWriter, r *http.Request) {
 func (a *App) getGamePosts(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 	rows, err := a.db.Query(r.Context(), `
-		SELECT p.id, u.username, p.title, p.slug, p.excerpt, p.post_type, p.published_at, p.created_at
+		SELECT p.id, u.username, p.title, p.slug, p.excerpt, p.post_type, p.cover_image_url, p.published_at, p.created_at
 		FROM posts p
 		JOIN users u ON u.id = p.author_id
 		JOIN post_game_tags pgt ON pgt.post_id = p.id
@@ -247,7 +251,7 @@ func (a *App) getCardPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rows, err := a.db.Query(r.Context(), `
-		SELECT p.id, u.username, p.title, p.slug, p.excerpt, p.post_type, p.published_at, p.created_at
+		SELECT p.id, u.username, p.title, p.slug, p.excerpt, p.post_type, p.cover_image_url, p.published_at, p.created_at
 		FROM posts p
 		JOIN users u ON u.id = p.author_id
 		JOIN post_card_tags pct ON pct.post_id = p.id
@@ -301,12 +305,12 @@ func (a *App) createPost(w http.ResponseWriter, r *http.Request) {
 
 	var p Post
 	err := a.db.QueryRow(r.Context(), `
-		INSERT INTO posts (author_id, title, slug, excerpt, body, post_type, published_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		RETURNING id, author_id, title, slug, excerpt, body, post_type, published_at, created_at, updated_at
-	`, user.ID, strings.TrimSpace(body.Title), slug, body.Excerpt, body.Body, postType, body.PublishedAt,
+		INSERT INTO posts (author_id, title, slug, excerpt, body, post_type, cover_image_url, published_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		RETURNING id, author_id, title, slug, excerpt, body, post_type, cover_image_url, published_at, created_at, updated_at
+	`, user.ID, strings.TrimSpace(body.Title), slug, body.Excerpt, body.Body, postType, body.CoverImageURL, body.PublishedAt,
 	).Scan(&p.ID, &p.AuthorID, &p.Title, &p.Slug, &p.Excerpt,
-		&p.Body, &p.PostType, &p.PublishedAt, &p.CreatedAt, &p.UpdatedAt)
+		&p.Body, &p.PostType, &p.CoverImageURL, &p.PublishedAt, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		jsonError(w, "Database error — slug may already be in use", http.StatusConflict)
 		return
@@ -362,6 +366,10 @@ func (a *App) updatePost(w http.ResponseWriter, r *http.Request) {
 			pt = "article"
 		}
 		a.db.Exec(r.Context(), "UPDATE posts SET post_type = $1, updated_at = NOW() WHERE id = $2", pt, postID)
+	}
+	if body.CoverImageURL != nil {
+		a.db.Exec(r.Context(), "UPDATE posts SET cover_image_url = $1, updated_at = NOW() WHERE id = $2",
+			body.CoverImageURL, postID)
 	}
 	if body.PublishedAt != nil {
 		a.db.Exec(r.Context(), "UPDATE posts SET published_at = $1, updated_at = NOW() WHERE id = $2",
@@ -420,7 +428,7 @@ func (a *App) listDraftPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rows, err := a.db.Query(r.Context(), `
-		SELECT p.id, u.username, p.title, p.slug, p.excerpt, p.post_type, p.published_at, p.created_at
+		SELECT p.id, u.username, p.title, p.slug, p.excerpt, p.post_type, p.cover_image_url, p.published_at, p.created_at
 		FROM posts p
 		JOIN users u ON u.id = p.author_id
 		ORDER BY p.created_at DESC
@@ -443,12 +451,12 @@ func (a *App) getPostAdmin(w http.ResponseWriter, r *http.Request) {
 	var p Post
 	err := a.db.QueryRow(r.Context(), `
 		SELECT p.id, p.author_id, u.username, p.title, p.slug, p.excerpt,
-		       p.body, p.post_type, p.published_at, p.created_at, p.updated_at
+		       p.body, p.post_type, p.cover_image_url, p.published_at, p.created_at, p.updated_at
 		FROM posts p
 		JOIN users u ON u.id = p.author_id
 		WHERE p.slug = $1
 	`, slug).Scan(&p.ID, &p.AuthorID, &p.AuthorName, &p.Title, &p.Slug,
-		&p.Excerpt, &p.Body, &p.PostType, &p.PublishedAt, &p.CreatedAt, &p.UpdatedAt)
+		&p.Excerpt, &p.Body, &p.PostType, &p.CoverImageURL, &p.PublishedAt, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		jsonError(w, "Post not found", http.StatusNotFound)
 		return

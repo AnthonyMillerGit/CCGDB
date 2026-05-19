@@ -7,7 +7,7 @@ function CardImageView({ node, deleteNode }) {
     <NodeViewWrapper
       as="span"
       contentEditable={false}
-      style={{ display: 'inline-block', verticalAlign: 'top', margin: '0 0.75rem 0.75rem 0' }}
+      style={{ display: 'inline-block', verticalAlign: 'top', margin: '0 0.5rem 0.5rem 0' }}
     >
       <figure
         className="card-image-block-editor"

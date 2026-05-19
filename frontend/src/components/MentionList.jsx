@@ -4,6 +4,7 @@ const TYPE_STYLES = {
   game: { bg: '#1a3a2a', color: 'var(--accent)' },
   set:  { bg: '#1a1a3a', color: '#a78bfa' },
   card: { bg: '#2a1a3a', color: '#f472b6' },
+  deck: { bg: '#2a1d0a', color: '#fb923c' },
 }
 
 const MentionList = forwardRef(({ items, command }, ref) => {
@@ -48,7 +49,7 @@ const MentionList = forwardRef(({ items, command }, ref) => {
   }
 
   return (
-    <div style={{ minWidth: 220, maxWidth: 'min(360px, 90vw)', maxHeight: 320, overflowY: 'auto' }}>
+    <div style={{ minWidth: 480, maxWidth: 'min(640px, 90vw)', maxHeight: 480, overflowY: 'auto' }}>
       {items.map((item, index) => {
         const ts = TYPE_STYLES[item.type] || TYPE_STYLES.card
         return (

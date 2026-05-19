@@ -62,6 +62,13 @@ export default function LandingPage() {
             Browse Games
           </button>
           <button
+            onClick={() => navigate('/blog')}
+            className="px-5 py-2.5 rounded-lg font-semibold text-sm sm:text-base transition-opacity hover:opacity-90"
+            style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}
+          >
+            Blog
+          </button>
+          <button
             onClick={() => goToRandomCard(navigate)}
             className="px-5 py-2.5 rounded-lg font-semibold text-sm sm:text-base transition-opacity hover:opacity-90"
             style={{ backgroundColor: 'var(--accent-maroon)', color: 'var(--bg-page)' }}
@@ -149,16 +156,27 @@ export default function LandingPage() {
               <Link
                 key={post.id}
                 to={`/blog/${post.slug}`}
-                className="p-5 rounded-xl transition-colors hover:border-[#0097a7]"
-                style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
+                className="flex rounded-xl transition-colors hover:border-[#0097a7] overflow-hidden"
+                style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', alignItems: 'stretch' }}
               >
-                <p className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>{post.title}</p>
-                {post.excerpt && (
-                  <p className="text-sm line-clamp-2" style={{ color: 'var(--text-muted)' }}>{post.excerpt}</p>
+                <div style={{ flex: 1, padding: '1rem 1.25rem', minWidth: 0 }}>
+                  <p className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>{post.title}</p>
+                  {post.excerpt && (
+                    <p className="text-sm line-clamp-2" style={{ color: 'var(--text-muted)' }}>{post.excerpt}</p>
+                  )}
+                  <p className="text-xs mt-2" style={{ color: '#9e836a' }}>
+                    {new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </p>
+                </div>
+                {post.cover_image_url && (
+                  <div style={{ width: 90, flexShrink: 0, overflow: 'hidden' }}>
+                    <img
+                      src={post.cover_image_url}
+                      alt=""
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+                    />
+                  </div>
                 )}
-                <p className="text-xs mt-2" style={{ color: '#9e836a' }}>
-                  {new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                </p>
               </Link>
             ))}
           </div>

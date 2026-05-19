@@ -4,14 +4,19 @@ import 'tippy.js/dist/tippy.css'
 import MentionList from './MentionList'
 import { API_URL } from '../config'
 
-export const mentionSuggestion = {
+export function createMentionSuggestion(getGameIds = () => []) {
+ return {
   char: '@',
   allowSpaces: true,
 
   items: async ({ query }) => {
     if (query.length < 2) return []
     try {
-      const res = await fetch(`${API_URL}/api/search/mentions?q=${encodeURIComponent(query)}`)
+      const token = localStorage.getItem('ccgdb_token')
+      const headers = token ? { Authorization: `Bearer ${token}` } : {}
+      const gameIds = getGameIds()
+      const gameParam = gameIds.length ? `&game_ids=${gameIds.join(',')}` : ''
+      const res = await fetch(`${API_URL}/api/search/mentions?q=${encodeURIComponent(query)}${gameParam}`, { headers })
       const data = await res.json()
       return Array.isArray(data) ? data : []
     } catch {
@@ -27,6 +32,34 @@ export const mentionSuggestion = {
         imageUrl: props.image_url || '',
         cardUrl: props.url,
       }).insertContent(' ').run()
+    } else if (props.type === 'deck') {
+      const token = localStorage.getItem('ccgdb_token')
+      fetch(`${API_URL}/api/decks/${props.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(r => r.json())
+        .then(deck => {
+          const sorted = [...(deck.cards || [])].sort((a, b) =>
+            (a.card_type || '').localeCompare(b.card_type || '')
+          )
+          const cards = sorted.map(c => ({
+            quantity: c.quantity,
+            name: c.card_name,
+            section: c.card_type || '',
+            cardId: c.card_id,
+            imageUrl: c.image_url || null,
+          }))
+          editor.chain().focus().deleteRange(range).insertDeckBox({
+            title: deck.name,
+            cards: JSON.stringify(cards),
+            game: deck.game_name || '',
+          }).run()
+        })
+        .catch(() => {
+          editor.chain().focus().deleteRange(range)
+            .insertContent({ type: 'text', marks: [{ type: 'link', attrs: { href: props.url } }], text: props.name })
+            .insertContent(' ').unsetLink().run()
+        })
     } else {
       editor
         .chain()
@@ -89,4 +122,5 @@ export const mentionSuggestion = {
       },
     }
   },
+ }
 }
