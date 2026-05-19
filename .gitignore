@@ -34,6 +34,8 @@ ingestion/
 # Compiled Go binaries
 api-go/api-go
 api-go/ccgvault
+api-go/ccgdb-api
+api-go/ccgvault_linux
 
 # Card images and card backs (large binary assets, served locally or from S3)
 frontend/public/cards/

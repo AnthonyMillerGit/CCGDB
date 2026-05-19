@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -6,9 +6,11 @@ import Placeholder from '@tiptap/extension-placeholder'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import Mention from '@tiptap/extension-mention'
+import { generateHTML } from '@tiptap/core'
+import DOMPurify from 'dompurify'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
-import { mentionSuggestion } from '../components/mentionSuggestion'
+import { createMentionSuggestion } from '../components/mentionSuggestion'
 import { CardImageBlock } from '../extensions/CardImageBlock.jsx'
 import { DeckBoxBlock } from '../extensions/DeckBoxBlock.jsx'
 import '../styles/editor.css'
@@ -27,6 +29,210 @@ const POST_TYPE_COLORS = {
   'set-review': '#4ade80',
   'tournament': '#fb923c',
   'news':       '#60a5fa',
+}
+
+// ── Schema validation ─────────────────────────────────────────────────────────
+
+// Recursively remove empty text nodes that make generateHTML throw silently.
+function cleanBody(node) {
+  if (!node || typeof node !== 'object') return node
+  const out = { ...node }
+  if (Array.isArray(out.content)) {
+    out.content = out.content
+      .map(cleanBody)
+      .filter(c => !(c.type === 'text' && c.text === ''))
+  }
+  return out
+}
+
+// ── Preview rendering helpers ─────────────────────────────────────────────────
+
+function esc(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+function buildDeckBoxHTML(cards, title) {
+  const total = cards.reduce((s, c) => s + c.quantity, 0)
+  const sections = []
+  let current = { name: '', cards: [] }
+  for (const card of cards) {
+    const sec = card.section || ''
+    if (sec !== current.name) {
+      if (current.cards.length) sections.push(current)
+      current = { name: sec, cards: [] }
+    }
+    current.cards.push(card)
+  }
+  if (current.cards.length) sections.push(current)
+
+  const rowsHTML = sections.map(section => {
+    const header = section.name ? `<div class="deckbox-section-header">${esc(section.name)}</div>` : ''
+    const rows = section.cards.map(card => {
+      const dataAttrs = card.imageUrl
+        ? ` data-image-url="${esc(card.imageUrl)}" data-card-name="${esc(card.name)}"`
+        : ''
+      const indicator = card.imageUrl ? '<span class="deckbox-hover-indicator">◈</span>' : ''
+      return `<div class="deckbox-row"${dataAttrs}><span class="deckbox-qty">×${card.quantity}</span><span class="deckbox-name">${esc(card.name)}</span>${indicator}</div>`
+    }).join('')
+    return header + rows
+  }).join('')
+
+  return `<div class="deckbox-block">
+    <div class="deckbox-header">
+      <span class="deckbox-title">🃏 ${esc(title)}</span>
+      <span class="deckbox-count">${total} cards</span>
+    </div>
+    <div class="deckbox-body">${rowsHTML}</div>
+  </div>`
+}
+
+// ── Preview Modal ─────────────────────────────────────────────────────────────
+
+function PreviewModal({ body, postTitle, onClose }) {
+  const previewRef = useRef(null)
+
+  const html = useMemo(() => {
+    if (!body) return ''
+    try {
+      const raw = generateHTML(cleanBody(body), [StarterKit, Image, Link, CardImageBlock, DeckBoxBlock])
+      return DOMPurify.sanitize(raw, {
+        ADD_ATTR: ['data-type', 'data-card-id', 'data-card-name', 'data-image-url', 'data-card-url', 'data-title', 'data-cards', 'data-game'],
+      })
+    } catch {
+      return '<p style="color:#ef4444">Preview error: the document has an invalid structure.</p>'
+    }
+  }, [body])
+
+  useEffect(() => {
+    const el = previewRef.current
+    if (!el) return
+
+    // Hydrate card images — consecutive images go into a flex row
+    const figs = [...el.querySelectorAll('figure[data-type="card-image"]')]
+    if (figs.length) {
+      const groups = [[figs[0]]]
+      for (let i = 1; i < figs.length; i++) {
+        const prev = groups[groups.length - 1]
+        if (figs[i].previousElementSibling === prev[prev.length - 1]) {
+          prev.push(figs[i])
+        } else {
+          groups.push([figs[i]])
+        }
+      }
+
+      function hydrateFig(fig, inRow) {
+        const imageUrl = fig.dataset.imageUrl
+        const cardName = fig.dataset.cardName || ''
+        const cardUrl = fig.dataset.cardUrl || ''
+        const w = inRow ? 150 : 180
+        fig.className = 'card-image-block'
+        fig.style.cssText = inRow ? `max-width:${w}px;` : `display:block;float:none;margin:1.25rem 0;max-width:${w}px;`
+        const a = document.createElement('a')
+        a.href = cardUrl
+        if (imageUrl) {
+          const img = document.createElement('img')
+          img.src = imageUrl
+          img.alt = cardName
+          img.style.cssText = `width:${w}px;border-radius:10px;display:block;box-shadow:0 4px 24px rgba(0,0,0,0.55);`
+          a.appendChild(img)
+        } else {
+          const ph = document.createElement('div')
+          ph.textContent = cardName
+          ph.style.cssText = `width:${w}px;height:${Math.round(w*1.4)}px;border-radius:10px;background:#2e2e38;display:flex;align-items:center;justify-content:center;padding:1rem;text-align:center;font-size:13px;color:#8e8e9e;`
+          a.appendChild(ph)
+        }
+        const cap = document.createElement('figcaption')
+        cap.textContent = cardName
+        cap.style.cssText = `text-align:center;font-size:12px;color:#8e8e9e;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:${w}px;`
+        fig.innerHTML = ''
+        fig.appendChild(a)
+        fig.appendChild(cap)
+      }
+
+      for (const group of groups) {
+        const inRow = group.length > 1
+        if (inRow) {
+          const row = document.createElement('div')
+          row.style.cssText = 'display:flex;flex-wrap:wrap;gap:1rem;margin:1.25rem 0;align-items:flex-start;'
+          group[0].parentNode.insertBefore(row, group[0])
+          group.forEach(f => row.appendChild(f))
+        }
+        group.forEach(f => hydrateFig(f, inRow))
+      }
+    }
+
+    // Hydrate deck boxes
+    const hoverPreview = document.createElement('div')
+    hoverPreview.style.cssText = 'position:fixed;z-index:10000;pointer-events:none;display:none;'
+    const hoverImg = document.createElement('img')
+    hoverImg.style.cssText = 'width:200px;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,0.8);display:block;'
+    hoverPreview.appendChild(hoverImg)
+    document.body.appendChild(hoverPreview)
+
+    el.querySelectorAll('div[data-type="deck-box"]').forEach(deckEl => {
+      const title = deckEl.dataset.title || 'Deck List'
+      try {
+        const cards = JSON.parse(deckEl.dataset.cards || '[]')
+        const built = document.createElement('div')
+        built.innerHTML = buildDeckBoxHTML(cards, title)
+        const deckboxDiv = built.firstElementChild
+        deckEl.parentNode.replaceChild(deckboxDiv, deckEl)
+        deckboxDiv.querySelectorAll('.deckbox-row[data-image-url]').forEach(row => {
+          row.addEventListener('mouseenter', () => {
+            hoverImg.src = row.dataset.imageUrl
+            const rect = row.getBoundingClientRect()
+            hoverPreview.style.left = (rect.right + 8) + 'px'
+            hoverPreview.style.top = Math.max(8, rect.top - 60) + 'px'
+            hoverPreview.style.display = 'block'
+          })
+          row.addEventListener('mouseleave', () => { hoverPreview.style.display = 'none' })
+        })
+      } catch { /* malformed JSON — leave as-is */ }
+    })
+
+    return () => hoverPreview.remove()
+  }, [html])
+
+  return (
+    <div className="fixed inset-0 z-40 flex flex-col" style={{ backgroundColor: 'var(--bg-page)' }}>
+      <div className="flex items-center justify-between px-6 py-3 border-b flex-shrink-0"
+        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
+        <span className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>Preview</span>
+        <button
+          onClick={onClose}
+          className="px-4 py-1.5 rounded text-sm font-semibold"
+          style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+        >
+          ← Back to Editor
+        </button>
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-3xl mx-auto px-6 py-10">
+          {postTitle && (
+            <h1 className="text-3xl font-bold mb-8" style={{ color: 'var(--text-primary)' }}>{postTitle}</h1>
+          )}
+          <div
+            ref={previewRef}
+            className="editor-content"
+            style={{ color: 'var(--text-primary)', fontSize: '1rem', lineHeight: '1.75' }}
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Date helpers ─────────────────────────────────────────────────────────────
+
+// Convert a UTC ISO string (from the API) to the YYYY-MM-DDTHH:MM format that
+// <input type="datetime-local"> expects in the user's local timezone.
+function toLocalInput(utcStr) {
+  if (!utcStr) return ''
+  const d = new Date(utcStr)
+  if (isNaN(d.getTime())) return ''
+  const pad = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 // ── Deck list parser ─────────────────────────────────────────────────────────
@@ -487,13 +693,24 @@ export default function PostEditorPage() {
   const [excerpt, setExcerpt] = useState('')
   const [postSlug, setPostSlug] = useState('')
   const [postType, setPostType] = useState('article')
-  const [publishedAt, setPublishedAt] = useState('')
+  const [publishedAt, setPublishedAt] = useState(() => toLocalInput(new Date().toISOString()))
   const [gameTags, setGameTags] = useState([])
   const [cardTags, setCardTags] = useState([])
+  const [coverImageUrl, setCoverImageUrl] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [showCardPicker, setShowCardPicker] = useState(false)
   const [showDeckBuilder, setShowDeckBuilder] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
+  const [saveStatus, setSaveStatus] = useState(null) // null | 'saving' | 'saved' | 'unsaved'
+  const dirtyRef = useRef(false)
+
+  // Ref so the mention suggestion always reads the latest game tag IDs
+  // even though the editor is created once on mount.
+  const gameTagIdsRef = useRef([])
+  useEffect(() => {
+    gameTagIdsRef.current = gameTags.map(g => g.game_id)
+  }, [gameTags])
 
   const editor = useEditor({
     extensions: [
@@ -503,8 +720,12 @@ export default function PostEditorPage() {
       Placeholder.configure({ placeholder: 'Write something amazing… Use @ to link cards, games, or sets.' }),
       Image.configure({ inline: false, allowBase64: false }),
       Link.configure({ openOnClick: false, HTMLAttributes: { rel: 'noopener noreferrer' } }),
-      Mention.configure({ suggestion: mentionSuggestion }),
+      Mention.configure({ suggestion: createMentionSuggestion(() => gameTagIdsRef.current) }),
     ],
+    onUpdate: () => {
+      dirtyRef.current = true
+      setSaveStatus('unsaved')
+    },
     editorProps: {
       attributes: {
         class: 'editor-content outline-none min-h-[280px] sm:min-h-[420px] px-5 py-5',
@@ -527,9 +748,10 @@ export default function PostEditorPage() {
       setExcerpt(post.excerpt || '')
       setPostSlug(post.slug)
       setPostType(post.post_type || 'article')
-      setPublishedAt(post.published_at ? post.published_at.slice(0, 16) : '')
+      setPublishedAt(post.published_at ? toLocalInput(post.published_at) : '')
       setGameTags(post.game_tags || [])
       setCardTags(post.card_tags || [])
+      setCoverImageUrl(post.cover_image_url || '')
       if (post.body && Object.keys(post.body).length > 0) {
         editor.commands.setContent(post.body)
       }
@@ -556,20 +778,22 @@ export default function PostEditorPage() {
     setSaving(true)
     setError('')
 
-    const resolvedPublishedAt = publish
-      ? (publishedAt ? new Date(publishedAt).toISOString() : new Date().toISOString())
-      : (publishedAt ? new Date(publishedAt).toISOString() : null)
-
     const payload = {
       title: title.trim(),
       slug: postSlug || autoSlug(title),
       excerpt: excerpt.trim() || null,
-      body: editor.getJSON(),
+      body: cleanBody(editor.getJSON()),
       post_type: postType,
-      published_at: resolvedPublishedAt,
+      cover_image_url: coverImageUrl.trim() || null,
       game_ids: gameTags.map(t => t.game_id),
       card_ids: cardTags.map(t => t.card_id),
       set_ids: [],
+    }
+
+    // Only set published_at when explicitly publishing — Save Draft never
+    // touches it so it can't accidentally reschedule or overwrite the date.
+    if (publish) {
+      payload.published_at = publishedAt ? new Date(publishedAt).toISOString() : new Date().toISOString()
     }
 
     const url = isEdit ? `${API_URL}/api/admin/posts/${slug}` : `${API_URL}/api/admin/posts`
@@ -580,7 +804,7 @@ export default function PostEditorPage() {
       if (res.ok) {
         const data = await res.json()
         const finalSlug = isEdit ? (payload.slug || slug) : data.slug
-        const willBePublic = resolvedPublishedAt && new Date(resolvedPublishedAt) <= new Date()
+        const willBePublic = publish && payload.published_at && new Date(payload.published_at) <= new Date()
         navigate(willBePublic ? `/blog/${finalSlug}` : '/admin/posts')
       } else {
         const data = await res.json().catch(() => ({}))
@@ -609,8 +833,54 @@ export default function PostEditorPage() {
     setSaving(false)
   }
 
+  const autoSave = useCallback(async () => {
+    if (!isEdit || !editor || !title.trim()) return
+    setSaveStatus('saving')
+    const payload = {
+      title: title.trim(),
+      slug: postSlug || autoSlug(title),
+      excerpt: excerpt.trim() || null,
+      body: cleanBody(editor.getJSON()),
+      post_type: postType,
+      cover_image_url: coverImageUrl.trim() || null,
+      game_ids: gameTags.map(t => t.game_id),
+      card_ids: cardTags.map(t => t.card_id),
+      set_ids: [],
+    }
+    try {
+      const res = await authFetch(`${API_URL}/api/admin/posts/${slug}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      })
+      if (res.ok) {
+        dirtyRef.current = false
+        setSaveStatus('saved')
+      } else {
+        setSaveStatus('unsaved')
+      }
+    } catch {
+      setSaveStatus('unsaved')
+    }
+  }, [isEdit, editor, title, postSlug, excerpt, postType, publishedAt, gameTags, cardTags, authFetch, slug])
+
+  useEffect(() => {
+    if (!isEdit) return
+    const id = setInterval(() => { if (dirtyRef.current) autoSave() }, 30_000)
+    return () => clearInterval(id)
+  }, [isEdit, autoSave])
+
   const inputStyle = { backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }
   const typeColor = POST_TYPE_COLORS[postType]
+
+  if (showPreview) {
+    return (
+      <PreviewModal
+        body={editor?.getJSON()}
+        postTitle={title}
+        onClose={() => setShowPreview(false)}
+      />
+    )
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -632,6 +902,14 @@ export default function PostEditorPage() {
           <RouterLink to="/admin/posts" className="text-sm" style={{ color: 'var(--text-muted)' }}>← Posts</RouterLink>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{isEdit ? 'Edit Post' : 'New Post'}</h1>
         </div>
+        <button
+          type="button"
+          onClick={() => setShowPreview(true)}
+          className="px-4 py-1.5 rounded text-sm font-semibold"
+          style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+        >
+          Preview →
+        </button>
       </div>
 
       {error && (
@@ -669,6 +947,24 @@ export default function PostEditorPage() {
           className="w-full px-3 py-2 rounded text-sm resize-none outline-none"
           style={inputStyle}
         />
+        <div className="flex items-center gap-3">
+          <input
+            type="url"
+            placeholder="Cover image URL (optional — shown as banner on blog listing)"
+            value={coverImageUrl}
+            onChange={e => setCoverImageUrl(e.target.value)}
+            className="flex-1 px-3 py-2 rounded text-sm outline-none"
+            style={inputStyle}
+          />
+          {coverImageUrl && (
+            <img
+              src={coverImageUrl}
+              alt="Cover preview"
+              style={{ height: 38, width: 68, objectFit: 'cover', borderRadius: 6, flexShrink: 0, border: '1px solid var(--border)' }}
+              onError={e => { e.target.style.display = 'none' }}
+            />
+          )}
+        </div>
       </div>
 
       {/* Editor */}
@@ -716,7 +1012,18 @@ export default function PostEditorPage() {
           <input type="datetime-local" value={publishedAt} onChange={e => setPublishedAt(e.target.value)}
             className="px-3 py-1.5 rounded text-sm outline-none" style={inputStyle} />
         </div>
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap">
+          {saveStatus && (
+            <span className="text-xs" style={{
+              color: saveStatus === 'unsaved' ? '#fb923c'
+                : saveStatus === 'saving' ? 'var(--text-muted)'
+                : '#4ade80',
+            }}>
+              {saveStatus === 'unsaved' ? 'Unsaved changes'
+                : saveStatus === 'saving' ? 'Saving…'
+                : 'Saved'}
+            </span>
+          )}
           {isEdit && publishedAt && new Date(publishedAt) <= new Date() && (
             <button type="button" onClick={handleUnpublish} disabled={saving}
               className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"

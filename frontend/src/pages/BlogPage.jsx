@@ -10,7 +10,81 @@ const POST_TYPE_LABELS = {
   'news':       { label: 'News',                color: '#60a5fa' },
 }
 
+
 const PAGE_SIZE = 20
+
+function PostCard({ post }) {
+  const typeInfo = POST_TYPE_LABELS[post.post_type]
+  const accentColor = typeInfo?.color || '#0097a7'
+
+  return (
+    <Link
+      to={`/blog/${post.slug}`}
+      className="flex rounded-xl overflow-hidden transition-all"
+      style={{
+        backgroundColor: 'var(--bg-surface)',
+        border: '1px solid var(--border)',
+        textDecoration: 'none',
+        alignItems: 'stretch',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = '#0097a7' }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
+    >
+      {/* Left accent bar (no image) or nothing (image handles visual weight) */}
+      {!post.cover_image_url && (
+        <div style={{ width: 4, flexShrink: 0, backgroundColor: accentColor, opacity: 0.7 }} />
+      )}
+
+      {/* Content */}
+      <div style={{ flex: 1, padding: '1rem 1.25rem', minWidth: 0 }}>
+        {typeInfo && (
+          <span style={{
+            display: 'inline-block', marginBottom: 6,
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
+            padding: '2px 8px', borderRadius: 20,
+            backgroundColor: accentColor + '22',
+            color: accentColor,
+            border: `1px solid ${accentColor}44`,
+          }}>
+            {typeInfo.label}
+          </span>
+        )}
+        <h2 style={{
+          color: 'var(--text-primary)', fontWeight: 700,
+          fontSize: '1.05rem', lineHeight: 1.35, marginBottom: 6,
+        }}>
+          {post.title}
+        </h2>
+        {post.excerpt && (
+          <p style={{
+            color: 'var(--text-muted)', fontSize: '0.875rem',
+            lineHeight: 1.55, marginBottom: 10,
+            display: '-webkit-box', WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}>
+            {post.excerpt}
+          </p>
+        )}
+        <div style={{ color: '#9e836a', fontSize: '0.75rem', display: 'flex', gap: 6, alignItems: 'center' }}>
+          <span>{post.author_name}</span>
+          <span style={{ opacity: 0.5 }}>·</span>
+          <span>{new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+        </div>
+      </div>
+
+      {/* Right thumbnail — portrait-friendly, no forced aspect ratio */}
+      {post.cover_image_url && (
+        <div style={{ width: 110, flexShrink: 0, overflow: 'hidden' }}>
+          <img
+            src={post.cover_image_url}
+            alt=""
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+          />
+        </div>
+      )}
+    </Link>
+  )
+}
 
 export default function BlogPage() {
   const { user } = useAuth()
@@ -73,37 +147,8 @@ export default function BlogPage() {
         </div>
       )}
 
-      <div className="flex flex-col gap-6">
-        {posts.map(post => (
-          <Link
-            key={post.id}
-            to={`/blog/${post.slug}`}
-            className="p-6 rounded-xl transition-colors hover:border-[#0097a7]"
-            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
-          >
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{post.title}</h2>
-              {POST_TYPE_LABELS[post.post_type] && (
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-                  style={{
-                    backgroundColor: POST_TYPE_LABELS[post.post_type].color + '22',
-                    color: POST_TYPE_LABELS[post.post_type].color,
-                    border: `1px solid ${POST_TYPE_LABELS[post.post_type].color}44`,
-                  }}>
-                  {POST_TYPE_LABELS[post.post_type].label}
-                </span>
-              )}
-            </div>
-            {post.excerpt && (
-              <p className="text-sm mb-3 line-clamp-3" style={{ color: 'var(--text-muted)' }}>{post.excerpt}</p>
-            )}
-            <div className="flex items-center gap-3 text-xs" style={{ color: '#9e836a' }}>
-              <span>{post.author_name}</span>
-              <span>·</span>
-              <span>{new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-            </div>
-          </Link>
-        ))}
+      <div className="flex flex-col gap-5">
+        {posts.map(post => <PostCard key={post.id} post={post} />)}
       </div>
 
       {hasMore && !loading && (

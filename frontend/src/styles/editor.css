@@ -1,6 +1,6 @@
-.editor-content h1 { font-size: 2em; font-weight: 700; margin: 0.75em 0 0.25em; color: #EDF2F6; }
-.editor-content h2 { font-size: 1.5em; font-weight: 700; margin: 0.75em 0 0.25em; color: #EDF2F6; }
-.editor-content h3 { font-size: 1.25em; font-weight: 600; margin: 0.75em 0 0.25em; color: #EDF2F6; }
+.editor-content h1 { font-size: 2em; font-weight: 700; margin: 0.75em 0 0.25em; color: var(--text-primary); }
+.editor-content h2 { font-size: 1.5em; font-weight: 700; margin: 0.75em 0 0.25em; color: var(--text-primary); }
+.editor-content h3 { font-size: 1.25em; font-weight: 600; margin: 0.75em 0 0.25em; color: var(--text-primary); }
 .editor-content p  { margin: 0.5em 0; }
 .editor-content strong { font-weight: 700; }
 .editor-content em { font-style: italic; }
@@ -41,15 +41,7 @@
 
 /* ── Card Image Block (reader) ─────────────────────────────────────── */
 .editor-content .card-image-block {
-  display: inline-block;
-  float: left;
-  margin: 0 1.5rem 1.5rem 0;
   max-width: 180px;
-}
-.editor-content .card-image-block::after {
-  content: '';
-  display: table;
-  clear: both;
 }
 .editor-content .card-image-block img {
   width: 180px;
@@ -152,20 +144,8 @@
   flex-shrink: 0;
 }
 
-/* Hover card image popup (reader — pure CSS) */
-.deckbox-hover-img {
-  display: none;
-  position: absolute;
-  left: calc(100% + 8px);
-  top: 50%;
-  transform: translateY(-50%);
-  width: 200px;
-  border-radius: 10px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.8);
-  z-index: 50;
-  pointer-events: none;
-}
-.deckbox-row:hover .deckbox-hover-img { display: block; }
+/* Card hover preview is rendered as a position:fixed div via JS in PostPage,
+   so it escapes the overflow:hidden on .deckbox-block */
 
 /* Deck list block (old plain-text style, kept for back-compat) */
 .editor-content pre[data-type="deckBlock"] {

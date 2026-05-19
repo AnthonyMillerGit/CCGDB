@@ -42,10 +42,11 @@ function buildDeckBoxHTML(cards, title) {
   const rowsHTML = sections.map(section => {
     const header = section.name ? `<div class="deckbox-section-header">${esc(section.name)}</div>` : ''
     const rows = section.cards.map(card => {
-      const hoverImg = card.imageUrl
-        ? `<img class="deckbox-hover-img" src="${esc(card.imageUrl)}" alt="${esc(card.name)}" />`
+      const dataAttrs = card.imageUrl
+        ? ` data-image-url="${esc(card.imageUrl)}" data-card-name="${esc(card.name)}"`
         : ''
-      return `<div class="deckbox-row">${hoverImg}<span class="deckbox-qty">×${card.quantity}</span><span class="deckbox-name">${esc(card.name)}</span></div>`
+      const indicator = card.imageUrl ? '<span class="deckbox-hover-indicator">◈</span>' : ''
+      return `<div class="deckbox-row"${dataAttrs}><span class="deckbox-qty">×${card.quantity}</span><span class="deckbox-name">${esc(card.name)}</span>${indicator}</div>`
     }).join('')
     return header + rows
   }).join('')
@@ -59,24 +60,6 @@ function buildDeckBoxHTML(cards, title) {
   </div>`
 }
 
-// Find the direct child of `root` that contains `node`
-function getTopLevelBlock(root, node) {
-  let el = node
-  while (el.parentElement && el.parentElement !== root) {
-    el = el.parentElement
-  }
-  return el.parentElement === root ? el : null
-}
-
-// Walk backwards from `block` looking for the nearest heading sibling
-function findPrecedingHeading(block) {
-  let prev = block.previousElementSibling
-  while (prev) {
-    if (/^H[1-6]$/.test(prev.tagName)) return prev
-    prev = prev.previousElementSibling
-  }
-  return null // card is before any heading — insert at top
-}
 
 export default function PostPage() {
   const { slug } = useParams()
@@ -116,146 +99,110 @@ export default function PostPage() {
     return () => el.removeEventListener('click', handleClick)
   }, [post, navigate])
 
-  // Hydrate CardImageBlock nodes
+  // Hydrate CardImageBlock nodes — consecutive images go into a flex row
   useEffect(() => {
     const el = bodyRef.current
     if (!el) return
-    el.querySelectorAll('figure[data-type="card-image"]').forEach(fig => {
+
+    const figs = [...el.querySelectorAll('figure[data-type="card-image"]')]
+    if (!figs.length) return
+
+    // Group figures that are direct adjacent siblings (no elements between them)
+    const groups = [[figs[0]]]
+    for (let i = 1; i < figs.length; i++) {
+      const prev = groups[groups.length - 1]
+      if (figs[i].previousElementSibling === prev[prev.length - 1]) {
+        prev.push(figs[i])
+      } else {
+        groups.push([figs[i]])
+      }
+    }
+
+    function hydrateFig(fig, inRow) {
       const imageUrl = fig.dataset.imageUrl
       const cardName = fig.dataset.cardName || ''
       const cardUrl  = fig.dataset.cardUrl || ''
-      if (!imageUrl && !cardName) return
-
+      const w = inRow ? 150 : 180
       fig.className = 'card-image-block'
-      fig.style.cssText = 'display:inline-block;float:left;margin:0 1.5rem 1.5rem 0;max-width:180px;'
-
+      fig.style.cssText = inRow ? `max-width:${w}px;` : `display:block;float:none;margin:1.25rem 0;max-width:${w}px;`
       const a = document.createElement('a')
       a.href = cardUrl
-
       if (imageUrl) {
         const img = document.createElement('img')
         img.src = imageUrl
         img.alt = cardName
-        img.style.cssText = 'width:180px;border-radius:10px;display:block;box-shadow:0 4px 24px rgba(0,0,0,0.55);'
+        img.style.cssText = `width:${w}px;border-radius:10px;display:block;box-shadow:0 4px 24px rgba(0,0,0,0.55);`
         a.appendChild(img)
       } else {
-        const placeholder = document.createElement('div')
-        placeholder.textContent = cardName
-        placeholder.style.cssText = 'width:180px;height:252px;border-radius:10px;background:#2e2e38;display:flex;align-items:center;justify-content:center;padding:1rem;text-align:center;font-size:13px;color:#8e8e9e;'
-        a.appendChild(placeholder)
+        const ph = document.createElement('div')
+        ph.textContent = cardName
+        ph.style.cssText = `width:${w}px;height:${Math.round(w*1.4)}px;border-radius:10px;background:#2e2e38;display:flex;align-items:center;justify-content:center;padding:1rem;text-align:center;font-size:13px;color:#8e8e9e;`
+        a.appendChild(ph)
       }
-
-      const caption = document.createElement('figcaption')
-      caption.textContent = cardName
-      caption.style.cssText = 'text-align:center;font-size:12px;color:#8e8e9e;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;'
-
+      const cap = document.createElement('figcaption')
+      cap.textContent = cardName
+      cap.style.cssText = `text-align:center;font-size:12px;color:#8e8e9e;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:${w}px;`
       fig.innerHTML = ''
       fig.appendChild(a)
-      fig.appendChild(caption)
-    })
+      fig.appendChild(cap)
+    }
+
+    for (const group of groups) {
+      const inRow = group.length > 1
+      if (inRow) {
+        const row = document.createElement('div')
+        row.style.cssText = 'display:flex;flex-wrap:wrap;gap:1rem;margin:1.25rem 0;align-items:flex-start;'
+        group[0].parentNode.insertBefore(row, group[0])
+        group.forEach(f => row.appendChild(f))
+      }
+      group.forEach(f => hydrateFig(f, inRow))
+    }
   }, [post])
 
-  // Hydrate DeckBoxBlock nodes
+  // Hydrate DeckBoxBlock nodes + attach hover preview
   useEffect(() => {
     const el = bodyRef.current
     if (!el) return
+
+    // Shared floating preview card (position:fixed so it escapes overflow:hidden)
+    const preview = document.createElement('div')
+    preview.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;display:none;'
+    const previewImg = document.createElement('img')
+    previewImg.style.cssText = 'width:200px;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,0.8);display:block;'
+    preview.appendChild(previewImg)
+    document.body.appendChild(preview)
+
     el.querySelectorAll('div[data-type="deck-box"]').forEach(deckEl => {
       const title = deckEl.dataset.title || 'Deck List'
       const cardsJson = deckEl.dataset.cards || '[]'
       try {
         const cards = JSON.parse(cardsJson)
-        deckEl.innerHTML = buildDeckBoxHTML(cards, title)
-        deckEl.removeAttribute('data-type')
-        deckEl.removeAttribute('data-cards')
-        deckEl.removeAttribute('data-title')
+        // Replace deckEl itself rather than setting innerHTML — avoids a spurious
+        // wrapper div that can cause deck boxes to render twice in some browsers.
+        const built = document.createElement('div')
+        built.innerHTML = buildDeckBoxHTML(cards, title)
+        const deckboxDiv = built.firstElementChild
+        deckEl.parentNode.replaceChild(deckboxDiv, deckEl)
+
+        deckboxDiv.querySelectorAll('.deckbox-row[data-image-url]').forEach(row => {
+          row.addEventListener('mouseenter', () => {
+            previewImg.src = row.dataset.imageUrl
+            previewImg.alt = row.dataset.cardName || ''
+            const rect = row.getBoundingClientRect()
+            preview.style.left = (rect.right + 8) + 'px'
+            preview.style.top = Math.max(8, rect.top - 60) + 'px'
+            preview.style.display = 'block'
+          })
+          row.addEventListener('mouseleave', () => {
+            preview.style.display = 'none'
+          })
+        })
       } catch { /* malformed JSON — leave as-is */ }
     })
+
+    return () => preview.remove()
   }, [post])
 
-  // Inject card images above the section heading where each card is first mentioned
-  useEffect(() => {
-    const el = bodyRef.current
-    if (!el) return
-
-    // Collect first occurrence of each unique card link
-    const seen = new Set()
-    const firstMentions = []
-    for (const anchor of el.querySelectorAll('a[href]')) {
-      const match = anchor.getAttribute('href').match(/^\/cards\/(\d+)$/)
-      if (!match) continue
-      const cardId = match[1]
-      if (seen.has(cardId)) continue
-      seen.add(cardId)
-      firstMentions.push({ cardId, anchor })
-    }
-    if (!firstMentions.length) return
-
-    // Group cards by the heading element that starts their section
-    // Key: heading element (or the symbol null = "before any heading")
-    const byHeading = new Map()
-    for (const mention of firstMentions) {
-      const block = getTopLevelBlock(el, mention.anchor)
-      if (!block) continue
-      const heading = findPrecedingHeading(block)
-      const key = heading ?? '__top__'
-      if (!byHeading.has(key)) byHeading.set(key, [])
-      byHeading.get(key).push(mention)
-    }
-
-    // Build and insert a card-image strip above each heading
-    const insertedWrappers = []
-    for (const [key, mentions] of byHeading) {
-      const insertionPoint = key === '__top__' ? el.firstElementChild : key
-
-      const strip = document.createElement('div')
-      strip.className = 'card-mention-strip'
-      strip.style.cssText = [
-        'display:flex',
-        'justify-content:center',
-        'gap:16px',
-        'flex-wrap:wrap',
-        'margin:2em 0 0.75em',
-      ].join(';')
-
-      for (const { cardId } of mentions) {
-        const frame = document.createElement('div')
-        frame.style.cssText = [
-          'width:160px',
-          'height:224px',
-          'background:#faf6ee',
-          'border-radius:10px',
-          'border:1px solid #d4c4a8',
-          'flex-shrink:0',
-        ].join(';')
-        strip.appendChild(frame)
-
-        fetch(`${API_URL}/api/cards/${cardId}`)
-          .then(r => r.json())
-          .then(card => {
-            const imgUrl = card.printings?.find(p => p.image_url)?.image_url
-            if (!imgUrl) { frame.remove(); return }
-            frame.style.cssText = ''
-            frame.style.flexShrink = '0'
-            const img = document.createElement('img')
-            img.src = imgUrl
-            img.alt = card.name
-            img.style.cssText = [
-              'width:160px',
-              'border-radius:10px',
-              'display:block',
-              'box-shadow:0 4px 24px rgba(0,0,0,0.55)',
-            ].join(';')
-            frame.appendChild(img)
-          })
-          .catch(() => frame.remove())
-      }
-
-      insertionPoint.parentElement?.insertBefore(strip, insertionPoint)
-      insertedWrappers.push(strip)
-    }
-
-    return () => insertedWrappers.forEach(w => w.remove())
-  }, [post])
 
   if (loading) return <p className="text-center py-20" style={{ color: 'var(--text-muted)' }}>Loading…</p>
   if (!post) return null
@@ -277,6 +224,21 @@ export default function PostPage() {
           </Link>
         )}
       </div>
+
+      {/* Hero image */}
+      {post.cover_image_url && (
+        <div style={{
+          width: '100%', height: 300, marginBottom: '2rem',
+          borderRadius: 16, overflow: 'hidden',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+        }}>
+          <img
+            src={post.cover_image_url}
+            alt=""
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+          />
+        </div>
+      )}
 
       {/* Header */}
       <h1 className="text-4xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>{post.title}</h1>
