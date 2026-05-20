@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
 import { rarityColor, rarityRank } from '../theme'
 
-const isUltraWide = window.matchMedia('(min-width: 2560px)').matches
+const isTouchDevice = window.matchMedia('(hover: none)').matches
 
 const CONDITION_LABELS = { NM: 'Near Mint', LP: 'Light Play', MP: 'Moderate Play', HP: 'Heavy Play', DM: 'Damaged' }
 const CONDITION_COLORS = { NM: '#4ade80', LP: '#a3e635', MP: '#facc15', HP: '#fb923c', DM: '#f87171' }
@@ -182,7 +182,7 @@ export default function CollectionGamePage() {
   const [rarityFilter, setRarityFilter] = useState([])
   const [attrFilters, setAttrFilters] = useState({}) // { key: string[] }
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(isUltraWide ? Infinity : 100)
+  const [pageSize, setPageSize] = useState(isTouchDevice ? 100 : Infinity)
   const [viewMode, setViewMode] = useState('grid')
   const [groupBySet, setGroupBySet] = useState(false)
   const [editMode, setEditMode] = useState(false)
@@ -479,7 +479,7 @@ export default function CollectionGamePage() {
   }, [groupBySet, pagedCards])
 
   const activeAttrFilterCount = Object.values(attrFilters).filter(v => v.length > 0).length
-  const activeCount = (setFilter ? 1 : 0) + (sort !== 'name_asc' ? 1 : 0) + rarityFilter.length + (foilOnly ? 1 : 0) + (pageSize !== (isUltraWide ? Infinity : 100) ? 1 : 0) + activeAttrFilterCount
+  const activeCount = (setFilter ? 1 : 0) + (sort !== 'name_asc' ? 1 : 0) + rarityFilter.length + (foilOnly ? 1 : 0) + (pageSize !== (isTouchDevice ? 100 : Infinity) ? 1 : 0) + activeAttrFilterCount
 
   function resetAllFilters() {
     setSetFilter('')

@@ -5,8 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { rarityColor, rarityRank } from '../theme'
 
 const isTouchDevice = window.matchMedia('(hover: none)').matches
-const isUltraWide  = window.matchMedia('(min-width: 2560px)').matches
-const DEFAULT_PER  = isUltraWide ? 0 : 50
+const DEFAULT_PER  = isTouchDevice ? 25 : 0
 
 // ── Attribute helpers ──────────────────────────────────────────────────────
 function parseAttrs(card) {
