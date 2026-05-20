@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext'
 import { rarityColor, rarityRank } from '../theme'
 
 const isTouchDevice = window.matchMedia('(hover: none)').matches
+const isUltraWide  = window.matchMedia('(min-width: 2560px)').matches
+const DEFAULT_PER  = isUltraWide ? 0 : 50
 
 // ── Attribute helpers ──────────────────────────────────────────────────────
 function parseAttrs(card) {
@@ -68,7 +70,7 @@ export default function CardsPage() {
   const rarityFilter = searchParams.getAll('rarity')
   const page        = parseInt(searchParams.get('page') || '1', 10)
   const _per        = searchParams.get('per')
-  const pageSize    = _per === null ? 25 : parseInt(_per, 10)
+  const pageSize    = _per === null ? DEFAULT_PER : parseInt(_per, 10)
   const viewMode    = searchParams.get('view')    || 'card'
 
   function setParam(updates) {
@@ -499,7 +501,7 @@ export default function CardsPage() {
       {/* ── Toolbar ──────────────────────────────────────────────────────── */}
       {(() => {
         const activeAttrFilterCount = Object.values(attrFilters).filter(v => v.length > 0).length
-        const activeCount = (sort !== 'name_asc' ? 1 : 0) + rarityFilter.length + (pageSize !== 25 ? 1 : 0) + activeAttrFilterCount
+        const activeCount = (sort !== 'name_asc' ? 1 : 0) + rarityFilter.length + (pageSize !== DEFAULT_PER ? 1 : 0) + activeAttrFilterCount
 
         return (
           <div className="flex items-center gap-2 mb-4 flex-wrap">
