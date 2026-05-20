@@ -47,9 +47,10 @@ LOCAL_COUNT=$(find "$LOCAL_ASSETS_DIR" -type f | wc -l | tr -d ' ')
 echo "Local image count: $LOCAL_COUNT"
 echo ""
 
+export AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID"
+export AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY"
+
 caffeinate -i \
-  AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" \
-  AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
   aws s3 sync "$LOCAL_ASSETS_DIR" "s3://$BUCKET/cards/" \
     --endpoint-url "$R2_ENDPOINT" \
     --size-only \

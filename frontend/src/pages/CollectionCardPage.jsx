@@ -142,7 +142,7 @@ export default function CollectionCardPage() {
           <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--text-muted)' }}>
             In Your Collection
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 ultra:grid-cols-10 gap-5">
             {items.map(item => (
               <PrintingCard
                 key={`${item.printing_id}-${item.finish}`}

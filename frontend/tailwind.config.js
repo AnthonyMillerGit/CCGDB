@@ -5,6 +5,10 @@ export default {
     ],
     theme: {
       extend: {
+        screens: {
+          '3xl': '1920px',
+          'ultra': '2560px',
+        },
         colors: {
           primary: '#252A34',
           secondary: '#2d3243',

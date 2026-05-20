@@ -891,13 +891,13 @@ export default function CollectionGamePage() {
         }
 
         const gridGroup = cards => (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 3xl:grid-cols-9 ultra:grid-cols-11 gap-3">
             {cards.map(gridCard)}
           </div>
         )
 
         const listGroup = cards => (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 ultra:grid-cols-9 gap-1">
             {cards.map(listCard)}
           </div>
         )
