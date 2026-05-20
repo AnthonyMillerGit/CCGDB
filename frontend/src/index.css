@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --breakpoint-3xl: 120rem;   /* 1920px */
+  --breakpoint-ultra: 160rem; /* 2560px */
+}
+
 .foil-rainbow {
   background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #c77dff, #ff6b6b);
   background-size: 200% auto;
