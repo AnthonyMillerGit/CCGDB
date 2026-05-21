@@ -115,7 +115,7 @@ func (a *App) exportDeck(w http.ResponseWriter, r *http.Request) {
 	rows, err := a.db.Query(r.Context(), `
 		SELECT
 		    c.name AS card_name,
-		    c.card_type,
+		    COALESCE(c.card_type, '') AS card_type,
 		    COALESCE(p.collector_number, '') AS collector_number,
 		    COALESCE(p.set_name, '') AS set_name,
 		    dc.quantity

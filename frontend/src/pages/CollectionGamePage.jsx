@@ -509,7 +509,7 @@ export default function CollectionGamePage() {
   }
 
   return (
-    <div className="px-4 py-8 mx-auto" style={{ maxWidth: '1400px' }}>
+    <div className="w-full">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
         <Link to="/profile" style={{ color: 'var(--accent)' }}>My Collection</Link>
@@ -783,6 +783,7 @@ export default function CollectionGamePage() {
       {printingGroups.length > 0 && (() => {
         const gridCard = group => (
           <div key={group.printing_id} className="flex flex-col rounded-xl overflow-hidden"
+            title={group.card_name}
             style={{ border: `1px solid ${editMode ? '#b86a0066' : 'var(--border)'}`, backgroundColor: 'var(--bg-surface)' }}>
             {/* Name + rarity above image */}
             <div className="flex items-center gap-1 p-1.5 pb-1">
@@ -893,13 +894,13 @@ export default function CollectionGamePage() {
         }
 
         const gridGroup = cards => (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 3xl:grid-cols-9 ultra:grid-cols-11 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 3xl:grid-cols-10 ultra:grid-cols-15 gap-3">
             {cards.map(gridCard)}
           </div>
         )
 
         const listGroup = cards => (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 ultra:grid-cols-9 gap-1">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 ultra:grid-cols-11 gap-1">
             {cards.map(listCard)}
           </div>
         )

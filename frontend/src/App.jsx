@@ -209,7 +209,7 @@ function App() {
         <ThemeProvider>
         <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg-page)', color: 'var(--text-primary)' }}>
           <Header />
-          <main className="flex-1 max-w-7xl 3xl:max-w-[1800px] ultra:max-w-[2400px] mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
+          <main className="flex-1 max-w-7xl ultra:max-w-[3200px] mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/games" element={<GamesPage />} />

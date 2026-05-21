@@ -760,14 +760,15 @@ export default function CardsPage() {
 
       {/* ── Card image grid ───────────────────────────────────────────────── */}
       {viewMode === 'card' && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 ultra:grid-cols-10 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-9 ultra:grid-cols-14 gap-4">
           {pagedCards.map(card => {
             const quantity = owned[card.printing_id]
             const isOwned = quantity > 0
             const bulkQty = bulkQtys[card.printing_id] || 0
             return (
               <div key={card.id} className="rounded-xl overflow-hidden border relative flex flex-col"
-                style={{ backgroundColor: 'var(--bg-surface)', borderColor: bulkQty > 0 ? 'var(--accent)' : 'var(--border)' }}>
+                title={card.name}
+                style={{ backgroundColor: bulkQty > 0 ? 'color-mix(in srgb, var(--accent) 12%, var(--bg-surface))' : 'var(--bg-surface)', borderColor: bulkQty > 0 ? 'var(--accent)' : 'var(--border)', borderWidth: bulkQty > 0 ? '2px' : '1px' }}>
                 {isOwned && (
                   <div className="absolute top-1.5 right-1.5 z-10 text-xs font-bold px-1.5 py-0.5 rounded"
                     style={{ backgroundColor: 'var(--accent)', color: 'var(--bg-page)' }}>×{quantity}</div>
@@ -785,20 +786,20 @@ export default function CardsPage() {
                   }
                 </div>
                 <div className="p-2 flex items-end justify-between gap-1">
-                  <p className="text-xs font-medium leading-tight" style={{ color: 'var(--text-primary)' }}>{card.name}</p>
+                  <p className="text-xs font-medium leading-tight truncate" style={{ color: 'var(--text-primary)' }}>{card.name}</p>
                   <p className="text-xs capitalize shrink-0" style={{ color: rarityColor(card.rarity, setInfo?.game_slug) }}>{card.rarity}</p>
                 </div>
                 {isBulkActive && (
-                  <div className="px-2 pb-2 flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center gap-1 px-1.5 pb-1.5" onClick={e => e.stopPropagation()}>
                     <button onClick={() => adjustQty(card.printing_id, -1)}
-                      className="w-7 h-7 rounded flex items-center justify-center text-sm font-bold"
+                      className="w-6 h-6 rounded flex items-center justify-center text-sm font-bold shrink-0"
                       style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>−</button>
                     <input type="number" min={0} value={bulkQty || ''} placeholder="0"
                       onChange={e => setQty(card.printing_id, e.target.value)}
-                      className="w-full text-center text-sm rounded px-1 py-0.5"
+                      className="w-full text-center text-xs rounded px-1 py-0.5"
                       style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
                     <button onClick={() => adjustQty(card.printing_id, 1)}
-                      className="w-7 h-7 rounded flex items-center justify-center text-sm font-bold"
+                      className="w-6 h-6 rounded flex items-center justify-center text-sm font-bold shrink-0"
                       style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--accent)' }}>+</button>
                   </div>
                 )}
@@ -810,7 +811,7 @@ export default function CardsPage() {
 
       {/* ── List view ────────────────────────────────────────────────────── */}
       {viewMode === 'list' && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-7 ultra:grid-cols-9 gap-1">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 3xl:grid-cols-7 ultra:grid-cols-11 gap-1">
           {pagedCards.map(card => {
             const quantity    = owned[card.printing_id]
             const isOwned     = quantity > 0
@@ -819,28 +820,34 @@ export default function CardsPage() {
             return (
               <div key={card.id}
                 onClick={() => !isBulkActive && navigate(`/cards/${card.id}?printing=${card.printing_id}`)}
-                className={`rounded border px-3 py-2 flex items-center justify-between gap-2 transition-colors ${!isBulkActive ? 'cursor-pointer hover:border-[#0097a7]' : ''}`}
-                style={{ backgroundColor: bulkQty > 0 ? '#dff0f4' : 'var(--bg-chip)', borderColor: bulkQty > 0 ? 'var(--accent)' : 'var(--border)' }}>
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{card.name}</span>
+                className={`rounded border px-2 py-1.5 flex flex-col gap-1 transition-colors ${!isBulkActive ? 'cursor-pointer hover:border-[#0097a7]' : ''}`}
+                style={{ backgroundColor: bulkQty > 0 ? 'color-mix(in srgb, var(--accent) 12%, var(--bg-chip))' : 'var(--bg-chip)', borderColor: bulkQty > 0 ? 'var(--accent)' : 'var(--border)', borderWidth: bulkQty > 0 ? '2px' : '1px' }}>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>{card.name}</span>
                   {isOwned && (
                     <span className="text-xs font-bold px-1 rounded shrink-0"
                       style={{ backgroundColor: '#0097a722', color: 'var(--accent)' }}>×{quantity}</span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs capitalize" style={{ color: cardRarityColor }}>{card.rarity}</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1 min-w-0 flex-1">
+                    {card.rarity && (
+                      <div className="w-2 h-2 rounded-full shrink-0" title={card.rarity}
+                        style={{ backgroundColor: cardRarityColor }} />
+                    )}
+                    <span className="text-xs capitalize truncate" style={{ color: cardRarityColor }}>{card.rarity}</span>
+                  </div>
                   {isBulkActive && (
-                    <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
                       <button onClick={() => adjustQty(card.printing_id, -1)}
-                        className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
+                        className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold"
                         style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>−</button>
                       <input type="number" min={0} value={bulkQty || ''} placeholder="0"
                         onChange={e => setQty(card.printing_id, e.target.value)}
-                        className="w-10 text-center text-xs rounded px-1 py-0.5"
+                        className="w-7 text-center text-xs rounded px-0.5 py-0.5"
                         style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
                       <button onClick={() => adjustQty(card.printing_id, 1)}
-                        className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
+                        className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold"
                         style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--accent)' }}>+</button>
                     </div>
                   )}

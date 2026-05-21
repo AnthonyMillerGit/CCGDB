@@ -27,7 +27,7 @@ func (a *App) getWishlist(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := a.db.Query(r.Context(), `
 		SELECT wl.id, wl.printing_id, c.id, c.name, s.name, g.slug, g.name,
-		       p.image_url, c.card_type, wl.added_at
+		       p.image_url, COALESCE(c.card_type, ''), wl.added_at
 		FROM wishlists wl
 		JOIN printings p ON p.id = wl.printing_id
 		JOIN cards c ON c.id = p.card_id
