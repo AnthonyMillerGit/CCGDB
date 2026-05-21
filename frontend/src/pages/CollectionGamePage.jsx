@@ -3,6 +3,8 @@ import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
 import { rarityColor, rarityRank } from '../theme'
+import { parseAttrs, getAttrVal, attrValToSortable, compareAttrVals, formatAttrKey, isPrimitiveAttrVal } from '../utils/cardAttributes'
+import { useClickOutside } from '../hooks/useClickOutside'
 
 const isTouchDevice = window.matchMedia('(hover: none)').matches
 
@@ -10,47 +12,6 @@ const CONDITION_LABELS = { NM: 'Near Mint', LP: 'Light Play', MP: 'Moderate Play
 const CONDITION_COLORS = { NM: '#4ade80', LP: '#a3e635', MP: '#facc15', HP: '#fb923c', DM: '#f87171' }
 const FINISHES = ['normal', 'foil', 'special foil']
 
-// ── Attribute helpers ──────────────────────────────────────────────────────────
-
-function parseAttrs(card) {
-  if (!card.attributes) return null
-  try {
-    return typeof card.attributes === 'string' ? JSON.parse(card.attributes) : card.attributes
-  } catch { return null }
-}
-
-function getAttrVal(card, key) {
-  const attrs = parseAttrs(card)
-  if (!attrs) return null
-  const val = attrs[key]
-  return val ?? null
-}
-
-function attrValToSortable(val) {
-  if (val === null || val === undefined) return null
-  if (Array.isArray(val)) return val.map(String).sort().join(', ')
-  return String(val)
-}
-
-function compareAttrVals(av, bv) {
-  if (av === null && bv === null) return 0
-  if (av === null) return 1
-  if (bv === null) return -1
-  const an = parseFloat(av), bn = parseFloat(bv)
-  if (!isNaN(an) && !isNaN(bn)) return an - bn
-  return av.localeCompare(bv)
-}
-
-function formatAttrKey(key) {
-  return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-}
-
-// Returns false if the value is a plain object or array-of-objects (not useful for sort/filter)
-function isPrimitiveAttrVal(val) {
-  if (val === null || val === undefined) return true
-  if (Array.isArray(val)) return val.length === 0 || typeof val[0] !== 'object'
-  return typeof val !== 'object'
-}
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
@@ -210,14 +171,7 @@ export default function CollectionGamePage() {
       .catch(() => {})
   }, [gameSlug])
 
-  useEffect(() => {
-    if (!filtersOpen) return
-    function handleClickOutside(e) {
-      if (filtersRef.current && !filtersRef.current.contains(e.target)) setFiltersOpen(false)
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [filtersOpen])
+  useClickOutside(filtersRef, () => setFiltersOpen(false), filtersOpen)
 
   const handleIncrease = useCallback(async (card) => {
     const res = await authFetch(`${API_URL}/api/users/me/collection`, {

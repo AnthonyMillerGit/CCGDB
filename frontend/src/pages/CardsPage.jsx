@@ -3,41 +3,12 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
 import { rarityColor, rarityRank } from '../theme'
+import { parseAttrs, getAttrVal, attrValToSortable, compareAttrVals, formatAttrKey, isPrimitiveAttrVal } from '../utils/cardAttributes'
+import { useClickOutside } from '../hooks/useClickOutside'
 
 const isTouchDevice = window.matchMedia('(hover: none)').matches
 const DEFAULT_PER  = isTouchDevice ? 25 : 0
 
-// ── Attribute helpers ──────────────────────────────────────────────────────
-function parseAttrs(card) {
-  if (!card.attributes) return null
-  try { return typeof card.attributes === 'string' ? JSON.parse(card.attributes) : card.attributes }
-  catch { return null }
-}
-function getAttrVal(card, key) {
-  const attrs = parseAttrs(card)
-  return attrs ? (attrs[key] ?? null) : null
-}
-function attrValToSortable(val) {
-  if (val === null || val === undefined) return null
-  if (Array.isArray(val)) return val.map(String).sort().join(', ')
-  return String(val)
-}
-function compareAttrVals(av, bv) {
-  if (av === null && bv === null) return 0
-  if (av === null) return 1
-  if (bv === null) return -1
-  const an = parseFloat(av), bn = parseFloat(bv)
-  if (!isNaN(an) && !isNaN(bn)) return an - bn
-  return av.localeCompare(bv)
-}
-function formatAttrKey(key) {
-  return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-}
-function isPrimitiveAttrVal(val) {
-  if (val === null || val === undefined) return true
-  if (Array.isArray(val)) return val.length === 0 || typeof val[0] !== 'object'
-  return typeof val !== 'object'
-}
 
 export default function CardsPage() {
   const { setId } = useParams()
@@ -104,19 +75,8 @@ export default function CardsPage() {
   const { user, authFetch } = useAuth()
 
   // ── Click-outside handlers ────────────────────────────────────────────────
-  useEffect(() => {
-    if (!filtersOpen) return
-    const h = e => { if (filtersRef.current && !filtersRef.current.contains(e.target)) setFiltersOpen(false) }
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
-  }, [filtersOpen])
-
-  useEffect(() => {
-    if (!bulkOpen) return
-    const h = e => { if (bulkRef.current && !bulkRef.current.contains(e.target)) setBulkOpen(false) }
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
-  }, [bulkOpen])
+  useClickOutside(filtersRef, () => setFiltersOpen(false), filtersOpen)
+  useClickOutside(bulkRef, () => setBulkOpen(false), bulkOpen)
 
   // Cross-set search: debounce API call when user types in the search box
   useEffect(() => {
@@ -133,13 +93,7 @@ export default function CardsPage() {
     return () => clearTimeout(searchDebounceRef.current)
   }, [search, setInfo?.game_slug])
 
-  // Close cross-set dropdown on outside click
-  useEffect(() => {
-    if (!searchDropResults.length) return
-    const h = e => { if (searchDropRef.current && !searchDropRef.current.contains(e.target)) setSearchDropResults([]) }
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
-  }, [searchDropResults.length])
+  useClickOutside(searchDropRef, () => setSearchDropResults([]), searchDropResults.length > 0)
 
   const handleSearchAdd = useCallback(async (card) => {
     if (!user || !card.printing_id) return

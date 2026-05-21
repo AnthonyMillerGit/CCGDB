@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { useClickOutside } from '../hooks/useClickOutside'
 import { createPortal } from 'react-dom'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -30,14 +31,7 @@ function ExportMenu({ onExport }) {
     { label: 'TXT', value: 'txt' },
   ]
 
-  useEffect(() => {
-    if (!open) return
-    function handleClick(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [open])
+  useClickOutside(ref, () => setOpen(false), open)
 
   return (
     <div ref={ref} className="relative">
@@ -1085,14 +1079,7 @@ export default function ProfilePage() {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false)
   const colorPickerRef = useRef(null)
 
-  useEffect(() => {
-    if (!showColorPicker) return
-    function handleClick(e) {
-      if (colorPickerRef.current && !colorPickerRef.current.contains(e.target)) setShowColorPicker(false)
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [showColorPicker])
+  useClickOutside(colorPickerRef, () => setShowColorPicker(false), showColorPicker)
 
   async function saveDisplayName() {
     const trimmed = displayNameInput.trim()

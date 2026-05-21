@@ -10,11 +10,6 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('theme', isDark ? 'dark' : 'light')
   }, [isDark])
 
-  // Apply on mount before first paint
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light')
-  }, [])
-
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme: () => setIsDark(d => !d) }}>
       {children}

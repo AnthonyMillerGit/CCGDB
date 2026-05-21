@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { useClickOutside } from '../hooks/useClickOutside'
 import { useParams, useNavigate } from 'react-router-dom'
 import { API_URL } from '../config'
 import { GAME_INFO } from '../data/gameInfo'
@@ -135,13 +136,7 @@ export default function SetsPage() {
     return () => clearTimeout(debounceRef.current)
   }, [searchQuery, slug])
 
-  // Close results when clicking outside
-  useEffect(() => {
-    if (!searchResults.length) return
-    const h = e => { if (searchRef.current && !searchRef.current.contains(e.target)) setSearchResults([]) }
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
-  }, [searchResults.length])
+  useClickOutside(searchRef, () => setSearchResults([]), searchResults.length > 0)
 
   const handleAddToCollection = useCallback(async (card) => {
     if (!user || !card.printing_id) return

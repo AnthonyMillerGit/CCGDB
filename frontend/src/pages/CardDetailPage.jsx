@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { useClickOutside } from '../hooks/useClickOutside'
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import MTGCardInfo           from '../components/card-templates/MTGCardInfo'
 import PokemonCardInfo       from '../components/card-templates/PokemonCardInfo'
@@ -243,17 +244,7 @@ function AddToDeckButton({ card, authFetch, fullWidth }) {
   const [creating, setCreating] = useState(false)
   const menuRef = useRef(null)
 
-  useEffect(() => {
-    if (!menuOpen) return
-    function handleClickOutside(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setMenuOpen(false)
-        setShowNewDeckInput(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [menuOpen])
+  useClickOutside(menuRef, () => { setMenuOpen(false); setShowNewDeckInput(false) }, menuOpen)
 
   async function openMenu() {
     setMenuOpen(true)

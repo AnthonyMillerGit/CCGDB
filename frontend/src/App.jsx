@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
+import { useClickOutside } from './hooks/useClickOutside'
 import { BrowserRouter, Routes, Route, useNavigate, Link, useLocation } from 'react-router-dom'
 import { API_URL, goToRandomCard } from './config'
 import GamesPage from './pages/GamesPage'
@@ -41,13 +42,7 @@ function UserMenu({ user }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
-  useEffect(() => {
-    function handleClick(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
+  useClickOutside(ref, () => setOpen(false))
 
   const baseItems = [
     ['My Collection', '/profile'],

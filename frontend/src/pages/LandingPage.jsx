@@ -33,7 +33,12 @@ export default function LandingPage() {
       setPosts(Array.isArray(postData) ? postData : [])
 
       if (Array.isArray(games) && games.length > 0) {
-        const shuffled = games.sort(() => Math.random() - 0.5).slice(0, 5)
+        const pool = [...games]
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[j]] = [pool[j], pool[i]]
+        }
+        const shuffled = pool.slice(0, 5)
         const params = shuffled.map(g => `game=${g.slug}`).join('&')
         const cards = await fetch(`${API_URL}/api/cards/random?limit=5&${params}`)
           .then(r => r.json())
