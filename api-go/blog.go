@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -149,20 +151,40 @@ func (a *App) loadPostTags(r *http.Request, postID int) ([]PostGameTag, []PostSe
 	return gameTags, setTags, cardTags
 }
 
-func (a *App) syncPostTags(r *http.Request, postID int, gameIDs, setIDs, cardIDs []int) {
-	a.db.Exec(r.Context(), "DELETE FROM post_game_tags WHERE post_id = $1", postID)
-	a.db.Exec(r.Context(), "DELETE FROM post_set_tags WHERE post_id = $1", postID)
-	a.db.Exec(r.Context(), "DELETE FROM post_card_tags WHERE post_id = $1", postID)
+func (a *App) syncPostTags(r *http.Request, postID int, gameIDs, setIDs, cardIDs []int) error {
+	tx, err := a.db.Begin(r.Context())
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(r.Context())
+
+	for _, stmt := range []string{
+		"DELETE FROM post_game_tags WHERE post_id = $1",
+		"DELETE FROM post_set_tags WHERE post_id = $1",
+		"DELETE FROM post_card_tags WHERE post_id = $1",
+	} {
+		if _, err := tx.Exec(r.Context(), stmt, postID); err != nil {
+			return err
+		}
+	}
 
 	for _, id := range gameIDs {
-		a.db.Exec(r.Context(), "INSERT INTO post_game_tags (post_id, game_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", postID, id)
+		if _, err := tx.Exec(r.Context(), "INSERT INTO post_game_tags (post_id, game_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", postID, id); err != nil {
+			return fmt.Errorf("insert game tag %d: %w", id, err)
+		}
 	}
 	for _, id := range setIDs {
-		a.db.Exec(r.Context(), "INSERT INTO post_set_tags (post_id, set_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", postID, id)
+		if _, err := tx.Exec(r.Context(), "INSERT INTO post_set_tags (post_id, set_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", postID, id); err != nil {
+			return fmt.Errorf("insert set tag %d: %w", id, err)
+		}
 	}
 	for _, id := range cardIDs {
-		a.db.Exec(r.Context(), "INSERT INTO post_card_tags (post_id, card_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", postID, id)
+		if _, err := tx.Exec(r.Context(), "INSERT INTO post_card_tags (post_id, card_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", postID, id); err != nil {
+			return fmt.Errorf("insert card tag %d: %w", id, err)
+		}
 	}
+
+	return tx.Commit(r.Context())
 }
 
 // ── Public handlers ───────────────────────────────────────────────────────────
@@ -320,7 +342,9 @@ func (a *App) createPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	p.AuthorName = user.Username
-	a.syncPostTags(r, p.ID, body.GameIDs, body.SetIDs, body.CardIDs)
+	if err := a.syncPostTags(r, p.ID, body.GameIDs, body.SetIDs, body.CardIDs); err != nil {
+		log.Printf("syncPostTags: post %d: %v", p.ID, err)
+	}
 	p.GameTags, p.SetTags, p.CardTags = a.loadPostTags(r, p.ID)
 	jsonResponse(w, p, http.StatusCreated)
 }
@@ -346,24 +370,27 @@ func (a *App) updatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	type fieldUpdate struct {
+		col string
+		val any
+	}
+	var updates []fieldUpdate
+
 	if body.Title != nil {
-		a.db.Exec(r.Context(), "UPDATE posts SET title = $1, updated_at = NOW() WHERE id = $2",
-			strings.TrimSpace(*body.Title), postID)
+		updates = append(updates, fieldUpdate{"title", strings.TrimSpace(*body.Title)})
 	}
 	if body.Slug != nil {
 		s := slugify(*body.Slug)
 		if len(s) > 200 {
 			s = s[:200]
 		}
-		a.db.Exec(r.Context(), "UPDATE posts SET slug = $1, updated_at = NOW() WHERE id = $2", s, postID)
+		updates = append(updates, fieldUpdate{"slug", s})
 	}
 	if body.Excerpt != nil {
-		a.db.Exec(r.Context(), "UPDATE posts SET excerpt = $1, updated_at = NOW() WHERE id = $2",
-			body.Excerpt, postID)
+		updates = append(updates, fieldUpdate{"excerpt", body.Excerpt})
 	}
 	if body.Body != nil {
-		a.db.Exec(r.Context(), "UPDATE posts SET body = $1, updated_at = NOW() WHERE id = $2",
-			body.Body, postID)
+		updates = append(updates, fieldUpdate{"body", body.Body})
 	}
 	if body.PostType != nil {
 		pt := *body.PostType
@@ -371,16 +398,26 @@ func (a *App) updatePost(w http.ResponseWriter, r *http.Request) {
 		if !validPostTypes[pt] {
 			pt = "article"
 		}
-		a.db.Exec(r.Context(), "UPDATE posts SET post_type = $1, updated_at = NOW() WHERE id = $2", pt, postID)
+		updates = append(updates, fieldUpdate{"post_type", pt})
 	}
 	if body.CoverImageURL != nil {
-		a.db.Exec(r.Context(), "UPDATE posts SET cover_image_url = $1, updated_at = NOW() WHERE id = $2",
-			body.CoverImageURL, postID)
+		updates = append(updates, fieldUpdate{"cover_image_url", body.CoverImageURL})
 	}
 	if body.PublishedAt != nil {
-		a.db.Exec(r.Context(), "UPDATE posts SET published_at = $1, updated_at = NOW() WHERE id = $2",
-			body.PublishedAt, postID)
+		updates = append(updates, fieldUpdate{"published_at", body.PublishedAt})
 	}
+
+	for _, u := range updates {
+		if _, err := a.db.Exec(r.Context(),
+			fmt.Sprintf("UPDATE posts SET %s = $1, updated_at = NOW() WHERE id = $2", u.col),
+			u.val, postID,
+		); err != nil {
+			log.Printf("updatePost: field %q, post %d: %v", u.col, postID, err)
+			jsonError(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+	}
+
 	if body.GameIDs != nil || body.SetIDs != nil || body.CardIDs != nil {
 		gameIDs := []int{}
 		setIDs := []int{}
@@ -394,7 +431,11 @@ func (a *App) updatePost(w http.ResponseWriter, r *http.Request) {
 		if body.CardIDs != nil {
 			cardIDs = *body.CardIDs
 		}
-		a.syncPostTags(r, postID, gameIDs, setIDs, cardIDs)
+		if err := a.syncPostTags(r, postID, gameIDs, setIDs, cardIDs); err != nil {
+			log.Printf("syncPostTags: post %d: %v", postID, err)
+			jsonError(w, "Database error", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	jsonResponse(w, map[string]string{"message": "Post updated"}, http.StatusOK)
@@ -407,7 +448,10 @@ func (a *App) deletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	slug := chi.URLParam(r, "slug")
-	a.db.Exec(r.Context(), "DELETE FROM posts WHERE slug = $1", slug)
+	if _, err := a.db.Exec(r.Context(), "DELETE FROM posts WHERE slug = $1", slug); err != nil {
+		jsonError(w, "Database error", http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 

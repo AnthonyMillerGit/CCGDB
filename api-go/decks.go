@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -177,21 +178,38 @@ func (a *App) updateDeck(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setClauses := []string{"updated_at = NOW()"}
+	args := []any{}
+	idx := 1
+
 	if body.Name != nil {
-		a.db.Exec(r.Context(), "UPDATE decks SET name = $1, updated_at = NOW() WHERE id = $2",
-			strings.TrimSpace(*body.Name), deckID)
+		setClauses = append(setClauses, fmt.Sprintf("name = $%d", idx))
+		args = append(args, strings.TrimSpace(*body.Name))
+		idx++
 	}
 	if body.Description != nil {
-		a.db.Exec(r.Context(), "UPDATE decks SET description = $1, updated_at = NOW() WHERE id = $2",
-			*body.Description, deckID)
+		setClauses = append(setClauses, fmt.Sprintf("description = $%d", idx))
+		args = append(args, *body.Description)
+		idx++
 	}
 	if body.Format != nil {
-		a.db.Exec(r.Context(), "UPDATE decks SET format = $1, updated_at = NOW() WHERE id = $2",
-			*body.Format, deckID)
+		setClauses = append(setClauses, fmt.Sprintf("format = $%d", idx))
+		args = append(args, *body.Format)
+		idx++
 	}
 	if body.ThumbnailCardID != nil {
-		a.db.Exec(r.Context(), "UPDATE decks SET thumbnail_card_id = $1, updated_at = NOW() WHERE id = $2",
-			*body.ThumbnailCardID, deckID)
+		setClauses = append(setClauses, fmt.Sprintf("thumbnail_card_id = $%d", idx))
+		args = append(args, *body.ThumbnailCardID)
+		idx++
+	}
+
+	if idx > 1 {
+		args = append(args, deckID)
+		q := fmt.Sprintf("UPDATE decks SET %s WHERE id = $%d", strings.Join(setClauses, ", "), idx)
+		if _, err := a.db.Exec(r.Context(), q, args...); err != nil {
+			jsonError(w, "Database error", http.StatusInternalServerError)
+			return
+		}
 	}
 	jsonResponse(w, map[string]string{"message": "Deck updated"}, http.StatusOK)
 }
@@ -206,7 +224,10 @@ func (a *App) deleteDeck(w http.ResponseWriter, r *http.Request) {
 	if _, ok := a.getDeckOrForbid(w, r, deckID, user.ID); !ok {
 		return
 	}
-	a.db.Exec(r.Context(), "DELETE FROM decks WHERE id = $1", deckID)
+	if _, err := a.db.Exec(r.Context(), "DELETE FROM decks WHERE id = $1", deckID); err != nil {
+		jsonError(w, "Database error", http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -355,7 +376,10 @@ func (a *App) removeCardFromDeck(w http.ResponseWriter, r *http.Request) {
 	if _, ok := a.getDeckOrForbid(w, r, deckID, user.ID); !ok {
 		return
 	}
-	a.db.Exec(r.Context(), "DELETE FROM deck_cards WHERE deck_id = $1 AND card_id = $2", deckID, cardID)
+	if _, err := a.db.Exec(r.Context(), "DELETE FROM deck_cards WHERE deck_id = $1 AND card_id = $2", deckID, cardID); err != nil {
+		jsonError(w, "Database error", http.StatusInternalServerError)
+		return
+	}
 	a.db.Exec(r.Context(), "UPDATE decks SET updated_at = NOW() WHERE id = $1", deckID)
 	w.WriteHeader(http.StatusNoContent)
 }
