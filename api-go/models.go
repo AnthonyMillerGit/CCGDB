@@ -143,11 +143,6 @@ type UpdateProfileRequest struct {
 	ClearAvatar      bool    `json:"clear_avatar"`
 }
 
-type AuthResponse struct {
-	Token string `json:"token"`
-	User  User   `json:"user"`
-}
-
 type RegisterRequest struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`

@@ -14,6 +14,38 @@ import (
 
 var hexColorRe = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
 
+func (a *App) setAuthCookie(w http.ResponseWriter, token string) {
+	secure := strings.HasPrefix(a.cfg.AppURL, "https://")
+	sameSite := http.SameSiteLaxMode
+	if secure {
+		sameSite = http.SameSiteNoneMode
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     "ccgdb_session",
+		Value:    token,
+		Path:     "/",
+		MaxAge:   a.cfg.AccessTokenExpireDays * 24 * 60 * 60,
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: sameSite,
+	})
+}
+
+func (a *App) clearAuthCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "ccgdb_session",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+	})
+}
+
+func (a *App) logout(w http.ResponseWriter, r *http.Request) {
+	a.clearAuthCookie(w)
+	jsonResponse(w, map[string]string{"message": "Logged out"}, http.StatusOK)
+}
+
 func secureToken() string {
 	b := make([]byte, 32)
 	rand.Read(b)
@@ -97,7 +129,8 @@ func (a *App) register(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	jsonResponse(w, AuthResponse{Token: authToken, User: user}, http.StatusCreated)
+	a.setAuthCookie(w, authToken)
+	jsonResponse(w, user, http.StatusCreated)
 }
 
 func (a *App) login(w http.ResponseWriter, r *http.Request) {
@@ -137,7 +170,8 @@ func (a *App) login(w http.ResponseWriter, r *http.Request) {
 		jsonError(w, "Server error", http.StatusInternalServerError)
 		return
 	}
-	jsonResponse(w, AuthResponse{Token: authToken, User: user}, http.StatusOK)
+	a.setAuthCookie(w, authToken)
+	jsonResponse(w, user, http.StatusOK)
 }
 
 func (a *App) me(w http.ResponseWriter, r *http.Request) {

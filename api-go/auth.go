@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -63,12 +62,12 @@ func (a *App) parseToken(tokenStr string) (int, error) {
 
 func (a *App) requireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		if !strings.HasPrefix(authHeader, "Bearer ") {
+		cookie, err := r.Cookie("ccgdb_session")
+		if err != nil || cookie.Value == "" {
 			jsonError(w, "Not authenticated", http.StatusUnauthorized)
 			return
 		}
-		userID, err := a.parseToken(strings.TrimPrefix(authHeader, "Bearer "))
+		userID, err := a.parseToken(cookie.Value)
 		if err != nil {
 			jsonError(w, "Invalid or expired token", http.StatusUnauthorized)
 			return

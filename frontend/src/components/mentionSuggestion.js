@@ -12,11 +12,9 @@ export function createMentionSuggestion(getGameIds = () => []) {
   items: async ({ query }) => {
     if (query.length < 2) return []
     try {
-      const token = localStorage.getItem('ccgdb_token')
-      const headers = token ? { Authorization: `Bearer ${token}` } : {}
       const gameIds = getGameIds()
       const gameParam = gameIds.length ? `&game_ids=${gameIds.join(',')}` : ''
-      const res = await fetch(`${API_URL}/api/search/mentions?q=${encodeURIComponent(query)}${gameParam}`, { headers })
+      const res = await fetch(`${API_URL}/api/search/mentions?q=${encodeURIComponent(query)}${gameParam}`, { credentials: 'include' })
       const data = await res.json()
       return Array.isArray(data) ? data : []
     } catch {
@@ -33,10 +31,7 @@ export function createMentionSuggestion(getGameIds = () => []) {
         cardUrl: props.url,
       }).insertContent(' ').run()
     } else if (props.type === 'deck') {
-      const token = localStorage.getItem('ccgdb_token')
-      fetch(`${API_URL}/api/decks/${props.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      fetch(`${API_URL}/api/decks/${props.id}`, { credentials: 'include' })
         .then(r => r.json())
         .then(deck => {
           const sorted = [...(deck.cards || [])].sort((a, b) =>

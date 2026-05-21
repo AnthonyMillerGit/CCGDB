@@ -1,38 +1,29 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { API_URL } from '../config'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem('ccgdb_token'))
-  const [user, setUser] = useState(() => {
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/auth/me`, { credentials: 'include' })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data?.id) setUser(data) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const logout = useCallback(async () => {
     try {
-      return JSON.parse(localStorage.getItem('ccgdb_user'))
-    } catch {
-      return null
-    }
-  })
-
-  const saveSession = (token, user) => {
-    localStorage.setItem('ccgdb_token', token)
-    localStorage.setItem('ccgdb_user', JSON.stringify(user))
-    setToken(token)
-    setUser(user)
-  }
-
-  const logout = useCallback(() => {
-    localStorage.removeItem('ccgdb_token')
-    localStorage.removeItem('ccgdb_user')
-    setToken(null)
+      await fetch(`${API_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' })
+    } catch {}
     setUser(null)
   }, [])
 
   const updateUser = useCallback((updates) => {
-    setUser(prev => {
-      const updated = { ...prev, ...updates }
-      localStorage.setItem('ccgdb_user', JSON.stringify(updated))
-      return updated
-    })
+    setUser(prev => ({ ...prev, ...updates }))
   }, [])
 
   const register = useCallback(async (username, email, password) => {
@@ -40,13 +31,14 @@ export function AuthProvider({ children }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, email, password }),
+      credentials: 'include',
     })
     if (!res.ok) {
       const err = await res.json()
       throw new Error(err.detail || 'Registration failed')
     }
     const data = await res.json()
-    saveSession(data.token, data.user)
+    setUser(data)
   }, [])
 
   const login = useCallback(async (email, password) => {
@@ -54,36 +46,34 @@ export function AuthProvider({ children }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
+      credentials: 'include',
     })
     if (!res.ok) {
       const err = await res.json()
       throw new Error(err.detail || 'Login failed')
     }
     const data = await res.json()
-    saveSession(data.token, data.user)
+    setUser(data)
   }, [])
 
   const authFetch = useCallback(async (url, options = {}) => {
     const isFormData = options.body instanceof FormData
     const res = await fetch(url, {
       ...options,
+      credentials: 'include',
       headers: {
         ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         ...(options.headers || {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     })
     if (res.status === 401) {
-      localStorage.removeItem('ccgdb_token')
-      localStorage.removeItem('ccgdb_user')
-      setToken(null)
       setUser(null)
     }
     return res
-  }, [token])
+  }, [])
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, register, authFetch, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, authFetch, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

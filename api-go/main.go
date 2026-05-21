@@ -51,7 +51,7 @@ func (a *App) routes() http.Handler {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   strings.Split(a.cfg.AllowedOrigins, ","),
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		AllowedHeaders:   []string{"Accept", "Content-Type"},
 		AllowCredentials: true,
 	})
 	r.Use(c.Handler)
@@ -104,6 +104,7 @@ func (a *App) routes() http.Handler {
 
 	r.Post("/api/auth/register", registerLimiter.middleware(a.register))
 	r.Post("/api/auth/login", loginLimiter.middleware(a.login))
+	r.Post("/api/auth/logout", a.logout)
 	r.Get("/api/auth/verify-email", a.verifyEmail)
 	r.Post("/api/auth/forgot-password", resetLimiter.middleware(a.forgotPassword))
 	r.Post("/api/auth/reset-password", resetLimiter.middleware(a.resetPassword))
