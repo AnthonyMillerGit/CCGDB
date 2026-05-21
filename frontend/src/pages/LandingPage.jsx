@@ -169,7 +169,7 @@ export default function LandingPage() {
                   {post.excerpt && (
                     <p className="text-sm line-clamp-2" style={{ color: 'var(--text-muted)' }}>{post.excerpt}</p>
                   )}
-                  <p className="text-xs mt-2" style={{ color: '#9e836a' }}>
+                  <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
                     {new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                   </p>
                 </div>

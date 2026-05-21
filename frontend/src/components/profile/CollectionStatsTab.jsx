@@ -237,7 +237,7 @@ export default function CollectionStatsTab({ authFetch }) {
   if (stats.length === 0) return (
     <div className="text-center py-16">
       <p className="text-lg mb-2" style={{ color: 'var(--text-muted)' }}>No collection data yet.</p>
-      <p className="text-sm" style={{ color: '#9e836a' }}>Add cards to your collection to see stats.</p>
+      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Add cards to your collection to see stats.</p>
     </div>
   )
 

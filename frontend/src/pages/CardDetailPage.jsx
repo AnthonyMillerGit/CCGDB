@@ -709,7 +709,7 @@ export default function CardDetailPage() {
               ({card.printings.length})
             </span>
           </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-9 3xl:grid-cols-11 ultra:grid-cols-14 gap-4">
             {card.printings.map(printing => (
               <div
                 key={printing.id}

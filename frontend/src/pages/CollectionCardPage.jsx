@@ -185,7 +185,7 @@ function PrintingCard({ item, gameSlug, onIncrease, onDecrease, onConditionChang
           </p>
           <div className="flex items-center gap-2 mt-0.5">
             {item.rarity && <span className="text-xs capitalize" style={{ color: itemRarityColor }}>{item.rarity}</span>}
-            {item.collector_number && <span className="text-xs" style={{ color: '#9e836a' }}>#{item.collector_number}</span>}
+            {item.collector_number && <span className="text-xs" style={{ color: 'var(--text-muted)' }}>#{item.collector_number}</span>}
           </div>
         </div>
 

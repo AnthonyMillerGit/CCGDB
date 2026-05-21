@@ -12,7 +12,7 @@ function postStatus(post) {
 const STATUS_STYLE = {
   published: { bg: '#1a1e40', color: 'var(--accent)', border: 'var(--accent)', label: 'Published' },
   scheduled:  { bg: '#2e2a0a', color: '#f4c542', border: '#f4c542', label: 'Scheduled' },
-  draft:      { bg: 'var(--bg-page)', color: 'var(--text-muted)', border: '#9e836a', label: 'Draft' },
+  draft:      { bg: 'var(--bg-page)', color: 'var(--text-muted)', border: 'var(--border)', label: 'Draft' },
 }
 
 export default function AdminPostsPage() {
@@ -72,7 +72,7 @@ export default function AdminPostsPage() {
                       {s.label}
                     </span>
                     {post.published_at && (
-                      <span className="text-xs" style={{ color: '#9e836a' }}>
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                         {new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                       </span>
                     )}
@@ -87,7 +87,7 @@ export default function AdminPostsPage() {
                     <Link
                       to={`/blog/${post.slug}`}
                       className="text-xs px-3 py-1.5 rounded"
-                      style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-muted)', border: '1px solid #9e836a' }}
+                      style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
                     >
                       View
                     </Link>
@@ -95,7 +95,7 @@ export default function AdminPostsPage() {
                   <Link
                     to={`/admin/posts/${post.slug}/edit`}
                     className="text-xs px-3 py-1.5 rounded"
-                    style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid #9e836a' }}
+                    style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid var(--border)' }}
                   >
                     Edit
                   </Link>
@@ -103,7 +103,7 @@ export default function AdminPostsPage() {
                     onClick={() => setConfirm(post)}
                     disabled={deleting === post.slug}
                     className="text-xs px-3 py-1.5 rounded disabled:opacity-50"
-                    style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent-maroon)', border: '1px solid #9e836a' }}
+                    style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent-maroon)', border: '1px solid var(--border)' }}
                   >
                     {deleting === post.slug ? '…' : 'Delete'}
                   </button>

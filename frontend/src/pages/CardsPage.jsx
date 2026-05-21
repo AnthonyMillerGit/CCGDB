@@ -339,8 +339,8 @@ export default function CardsPage() {
   // ── Image grid hover ──────────────────────────────────────────────────────
   const handleMouseEnter = (e, card) => {
     if (!card.image_url || isTouchDevice) return
-    e.currentTarget.style.borderColor = '#6b2d8f'
-    e.currentTarget.style.boxShadow = '0 0 14px rgba(107, 45, 143, 0.28)'
+    e.currentTarget.style.borderColor = 'var(--accent-purple)'
+    e.currentTarget.style.boxShadow = '0 0 14px color-mix(in srgb, var(--accent-purple) 28%, transparent)'
     e.currentTarget.style.transform = 'scale(1.05)'
     const rect = e.currentTarget.getBoundingClientRect()
     setTooltipPos({
@@ -680,7 +680,7 @@ export default function CardsPage() {
       {/* ── Bulk mode bar ────────────────────────────────────────────────── */}
       {isBulkActive && (
         <div className="flex items-center gap-3 mb-4 px-4 py-3 rounded-lg flex-wrap"
-          style={{ backgroundColor: '#dff0f4', border: '1px solid #0097a733' }}>
+          style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}>
           <span className="text-sm font-medium" style={{ color: 'var(--accent)' }}>
             Adding to {bulkTarget === 'collection' ? 'Collection' : bulkTarget === 'deck' ? 'Deck' : 'Wishlist'}
           </span>
@@ -704,7 +704,7 @@ export default function CardsPage() {
               {bulkSaving ? 'Saving…' : `Save ${bulkCount} Card${bulkCount > 1 ? 's' : ''}`}
             </button>
           )}
-          {bulkMsg && <span className="text-sm" style={{ color: '#a5d6a7' }}>{bulkMsg}</span>}
+          {bulkMsg && <span className="text-sm" style={{ color: 'var(--accent)' }}>{bulkMsg}</span>}
           <button onClick={() => { setBulkTarget(null); setBulkQtys({}); setBulkMsg('') }}
             className="ml-auto text-xs hover:opacity-80" style={{ color: 'var(--text-muted)' }}>
             Cancel
@@ -817,14 +817,14 @@ export default function CardsPage() {
         <div className="flex items-center justify-center gap-2 mt-8">
           <button onClick={() => setParam({ page: Math.max(1, page - 1) })} disabled={safePage === 1}
             className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: safePage === 1 ? '#9e836a' : 'var(--text-primary)', cursor: safePage === 1 ? 'not-allowed' : 'pointer' }}>
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: safePage === 1 ? 'var(--text-muted)' : 'var(--text-primary)', cursor: safePage === 1 ? 'not-allowed' : 'pointer' }}>
             ‹ Prev
           </button>
           {Array.from({ length: totalPages }, (_, i) => i + 1)
             .filter(p => p === 1 || p === totalPages || Math.abs(p - safePage) <= 2)
             .reduce((acc, p, i, arr) => { if (i > 0 && p - arr[i-1] > 1) acc.push('…'); acc.push(p); return acc }, [])
             .map((p, i) => p === '…'
-              ? <span key={`e-${i}`} className="text-sm px-1" style={{ color: '#9e836a' }}>…</span>
+              ? <span key={`e-${i}`} className="text-sm px-1" style={{ color: 'var(--text-muted)' }}>…</span>
               : <button key={p} onClick={() => setParam({ page: p })} className="text-sm w-8 h-8 rounded"
                   style={{ backgroundColor: p === safePage ? 'var(--accent)' : 'var(--bg-surface)', border: '1px solid var(--border)', color: p === safePage ? 'var(--text-panel)' : 'var(--text-primary)', fontWeight: p === safePage ? '600' : '400' }}>
                   {p}
@@ -832,7 +832,7 @@ export default function CardsPage() {
             )}
           <button onClick={() => setParam({ page: Math.min(totalPages, page + 1) })} disabled={safePage === totalPages}
             className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: safePage === totalPages ? '#9e836a' : 'var(--text-primary)', cursor: safePage === totalPages ? 'not-allowed' : 'pointer' }}>
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: safePage === totalPages ? 'var(--text-muted)' : 'var(--text-primary)', cursor: safePage === totalPages ? 'not-allowed' : 'pointer' }}>
             Next ›
           </button>
         </div>

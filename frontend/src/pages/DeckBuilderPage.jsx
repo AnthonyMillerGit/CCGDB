@@ -8,7 +8,7 @@ import { API_URL } from '../config'
 function DeckCardRow({ card, onIncrease, onDecrease, onMouseEnter, onMouseLeave, onSetThumbnail, isThumbnail }) {
   return (
     <div className="group flex items-center gap-2 px-3 py-1.5"
-      style={{ borderBottom: '1px solid #f5f0e8' }}
+      style={{ borderBottom: '1px solid var(--border)' }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}>
       {card.image_url
@@ -313,8 +313,8 @@ export default function DeckBuilderPage() {
                   onClick={() => { setFormatInput(deck.format || ''); setEditingFormat(true) }}
                   className="text-xs hover:opacity-80 transition-opacity"
                   style={deck.format
-                    ? { backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)', padding: '2px 8px', borderRadius: '4px', border: '1px solid #9e836a' }
-                    : { color: '#9e836a' }
+                    ? { backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border)' }
+                    : { color: 'var(--text-muted)' }
                   }
                 >
                   {deck.format || '+ format'}

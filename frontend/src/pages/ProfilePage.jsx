@@ -42,7 +42,7 @@ function ImportButton({ onImport, label = 'Import', importing = false }) {
         onClick={handleClick}
         disabled={importing}
         className="text-xs px-3 py-1.5 rounded flex items-center gap-1"
-        style={{ backgroundColor: 'var(--bg-chip)', color: importing ? 'var(--text-muted)' : 'var(--accent)', border: '1px solid #9e836a', cursor: importing ? 'not-allowed' : 'pointer' }}
+        style={{ backgroundColor: 'var(--bg-chip)', color: importing ? 'var(--text-muted)' : 'var(--accent)', border: '1px solid var(--border)', cursor: importing ? 'not-allowed' : 'pointer' }}
       >
         {importing ? 'Importing…' : label}
       </button>
@@ -407,7 +407,7 @@ export default function ProfilePage() {
                 <input
                   autoFocus
                   className="text-lg font-bold rounded px-2 py-0.5 outline-none"
-                  style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)', border: '1px solid #9e836a', maxWidth: '200px' }}
+                  style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)', border: '1px solid var(--border)', maxWidth: '200px' }}
                   value={displayNameInput}
                   onChange={e => setDisplayNameInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') saveDisplayName(); if (e.key === 'Escape') setEditingDisplayName(false) }}
@@ -453,7 +453,7 @@ export default function ProfilePage() {
         <button
           onClick={handleLogout}
           className="self-start sm:self-auto px-4 py-2 rounded text-sm font-medium"
-          style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)', border: '1px solid #9e836a' }}
+          style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
         >
           Sign Out
         </button>

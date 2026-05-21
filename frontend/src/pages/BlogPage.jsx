@@ -65,7 +65,7 @@ function PostCard({ post }) {
             {post.excerpt}
           </p>
         )}
-        <div style={{ color: '#9e836a', fontSize: '0.75rem', display: 'flex', gap: 6, alignItems: 'center' }}>
+        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', display: 'flex', gap: 6, alignItems: 'center' }}>
           <span>{post.author_name}</span>
           <span style={{ opacity: 0.5 }}>·</span>
           <span>{new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>

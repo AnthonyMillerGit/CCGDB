@@ -379,7 +379,7 @@ export default function PostEditorPage() {
           {isEdit && publishedAt && new Date(publishedAt) <= new Date() && (
             <button type="button" onClick={handleUnpublish} disabled={saving}
               className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
-              style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent-maroon)', border: '1px solid #9e836a' }}>
+              style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent-maroon)', border: '1px solid var(--border)' }}>
               Unpublish
             </button>
           )}

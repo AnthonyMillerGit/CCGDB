@@ -605,9 +605,9 @@ export default function CollectionGamePage() {
       {/* Edit mode banner */}
       {editMode && (
         <div className="flex items-center justify-between gap-3 mb-4 px-4 py-2.5 rounded-lg"
-          style={{ backgroundColor: '#3d2600', border: '1px solid #b86a0066' }}>
+          style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--accent-maroon)' }}>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold" style={{ color: '#f59e0b' }}>Edit Mode</span>
+            <span className="text-xs font-semibold" style={{ color: 'var(--accent-maroon)' }}>Edit Mode</span>
             <span className="text-xs" style={{ color: 'var(--text-muted)' }}>— change finish and condition inline. Saves instantly.</span>
           </div>
           <button onClick={() => setEditMode(false)} className="text-xs hover:opacity-80" style={{ color: 'var(--text-muted)' }}>✕ Done</button>
@@ -722,7 +722,7 @@ export default function CollectionGamePage() {
             <button
               onClick={() => toggleSet(setName)}
               className="w-full flex items-center gap-3 px-4 py-2 rounded-lg mb-3 mt-1 text-left"
-              style={{ backgroundColor: '#252a3b', border: '1px solid var(--border)' }}
+              style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)' }}
             >
               <span className="text-xs" style={{ color: 'var(--text-muted)', minWidth: '0.75rem' }}>
                 {collapsed ? '▶' : '▼'}
@@ -763,7 +763,7 @@ export default function CollectionGamePage() {
       {undoCard && (
         <div
           className="fixed bottom-6 left-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl"
-          style={{ transform: 'translateX(-50%)', backgroundColor: 'var(--bg-surface)', border: '1px solid #9e836a', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}
+          style={{ transform: 'translateX(-50%)', backgroundColor: 'var(--bg-surface)', border: '1px solid var(--text-muted)', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}
         >
           <span className="text-sm">Removed <strong>{undoCard.card_name}</strong></span>
           <button
@@ -783,7 +783,7 @@ export default function CollectionGamePage() {
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={safePage === 1}
             className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: safePage === 1 ? '#9e836a' : 'var(--text-primary)', cursor: safePage === 1 ? 'not-allowed' : 'pointer' }}
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: safePage === 1 ? 'var(--text-muted)' : 'var(--text-primary)', cursor: safePage === 1 ? 'not-allowed' : 'pointer' }}
           >
             ‹ Prev
           </button>
@@ -797,7 +797,7 @@ export default function CollectionGamePage() {
             }, [])
             .map((p, i) =>
               p === '…' ? (
-                <span key={`ellipsis-${i}`} className="text-sm px-1" style={{ color: '#9e836a' }}>…</span>
+                <span key={`ellipsis-${i}`} className="text-sm px-1" style={{ color: 'var(--text-muted)' }}>…</span>
               ) : (
                 <button
                   key={p}
@@ -820,7 +820,7 @@ export default function CollectionGamePage() {
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={safePage === totalPages}
             className="text-sm px-3 py-1.5 rounded"
-            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: safePage === totalPages ? '#9e836a' : 'var(--text-primary)', cursor: safePage === totalPages ? 'not-allowed' : 'pointer' }}
+            style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: safePage === totalPages ? 'var(--text-muted)' : 'var(--text-primary)', cursor: safePage === totalPages ? 'not-allowed' : 'pointer' }}
           >
             Next ›
           </button>

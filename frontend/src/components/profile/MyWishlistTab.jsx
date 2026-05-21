@@ -41,7 +41,7 @@ export default function MyWishlistTab({ authFetch }) {
   if (items.length === 0) return (
     <div className="text-center py-16">
       <p className="text-lg mb-2" style={{ color: 'var(--text-muted)' }}>Your wishlist is empty.</p>
-      <p className="text-sm" style={{ color: '#9e836a' }}>Add cards to your wishlist from any card detail page.</p>
+      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Add cards to your wishlist from any card detail page.</p>
     </div>
   )
 
@@ -64,7 +64,7 @@ export default function MyWishlistTab({ authFetch }) {
             onConfirm: handleClearAll,
           })}
           className="text-xs px-3 py-1.5 rounded"
-          style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent-maroon)', border: '1px solid #9e836a' }}
+          style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent-maroon)', border: '1px solid var(--border)' }}
         >
           Clear Wishlist
         </button>

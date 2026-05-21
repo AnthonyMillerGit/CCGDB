@@ -125,48 +125,86 @@ function ThemeToggle() {
   )
 }
 
+function MobileNav({ open, onClose }) {
+  const navigate = useNavigate()
+  if (!open) return null
+  function go(path) { onClose(); navigate(path) }
+  return (
+    <>
+      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <div
+        className="fixed top-0 left-0 bottom-0 z-50 flex flex-col pt-16 pb-8 px-6 gap-6 w-64 shadow-2xl"
+        style={{ backgroundColor: 'var(--bg-header)', borderRight: '1px solid var(--border)' }}
+      >
+        <button onClick={() => go('/games')} className="text-left text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Games</button>
+        <button onClick={() => go('/blog')} className="text-left text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Blog</button>
+        <button
+          onClick={() => { onClose(); goToRandomCard(navigate) }}
+          className="text-left text-lg font-semibold"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          🎲 Random Card
+        </button>
+      </div>
+    </>
+  )
+}
+
 function Header() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   return (
-    <header
-      className="px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-6"
-      style={{ backgroundColor: 'var(--bg-header)', borderBottom: '3px solid var(--accent)' }}
-    >
-      <h1
-        className="text-xl sm:text-2xl font-bold cursor-pointer flex-shrink-0 tracking-tight"
-        style={{ color: 'var(--accent-maroon)' }}
-        onClick={() => navigate('/')}
+    <>
+      <MobileNav open={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
+      <header
+        className="px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-6"
+        style={{ backgroundColor: 'var(--bg-header)', borderBottom: '3px solid var(--accent)' }}
       >
-        CCGVault
-      </h1>
-      <nav className="hidden md:flex items-center gap-6">
-        <NavLink to="/games">Games</NavLink>
-        <NavLink to="/blog">Blog</NavLink>
         <button
-          onClick={() => goToRandomCard(navigate)}
-          className="text-sm font-medium transition-colors"
-          style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          className="md:hidden flex flex-col gap-1.5 p-1 flex-shrink-0"
+          onClick={() => setMobileNavOpen(o => !o)}
+          aria-label="Open navigation"
         >
-          🎲 Random
+          <span className="block w-5 h-0.5" style={{ backgroundColor: 'var(--text-muted)' }} />
+          <span className="block w-5 h-0.5" style={{ backgroundColor: 'var(--text-muted)' }} />
+          <span className="block w-5 h-0.5" style={{ backgroundColor: 'var(--text-muted)' }} />
         </button>
-      </nav>
-      <div className="flex items-center gap-2 sm:gap-4 ml-auto">
-        <SearchBar />
-        <ThemeToggle />
-        {user ? (
-          <UserMenu user={user} />
-        ) : (
-          <Link
-            to="/login"
-            className="text-sm font-medium px-3 py-1.5 rounded"
-            style={{ backgroundColor: 'var(--accent-maroon)', color: '#ffffff' }}
+        <h1
+          className="text-xl sm:text-2xl font-bold cursor-pointer flex-shrink-0 tracking-tight"
+          style={{ color: 'var(--accent-maroon)' }}
+          onClick={() => navigate('/')}
+        >
+          CCGVault
+        </h1>
+        <nav className="hidden md:flex items-center gap-6">
+          <NavLink to="/games">Games</NavLink>
+          <NavLink to="/blog">Blog</NavLink>
+          <button
+            onClick={() => goToRandomCard(navigate)}
+            className="text-sm font-medium transition-colors"
+            style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
-            Login
-          </Link>
-        )}
-      </div>
-    </header>
+            🎲 Random
+          </button>
+        </nav>
+        <div className="flex items-center gap-2 sm:gap-4 ml-auto">
+          <SearchBar />
+          <ThemeToggle />
+          {user ? (
+            <UserMenu user={user} />
+          ) : (
+            <Link
+              to="/login"
+              className="text-sm font-medium px-3 py-1.5 rounded flex-shrink-0"
+              style={{ backgroundColor: 'var(--accent-maroon)', color: '#ffffff' }}
+            >
+              Login
+            </Link>
+          )}
+        </div>
+      </header>
+    </>
   )
 }
 

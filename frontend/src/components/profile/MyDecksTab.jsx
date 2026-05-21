@@ -148,7 +148,7 @@ export default function MyDecksTab({ authFetch }) {
             <button
               onClick={openImportForm}
               className="text-xs px-3 py-1.5 rounded"
-              style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid #9e836a' }}
+              style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid var(--border)' }}
             >
               Import Deck
             </button>
@@ -238,7 +238,7 @@ export default function MyDecksTab({ authFetch }) {
               type="button"
               onClick={() => importFileRef.current?.click()}
               className="px-3 py-1.5 rounded text-sm flex-shrink-0"
-              style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid #9e836a' }}
+              style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid var(--border)' }}
             >
               Choose File
             </button>
@@ -278,7 +278,7 @@ export default function MyDecksTab({ authFetch }) {
             <div className="shrink-0 rounded overflow-hidden" style={{ width: '44px', height: '62px', backgroundColor: 'var(--bg-chip)' }}>
               {deck.thumbnail_url
                 ? <img src={deck.thumbnail_url} alt="" className="w-full h-full object-cover" />
-                : <div className="w-full h-full flex items-center justify-center" style={{ color: '#9e836a', fontSize: '1.4rem' }}>🃏</div>
+                : <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--text-muted)', fontSize: '1.4rem' }}>🃏</div>
               }
             </div>
             <div className="flex-1 min-w-0">
@@ -290,7 +290,7 @@ export default function MyDecksTab({ authFetch }) {
                 </span>
                 {deck.format && (
                   <span className="text-xs px-1.5 py-0.5 rounded font-medium"
-                    style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)', border: '1px solid #9e836a' }}>
+                    style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
                     {deck.format}
                   </span>
                 )}
@@ -303,14 +303,14 @@ export default function MyDecksTab({ authFetch }) {
               <button
                 onClick={e => { e.stopPropagation(); handleCopy(deck) }}
                 className="text-xs px-3 py-1.5 rounded"
-                style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid #9e836a' }}
+                style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid var(--border)' }}
               >
                 Copy
               </button>
               <button
                 onClick={e => { e.stopPropagation(); handleDelete(deck) }}
                 className="text-xs px-3 py-1.5 rounded"
-                style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent-maroon)', border: '1px solid #9e836a' }}
+                style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent-maroon)', border: '1px solid var(--border)' }}
               >
                 Delete
               </button>

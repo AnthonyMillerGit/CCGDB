@@ -29,7 +29,7 @@ export default function ExportMenu({ onExport }) {
       <button
         onClick={e => { e.stopPropagation(); setOpen(o => !o) }}
         className="text-xs px-3 py-1.5 rounded flex items-center gap-1"
-        style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid #9e836a' }}
+        style={{ backgroundColor: 'var(--bg-chip)', color: 'var(--accent)', border: '1px solid var(--border)' }}
       >
         Export ▾
       </button>
