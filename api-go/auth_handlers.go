@@ -7,9 +7,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 )
+
+var hexColorRe = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
 
 func secureToken() string {
 	b := make([]byte, 32)
@@ -84,11 +87,15 @@ func (a *App) register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go a.sendEmail(body.Email,
-		fmt.Sprintf("Verify your %s email", a.cfg.AppName),
-		fmt.Sprintf("Hi %s,\n\nPlease verify your email address by clicking the link below:\n\n%s/verify-email?token=%s\n\nThis link expires in 24 hours.\n\nThanks,\n%s",
-			body.Username, a.cfg.AppURL, token, a.cfg.AppName),
-	)
+	go func() {
+		if err := a.sendEmail(body.Email,
+			fmt.Sprintf("Verify your %s email", a.cfg.AppName),
+			fmt.Sprintf("Hi %s,\n\nPlease verify your email address by clicking the link below:\n\n%s/verify-email?token=%s\n\nThis link expires in 24 hours.\n\nThanks,\n%s",
+				body.Username, a.cfg.AppURL, token, a.cfg.AppName),
+		); err != nil {
+			log.Printf("sendEmail: verification email to %s failed: %v", body.Email, err)
+		}
+	}()
 
 	jsonResponse(w, AuthResponse{Token: authToken, User: user}, http.StatusCreated)
 }
@@ -97,6 +104,10 @@ func (a *App) login(w http.ResponseWriter, r *http.Request) {
 	var body LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		jsonError(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	if len(body.Email) == 0 || len(body.Email) > 255 || len(body.Password) == 0 || len(body.Password) > 128 {
+		jsonError(w, "Invalid email or password", http.StatusUnauthorized)
 		return
 	}
 
@@ -187,11 +198,15 @@ func (a *App) resendVerification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go a.sendEmail(user.Email,
-		fmt.Sprintf("Verify your %s email", a.cfg.AppName),
-		fmt.Sprintf("Hi %s,\n\nPlease verify your email address:\n\n%s/verify-email?token=%s\n\nThis link expires in 24 hours.\n\nThanks,\n%s",
-			user.Username, a.cfg.AppURL, token, a.cfg.AppName),
-	)
+	go func() {
+		if err := a.sendEmail(user.Email,
+			fmt.Sprintf("Verify your %s email", a.cfg.AppName),
+			fmt.Sprintf("Hi %s,\n\nPlease verify your email address:\n\n%s/verify-email?token=%s\n\nThis link expires in 24 hours.\n\nThanks,\n%s",
+				user.Username, a.cfg.AppURL, token, a.cfg.AppName),
+		); err != nil {
+			log.Printf("sendEmail: resend verification to %s failed: %v", user.Email, err)
+		}
+	}()
 
 	jsonResponse(w, map[string]string{"message": "Verification email sent"}, http.StatusOK)
 }
@@ -226,11 +241,15 @@ func (a *App) forgotPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go a.sendEmail(body.Email,
-		fmt.Sprintf("Reset your %s password", a.cfg.AppName),
-		fmt.Sprintf("Hi %s,\n\nClick the link below to reset your password:\n\n%s/reset-password?token=%s\n\nThis link expires in 1 hour. If you didn't request this, ignore this email.\n\nThanks,\n%s",
-			username, a.cfg.AppURL, token, a.cfg.AppName),
-	)
+	go func() {
+		if err := a.sendEmail(body.Email,
+			fmt.Sprintf("Reset your %s password", a.cfg.AppName),
+			fmt.Sprintf("Hi %s,\n\nClick the link below to reset your password:\n\n%s/reset-password?token=%s\n\nThis link expires in 1 hour. If you didn't request this, ignore this email.\n\nThanks,\n%s",
+				username, a.cfg.AppURL, token, a.cfg.AppName),
+		); err != nil {
+			log.Printf("sendEmail: password reset to %s failed: %v", body.Email, err)
+		}
+	}()
 
 	jsonResponse(w, map[string]string{"message": safeMsg}, http.StatusOK)
 }
@@ -301,7 +320,7 @@ func (a *App) updateProfile(w http.ResponseWriter, r *http.Request) {
 
 	if body.AvatarColor != nil {
 		color := strings.TrimSpace(*body.AvatarColor)
-		if len(color) != 7 || color[0] != '#' {
+		if !hexColorRe.MatchString(color) {
 			jsonError(w, "Invalid color format", http.StatusBadRequest)
 			return
 		}

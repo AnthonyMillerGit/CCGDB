@@ -292,6 +292,9 @@ func (a *App) createPost(w http.ResponseWriter, r *http.Request) {
 	} else {
 		slug = slugify(slug)
 	}
+	if len(slug) > 200 {
+		slug = slug[:200]
+	}
 
 	if body.Body == nil {
 		body.Body = json.RawMessage(`{}`)
@@ -348,8 +351,11 @@ func (a *App) updatePost(w http.ResponseWriter, r *http.Request) {
 			strings.TrimSpace(*body.Title), postID)
 	}
 	if body.Slug != nil {
-		a.db.Exec(r.Context(), "UPDATE posts SET slug = $1, updated_at = NOW() WHERE id = $2",
-			slugify(*body.Slug), postID)
+		s := slugify(*body.Slug)
+		if len(s) > 200 {
+			s = s[:200]
+		}
+		a.db.Exec(r.Context(), "UPDATE posts SET slug = $1, updated_at = NOW() WHERE id = $2", s, postID)
 	}
 	if body.Excerpt != nil {
 		a.db.Exec(r.Context(), "UPDATE posts SET excerpt = $1, updated_at = NOW() WHERE id = $2",

@@ -84,9 +84,12 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 			jsonError(w, "Invalid JSON format", http.StatusBadRequest)
 			return
 		}
-		// Normalise condition on JSON rows too
+		// Normalise condition and clamp quantity on JSON rows
 		for i := range rows {
 			rows[i].Condition = normCondition(rows[i].Condition)
+			if rows[i].Quantity <= 0 || rows[i].Quantity > 10000 {
+				rows[i].Quantity = 1
+			}
 		}
 	} else {
 		// Default: treat as CSV
@@ -126,7 +129,7 @@ func (a *App) importCollection(w http.ResponseWriter, r *http.Request) {
 			// Quantity: our format uses "quantity", Moxfield uses "count"
 			qtyStr := colFirst(record, "quantity", "count", "qty")
 			qty := 1
-			if q, err := strconv.Atoi(qtyStr); err == nil && q > 0 {
+			if q, err := strconv.Atoi(qtyStr); err == nil && q > 0 && q <= 10000 {
 				qty = q
 			}
 			// Finish: our format uses "finish"; legacy/Moxfield exports use "foil"/"is_foil"
@@ -300,7 +303,7 @@ func (a *App) importDeck(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			qty, err := strconv.Atoi(parts[0])
-			if err != nil || qty <= 0 {
+			if err != nil || qty <= 0 || qty > 10000 {
 				continue
 			}
 			rows = append(rows, importRow{

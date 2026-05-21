@@ -32,7 +32,7 @@ func (a *App) getSetCards(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rows, err := a.db.Query(r.Context(), `
-		SELECT c.id, c.name, c.card_type, c.rules_text, c.attributes,
+		SELECT c.id, c.name, COALESCE(c.card_type, ''), c.rules_text, c.attributes,
 		       p.id AS printing_id, p.collector_number, p.rarity, p.image_url, p.artist
 		FROM cards c
 		JOIN printings p ON p.card_id = c.id
@@ -65,11 +65,15 @@ func (a *App) searchCards(w http.ResponseWriter, r *http.Request) {
 		jsonError(w, "name query param required", http.StatusBadRequest)
 		return
 	}
+	if len(name) > 255 {
+		jsonError(w, "name query param too long", http.StatusBadRequest)
+		return
+	}
 	game := r.URL.Query().Get("game")
 
 	query := `
 		SELECT DISTINCT ON (c.id, s.id)
-		    c.id, c.name, c.card_type, c.rules_text,
+		    c.id, c.name, COALESCE(c.card_type, ''), c.rules_text,
 		    g.slug AS game, g.name AS game_name,
 		    p.image_url, p.id AS printing_id, s.name AS set_name
 		FROM cards c
@@ -115,7 +119,7 @@ func (a *App) getCard(w http.ResponseWriter, r *http.Request) {
 
 	var card CardDetail
 	err = a.db.QueryRow(r.Context(), `
-		SELECT c.id, c.name, c.card_type, c.rules_text, c.attributes,
+		SELECT c.id, c.name, COALESCE(c.card_type, ''), c.rules_text, c.attributes,
 		       g.id AS game_id, g.name AS game, g.slug AS game_slug
 		FROM cards c
 		JOIN games g ON g.id = c.game_id
@@ -170,7 +174,7 @@ func (a *App) getPrinting(w http.ResponseWriter, r *http.Request) {
 		SELECT p.id, p.collector_number, p.rarity, p.image_url,
 		       p.back_image_url, p.artist, p.flavor_text,
 		       s.name AS set_name, s.code AS set_code, s.release_date::text,
-		       c.id AS card_id, c.name AS card_name, c.card_type,
+		       c.id AS card_id, c.name AS card_name, COALESCE(c.card_type, ''),
 		       c.rules_text, c.attributes,
 		       g.name AS game, g.slug AS game_slug
 		FROM printings p
@@ -220,7 +224,7 @@ func (a *App) randomCards(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := a.db.Query(r.Context(), `
 		SELECT DISTINCT ON (g.slug)
-		    c.id, c.name, c.card_type, g.slug AS game, g.name AS game_name,
+		    c.id, c.name, COALESCE(c.card_type, ''), g.slug AS game, g.name AS game_name,
 		    p.image_url
 		FROM printings p
 		JOIN cards c ON c.id = p.card_id
@@ -268,7 +272,7 @@ func (a *App) searchSuggestions(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := a.db.Query(r.Context(), `
 		SELECT DISTINCT ON (c.name, g.slug)
-		    c.id, c.name, c.card_type, g.name AS game, g.slug AS game_slug,
+		    c.id, c.name, COALESCE(c.card_type, ''), g.name AS game, g.slug AS game_slug,
 		    p.image_url
 		FROM cards c
 		JOIN games g ON g.id = c.game_id

@@ -63,9 +63,9 @@ export function AuthProvider({ children }) {
     saveSession(data.token, data.user)
   }, [])
 
-  const authFetch = useCallback((url, options = {}) => {
+  const authFetch = useCallback(async (url, options = {}) => {
     const isFormData = options.body instanceof FormData
-    return fetch(url, {
+    const res = await fetch(url, {
       ...options,
       headers: {
         ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
@@ -73,6 +73,13 @@ export function AuthProvider({ children }) {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     })
+    if (res.status === 401) {
+      localStorage.removeItem('ccgdb_token')
+      localStorage.removeItem('ccgdb_user')
+      setToken(null)
+      setUser(null)
+    }
+    return res
   }, [token])
 
   return (

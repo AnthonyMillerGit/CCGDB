@@ -19,6 +19,8 @@ function StatChip({ label, value, color = '#1c1008' }) {
   )
 }
 
+import DOMPurify from 'dompurify'
+
 function TextBlock({ text, isHtml = false }) {
   if (!text) return null
   return (
@@ -26,7 +28,7 @@ function TextBlock({ text, isHtml = false }) {
       {isHtml
         ? <div className="leading-relaxed text-sm card-rules-html"
             style={{ color: 'var(--text-panel)' }}
-            dangerouslySetInnerHTML={{ __html: text }} />
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }} />
         : <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: 'var(--text-panel)' }}>{text}</p>
       }
     </div>

@@ -85,11 +85,17 @@ func (a *App) createDeck(w http.ResponseWriter, r *http.Request) {
 		GameID      int    `json:"game_id"`
 	}
 	var result Result
+	name := strings.TrimSpace(body.Name)
+	if len(name) == 0 || len(name) > 200 {
+		jsonError(w, "Deck name must be 1–200 characters", http.StatusBadRequest)
+		return
+	}
+
 	err := a.db.QueryRow(r.Context(), `
 		INSERT INTO decks (user_id, game_id, name, description, format)
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, name, description, game_id
-	`, user.ID, body.GameID, strings.TrimSpace(body.Name), body.Description, body.Format,
+	`, user.ID, body.GameID, name, body.Description, body.Format,
 	).Scan(&result.ID, &result.Name, &result.Description, &result.GameID)
 	if err != nil {
 		jsonError(w, "Database error", http.StatusInternalServerError)
@@ -118,7 +124,7 @@ func (a *App) getDeck(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := a.db.Query(r.Context(), `
 		SELECT dc.id, dc.card_id, dc.quantity,
-		       c.name AS card_name, c.card_type, c.attributes,
+		       c.name AS card_name, COALESCE(c.card_type, ''), c.attributes,
 		       g.name AS game_name, g.slug AS game_slug,
 		       p.image_url
 		FROM deck_cards dc

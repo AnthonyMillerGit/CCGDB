@@ -72,13 +72,10 @@ func (rl *rateLimiter) middleware(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func realIP(r *http.Request) string {
-	if fwd := r.Header.Get("X-Forwarded-For"); fwd != "" {
-		return strings.SplitN(fwd, ",", 2)[0]
-	}
-	if rip := r.Header.Get("X-Real-IP"); rip != "" {
-		return rip
-	}
-	// Strip port from RemoteAddr
+	// Use RemoteAddr only — X-Forwarded-For and X-Real-IP can be spoofed by
+	// clients and must not be trusted for rate limiting without a verified
+	// trusted-proxy config. When deploying behind a reverse proxy, configure
+	// the proxy to use PROXY protocol or handle rate limiting at the proxy layer.
 	addr := r.RemoteAddr
 	if i := strings.LastIndex(addr, ":"); i != -1 {
 		return addr[:i]

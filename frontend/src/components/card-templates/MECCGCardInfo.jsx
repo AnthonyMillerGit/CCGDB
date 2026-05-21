@@ -1,3 +1,5 @@
+import DOMPurify from 'dompurify'
+
 const ALIGNMENT_STYLE = {
   Hero:    { color: 'var(--accent)', backgroundColor: '#1a1a3a', borderColor: '#0097a744' },
   Minion:  { color: '#8b1a3a', backgroundColor: '#3a1a1a', borderColor: '#8b1a3a44' },
@@ -105,7 +107,7 @@ export default function MECCGCardInfo({ card }) {
       {card.rules_text && (
         <div className="rounded-xl p-5 mb-5 border card-rules-html"
           style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border)', color: 'var(--text-primary)', lineHeight: '1.6' }}>
-          <div dangerouslySetInnerHTML={{ __html: card.rules_text }} />
+          <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(card.rules_text) }} />
         </div>
       )}
     </div>

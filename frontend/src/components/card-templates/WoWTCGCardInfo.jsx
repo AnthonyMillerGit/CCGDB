@@ -1,3 +1,5 @@
+import DOMPurify from 'dompurify'
+
 // ── Faction colors ────────────────────────────────────────────────────────────
 const FACTION_STYLES = {
   Alliance: { text: '#90caf9', bg: '#0d1b2e', border: '#1565c0' },
@@ -193,7 +195,7 @@ export default function WoWTCGCardInfo({ card }) {
           {hasHTML ? (
             <div className="card-rules-html text-sm leading-relaxed"
               style={{ color: 'var(--text-primary)' }}
-              dangerouslySetInnerHTML={{ __html: card.rules_text }} />
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(card.rules_text) }} />
           ) : (
             <p className="whitespace-pre-line leading-relaxed text-sm" style={{ color: 'var(--text-primary)' }}>
               {card.rules_text}
