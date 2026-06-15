@@ -1,0 +1,3 @@
+[submodule "ingestion"]
+	path = ingestion
+	url = https://github.com/AnthonyMillerGit/ingestCCG.git
