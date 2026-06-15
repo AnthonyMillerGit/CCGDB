@@ -16,7 +16,7 @@ func (a *App) imgURL(url *string) *string {
 	if url == nil || *url == "" || strings.HasPrefix(*url, "http") {
 		return url
 	}
-	s := a.cfg.AssetBaseURL + "/" + *url
+	s := a.cfg.AssetBaseURL + "/" + strings.TrimLeft(*url, "/")
 	return &s
 }
 
