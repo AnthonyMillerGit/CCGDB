@@ -34,6 +34,7 @@ func (a *App) getGames(w http.ResponseWriter, r *http.Request) {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}
+		g.CardBackImage = a.imgURL(g.CardBackImage)
 		games = append(games, g)
 	}
 	jsonResponse(w, games, http.StatusOK)
@@ -66,6 +67,7 @@ func (a *App) getRecentSets(w http.ResponseWriter, r *http.Request) {
 			&s.GameName, &s.GameSlug, &s.CardBackImage); err != nil {
 			continue
 		}
+		s.CardBackImage = a.imgURL(s.CardBackImage)
 		sets = append(sets, s)
 	}
 	jsonResponse(w, sets, http.StatusOK)
@@ -101,6 +103,7 @@ func (a *App) getGame(w http.ResponseWriter, r *http.Request) {
 		jsonError(w, "Game not found", http.StatusNotFound)
 		return
 	}
+	g.CardBackImage = a.imgURL(g.CardBackImage)
 	jsonResponse(w, g, http.StatusOK)
 }
 

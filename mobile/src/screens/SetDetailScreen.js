@@ -16,35 +16,46 @@ const NUM_COLUMNS = 3
 const CARD_MARGIN = 8
 const screenWidth = Dimensions.get('window').width
 const cardWidth = (screenWidth - CARD_MARGIN * (NUM_COLUMNS + 1)) / NUM_COLUMNS
-const cardHeight = cardWidth * 1.4 // standard card aspect ratio
+const cardHeight = cardWidth * 1.4
 
-export default function GamesScreen({ navigation }) {
-  const [games, setGames] = useState([])
+const RARITY_COLOR = {
+  common: '#8892a4',
+  uncommon: '#a8c4d4',
+  rare: '#d4af37',
+  mythic: '#e05c10',
+  special: '#9b59b6',
+  bonus: '#9b59b6',
+}
+
+export default function SetDetailScreen({ route, navigation }) {
+  const { setId, setName, gameSlug, gameName } = route.params
+  const [cards, setCards] = useState([])
   const [filtered, setFiltered] = useState([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`${API_URL}/api/games`)
+    navigation.setOptions({ title: setName })
+    fetch(`${API_URL}/api/sets/${setId}/cards`)
       .then(r => r.json())
       .then(data => {
         const list = Array.isArray(data) ? data : []
-        setGames(list)
+        setCards(list)
         setFiltered(list)
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [])
+  }, [setId])
 
   const onSearch = useCallback((text) => {
     setSearch(text)
     if (!text.trim()) {
-      setFiltered(games)
+      setFiltered(cards)
     } else {
       const q = text.toLowerCase()
-      setFiltered(games.filter(g => g.name.toLowerCase().includes(q)))
+      setFiltered(cards.filter(c => c.name.toLowerCase().includes(q)))
     }
-  }, [games])
+  }, [cards])
 
   if (loading) {
     return (
@@ -58,30 +69,34 @@ export default function GamesScreen({ navigation }) {
     <View style={styles.container}>
       <TextInput
         style={styles.searchInput}
-        placeholder="Search games..."
+        placeholder="Search cards..."
         placeholderTextColor="#8892a4"
         value={search}
         onChangeText={onSearch}
       />
       <Text style={styles.countLabel}>
-        {filtered.length} game{filtered.length !== 1 ? 's' : ''}
+        {filtered.length} card{filtered.length !== 1 ? 's' : ''}
         {search ? ` matching "${search}"` : ''}
       </Text>
       <FlatList
         data={filtered}
-        keyExtractor={item => String(item.id)}
+        keyExtractor={item => String(item.printing_id)}
         numColumns={NUM_COLUMNS}
         contentContainerStyle={styles.grid}
         columnWrapperStyle={styles.row}
         renderItem={({ item }) => (
-          <GameCard
-            game={item}
-            onPress={() => navigation.navigate('GameDetail', { gameSlug: item.slug, gameName: item.name })}
+          <CardTile
+            card={item}
+            onPress={() => navigation.navigate('CardDetail', {
+              cardId: item.id,
+              printingId: item.printing_id,
+              cardName: item.name,
+            })}
           />
         )}
         ListEmptyComponent={
           <View style={styles.centered}>
-            <Text style={styles.emptyText}>No games found.</Text>
+            <Text style={styles.emptyText}>No cards found.</Text>
           </View>
         }
       />
@@ -89,23 +104,30 @@ export default function GamesScreen({ navigation }) {
   )
 }
 
-function GameCard({ game, onPress }) {
-  const imageUri = game.card_back_image || null
+function CardTile({ card, onPress }) {
+  const rarityColor = RARITY_COLOR[card.rarity] || '#8892a4'
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.75}>
-      {imageUri ? (
+      {card.image_url ? (
         <Image
-          source={{ uri: imageUri }}
+          source={{ uri: card.image_url }}
           style={styles.cardImage}
           resizeMode="cover"
         />
       ) : (
         <View style={[styles.cardImage, styles.cardPlaceholder]}>
-          <Text style={styles.placeholderText}>{game.name.slice(0, 2).toUpperCase()}</Text>
+          <Text style={styles.placeholderText} numberOfLines={3}>{card.name}</Text>
         </View>
       )}
-      <Text style={styles.cardName} numberOfLines={2}>{game.name}</Text>
+      {card.collector_number && (
+        <View style={styles.numberBadge}>
+          <Text style={styles.numberText}>{card.collector_number}</Text>
+        </View>
+      )}
+      <View style={styles.rarityBar}>
+        <View style={[styles.rarityDot, { backgroundColor: rarityColor }]} />
+      </View>
     </TouchableOpacity>
   )
 }
@@ -149,6 +171,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: cardWidth,
+    position: 'relative',
   },
   cardImage: {
     width: cardWidth,
@@ -159,22 +182,34 @@ const styles = StyleSheet.create({
   cardPlaceholder: {
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 6,
   },
   placeholderText: {
     color: '#8892a4',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  cardName: {
-    color: '#EAEAEA',
     fontSize: 10,
     textAlign: 'center',
-    marginTop: 5,
-    lineHeight: 13,
   },
-  emptyText: {
-    color: '#8892a4',
-    marginTop: 60,
-    fontSize: 15,
+  numberBadge: {
+    position: 'absolute',
+    top: 5,
+    left: 5,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    borderRadius: 4,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+  },
+  numberText: {
+    color: '#EAEAEA',
+    fontSize: 9,
+    fontWeight: '600',
+  },
+  rarityBar: {
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  rarityDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
 })
