@@ -28,8 +28,8 @@ backup.sh
 # Card back images
 frontend/public/card-backs/
 
-# Ingestion/scraper scripts (private — live in separate private repo)
-ingestion/
+# Ingestion/scraper scripts live in a private repo, mounted here as a
+# git submodule (see .gitmodules → AnthonyMillerGit/ingestCCG).
 
 # Compiled Go binaries
 api-go/api-go

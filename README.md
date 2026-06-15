@@ -25,9 +25,11 @@ A multi-TCG collection and deck management platform supporting 20+ trading card 
 ```
 CCGDB/
 ├── api-go/          # Go REST API
-├── frontend/        # React web app
+├── frontend/        # React web app (Vite)
 ├── mobile/          # React Native app (Expo)
-├── db/              # PostgreSQL migration files
+├── ingestion/       # Card-data scrapers (private submodule)
+├── db/              # PostgreSQL migrations (001–023) + maintenance/
+├── scripts/         # Deploy & ops scripts
 └── docker-compose.yml
 ```
 
@@ -72,8 +74,8 @@ docker-compose up -d
 2. **Run migrations**
 
 ```bash
-psql -U your_db_user -d ccgdb -f db/001_initial.sql
-# run remaining migration files in order
+# run all numbered migrations in order
+for f in db/0*.sql; do psql -U your_db_user -d ccgdb -f "$f"; done
 ```
 
 3. **Start the API**
