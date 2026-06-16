@@ -41,6 +41,12 @@
   --accent-maroon:  #8b1a3a;
   --accent-purple:  #6b2d8f;
   --shadow:         rgba(28,16,8,0.12);
+  /* Card condition gradient (NM→DM) — deep tones for contrast on light surfaces */
+  --cond-nm:        #15803d;
+  --cond-lp:        #4d7c0f;
+  --cond-mp:        #a16207;
+  --cond-hp:        #c2410c;
+  --cond-dm:        #b91c1c;
 }
 
 [data-theme="dark"] {
@@ -59,6 +65,12 @@
   --accent-maroon:  #e07a90;
   --accent-purple:  #a67ed0;
   --shadow:         rgba(0,0,0,0.4);
+  /* Vivid set reads well against the dark background */
+  --cond-nm:        #4ade80;
+  --cond-lp:        #a3e635;
+  --cond-mp:        #facc15;
+  --cond-hp:        #fb923c;
+  --cond-dm:        #f87171;
 }
 
 html, body {

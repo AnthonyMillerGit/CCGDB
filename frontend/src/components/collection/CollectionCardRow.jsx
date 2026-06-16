@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { rarityColor } from '../../theme'
 
 export const CONDITION_LABELS = { NM: 'Near Mint', LP: 'Light Play', MP: 'Moderate Play', HP: 'Heavy Play', DM: 'Damaged' }
-export const CONDITION_COLORS = { NM: '#4ade80', LP: '#a3e635', MP: '#facc15', HP: '#fb923c', DM: '#f87171' }
+export const CONDITION_COLORS = { NM: 'var(--cond-nm)', LP: 'var(--cond-lp)', MP: 'var(--cond-mp)', HP: 'var(--cond-hp)', DM: 'var(--cond-dm)' }
 export const FINISHES = ['normal', 'foil', 'special foil']
 
 export function QuantityControl({ quantity, onIncrease, onDecrease, onSet, finish }) {
@@ -99,7 +99,7 @@ export function ListCardRow({ group, gameSlug, onIncrease, onDecrease, onSet, ed
               value={item.condition || 'NM'}
               onChange={e => onConditionChange(item, e.target.value)}
               className="text-xs px-1.5 py-1.5 rounded font-medium"
-              style={{ backgroundColor: 'var(--bg-chip)', border: `1px solid ${condColor}55`, color: condColor, outline: 'none', flex: 1 }}
+              style={{ backgroundColor: 'var(--bg-chip)', border: `1px solid color-mix(in srgb, ${condColor} 34%, transparent)`, color: condColor, outline: 'none', flex: 1 }}
             >
               {Object.entries(CONDITION_LABELS).map(([val, label]) => (
                 <option key={val} value={val}>{val} — {label}</option>

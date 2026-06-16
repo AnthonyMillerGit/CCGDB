@@ -564,7 +564,7 @@ export default function ProfilePage() {
 
       {activeTab === 'decks' && <MyDecksTab authFetch={authFetch} />}
       {activeTab === 'wishlist' && <MyWishlistTab authFetch={authFetch} />}
-      {activeTab === 'stats' && <CollectionStatsTab authFetch={authFetch} />}
+      {activeTab === 'stats' && <CollectionStatsTab authFetch={authFetch} collection={collection} />}
 
       {showAvatarPicker && (
         <CardAvatarPicker
