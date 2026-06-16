@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Upload new card images from local assets/ to Cloudflare R2.
+# Upload new card images and card-backs from local assets/ to Cloudflare R2.
 #
 # Usage:
 #   ./scripts/sync_images_r2.sh
@@ -16,7 +16,9 @@
 set -euo pipefail
 
 BUCKET="ccgvault-assets"
-LOCAL_ASSETS_DIR="$(cd "$(dirname "$0")/.." && pwd)/assets/cards"
+ASSETS_ROOT="$(cd "$(dirname "$0")/.." && pwd)/assets"
+LOCAL_ASSETS_DIR="$ASSETS_ROOT/cards"
+LOCAL_CARDBACKS_DIR="$ASSETS_ROOT/card-backs"
 
 # ── Validate credentials ───────────────────────────────────────────────────────
 if [[ -z "${R2_ACCOUNT_ID:-}" || -z "${R2_ACCESS_KEY_ID:-}" || -z "${R2_SECRET_ACCESS_KEY:-}" ]]; then
@@ -56,6 +58,23 @@ caffeinate -i \
     --size-only \
     --no-progress \
     --region auto
+
+# ── Card-back images (game thumbnails) ─────────────────────────────────────────
+# Small set, but easy to miss — these are served at assets.ccgvault.io/card-backs/
+# and a missing one shows up as a blank card back on the /games page.
+if [[ -d "$LOCAL_CARDBACKS_DIR" ]]; then
+  echo ""
+  echo "=== Syncing card-backs to R2 ==="
+  echo "Source : $LOCAL_CARDBACKS_DIR"
+  echo "Dest   : s3://$BUCKET/card-backs/"
+  echo ""
+  caffeinate -i \
+    aws s3 sync "$LOCAL_CARDBACKS_DIR" "s3://$BUCKET/card-backs/" \
+      --endpoint-url "$R2_ENDPOINT" \
+      --size-only \
+      --no-progress \
+      --region auto
+fi
 
 echo ""
 echo "Sync complete."
