@@ -326,7 +326,7 @@ export default function CollectionGamePage() {
     setSort('name_asc')
     setRarityFilter([])
     setFoilOnly(false)
-    setPageSize(100)
+    setPageSize(isTouchDevice ? 100 : Infinity)
     setAttrFilters({})
     setPage(1)
   }
@@ -679,7 +679,7 @@ export default function CollectionGamePage() {
                           value={item.condition || 'NM'}
                           onChange={e => handleConditionChange(item, e.target.value)}
                           className="text-xs px-1.5 py-1.5 rounded w-full font-medium"
-                          style={{ backgroundColor: 'var(--bg-surface)', border: `1px solid ${condColor}55`, color: condColor, outline: 'none' }}
+                          style={{ backgroundColor: 'var(--bg-surface)', border: `1px solid color-mix(in srgb, ${condColor} 34%, transparent)`, color: condColor, outline: 'none' }}
                         >
                           {Object.entries(CONDITION_LABELS).map(([val, label]) => (
                             <option key={val} value={val}>{val} — {label}</option>
