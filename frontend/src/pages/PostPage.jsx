@@ -221,11 +221,7 @@ export default function PostPage() {
   useEffect(() => {
     const el = bodyRef.current
     if (!el) return
-    const items = [...el.querySelectorAll('h2')].map((h, i) => {
-      const id = 'sec-' + i + '-' + (h.textContent || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40)
-      h.id = id
-      return { id, text: h.textContent }
-    })
+    const items = [...el.querySelectorAll('h2')].map((h, i) => ({ i, text: h.textContent }))
     setToc(items)
   }, [post])
 
@@ -347,10 +343,17 @@ export default function PostPage() {
           <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Contents</p>
           <ol className="flex flex-col gap-1" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {toc.map(item => (
-              <li key={item.id}>
+              <li key={item.i}>
                 <a
-                  href={`#${item.id}`}
-                  onClick={e => { e.preventDefault(); document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}
+                  href="#"
+                  onClick={e => {
+                    e.preventDefault()
+                    const h = bodyRef.current?.querySelectorAll('h2')[item.i]
+                    if (h) {
+                      const y = h.getBoundingClientRect().top + window.scrollY - 16
+                      window.scrollTo({ top: y, behavior: 'smooth' })
+                    }
+                  }}
                   className="text-sm hover:underline"
                   style={{ color: 'var(--accent)' }}
                 >
