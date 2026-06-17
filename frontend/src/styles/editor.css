@@ -178,3 +178,12 @@
   white-space: pre;
   line-height: 1.7;
 }
+
+/* Inline card-name mentions (auto-linked from a post's card tags) */
+.editor-content .card-mention {
+  color: var(--accent);
+  border-bottom: 1px dotted var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+.editor-content .card-mention:hover { opacity: 0.85; }

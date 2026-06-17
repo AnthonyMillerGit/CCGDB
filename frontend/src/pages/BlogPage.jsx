@@ -13,6 +13,23 @@ const POST_TYPE_LABELS = {
 
 const PAGE_SIZE = 20
 
+function Chip({ active, onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      className="text-xs px-3 py-1 rounded-full transition-colors"
+      style={{
+        backgroundColor: active ? 'var(--accent)' : 'var(--bg-surface)',
+        border: '1px solid ' + (active ? 'var(--accent)' : 'var(--border)'),
+        color: active ? '#fff' : 'var(--text-muted)',
+        cursor: 'pointer',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
 function PostCard({ post }) {
   const typeInfo = POST_TYPE_LABELS[post.post_type]
   const accentColor = typeInfo?.color || '#0097a7'
@@ -92,26 +109,41 @@ export default function BlogPage() {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
+  const [filters, setFilters] = useState({ games: [], types: [] })
+  const [game, setGame] = useState('')
+  const [type, setType] = useState('')
+
+  const qs = (offset) => {
+    const p = new URLSearchParams({ limit: String(PAGE_SIZE) })
+    if (offset) p.set('offset', String(offset))
+    if (game) p.set('game', game)
+    if (type) p.set('type', type)
+    return p.toString()
+  }
 
   useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(`${API_URL}/api/blog?limit=${PAGE_SIZE}`)
-        const data = await res.json()
+    fetch(`${API_URL}/api/blog/filters`)
+      .then(r => r.json())
+      .then(d => setFilters({ games: d.games || [], types: d.types || [] }))
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    setLoading(true)
+    fetch(`${API_URL}/api/blog?${qs(0)}`)
+      .then(r => r.json())
+      .then(data => {
         const list = Array.isArray(data) ? data : []
         setPosts(list)
         setHasMore(list.length === PAGE_SIZE)
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [])
+      })
+      .finally(() => setLoading(false))
+  }, [game, type])  // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loadMore() {
     setLoadingMore(true)
     try {
-      const res = await fetch(`${API_URL}/api/blog?limit=${PAGE_SIZE}&offset=${posts.length}`)
+      const res = await fetch(`${API_URL}/api/blog?${qs(posts.length)}`)
       const data = await res.json()
       const list = Array.isArray(data) ? data : []
       setPosts(prev => [...prev, ...list])
@@ -135,6 +167,33 @@ export default function BlogPage() {
           </Link>
         )}
       </div>
+
+      {(filters.games.length > 1 || filters.types.length > 1) && (
+        <div className="flex flex-col gap-2 mb-6">
+          {filters.games.length > 1 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs uppercase tracking-widest mr-1" style={{ color: 'var(--text-muted)' }}>Game</span>
+              <Chip active={!game} onClick={() => setGame('')}>All</Chip>
+              {filters.games.map(g => (
+                <Chip key={g.slug} active={game === g.slug} onClick={() => setGame(game === g.slug ? '' : g.slug)}>
+                  {g.name} ({g.count})
+                </Chip>
+              ))}
+            </div>
+          )}
+          {filters.types.length > 1 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs uppercase tracking-widest mr-1" style={{ color: 'var(--text-muted)' }}>Type</span>
+              <Chip active={!type} onClick={() => setType('')}>All</Chip>
+              {filters.types.map(t => (
+                <Chip key={t} active={type === t} onClick={() => setType(type === t ? '' : t)}>
+                  {POST_TYPE_LABELS[t]?.label || t}
+                </Chip>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {loading && <p style={{ color: 'var(--text-muted)' }}>Loading posts…</p>}
 

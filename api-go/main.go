@@ -94,6 +94,7 @@ func (a *App) routes() http.Handler {
 
 	// Blog — public
 	r.Get("/api/blog", a.listPosts)
+	r.Get("/api/blog/filters", a.getBlogFilters)
 	r.Get("/api/blog/{slug}", a.getPost)
 	r.Get("/api/games/{slug}/posts", a.getGamePosts)
 	r.Get("/api/cards/{cardID}/posts", a.getCardPosts)
