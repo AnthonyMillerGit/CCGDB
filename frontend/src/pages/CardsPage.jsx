@@ -816,7 +816,8 @@ export default function CardsPage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-8">
           <button onClick={() => setParam({ page: Math.max(1, page - 1) })} disabled={safePage === 1}
-            className="text-sm px-3 py-1.5 rounded"
+            aria-label="Previous page"
+            className="text-sm px-3 py-2 rounded"
             style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: safePage === 1 ? 'var(--text-muted)' : 'var(--text-primary)', cursor: safePage === 1 ? 'not-allowed' : 'pointer' }}>
             ‹ Prev
           </button>
@@ -825,13 +826,16 @@ export default function CardsPage() {
             .reduce((acc, p, i, arr) => { if (i > 0 && p - arr[i-1] > 1) acc.push('…'); acc.push(p); return acc }, [])
             .map((p, i) => p === '…'
               ? <span key={`e-${i}`} className="text-sm px-1" style={{ color: 'var(--text-muted)' }}>…</span>
-              : <button key={p} onClick={() => setParam({ page: p })} className="text-sm w-8 h-8 rounded"
+              : <button key={p} onClick={() => setParam({ page: p })}
+                  aria-label={`Page ${p}`} aria-current={p === safePage ? 'page' : undefined}
+                  className="text-sm w-9 h-9 rounded"
                   style={{ backgroundColor: p === safePage ? 'var(--accent)' : 'var(--bg-surface)', border: '1px solid var(--border)', color: p === safePage ? 'var(--text-panel)' : 'var(--text-primary)', fontWeight: p === safePage ? '600' : '400' }}>
                   {p}
                 </button>
             )}
           <button onClick={() => setParam({ page: Math.min(totalPages, page + 1) })} disabled={safePage === totalPages}
-            className="text-sm px-3 py-1.5 rounded"
+            aria-label="Next page"
+            className="text-sm px-3 py-2 rounded"
             style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: safePage === totalPages ? 'var(--text-muted)' : 'var(--text-primary)', cursor: safePage === totalPages ? 'not-allowed' : 'pointer' }}>
             Next ›
           </button>

@@ -51,6 +51,7 @@ export default function LoginPage() {
       {/* Tab toggle */}
       <div className="flex mb-6 rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
         <button
+          type="button"
           onClick={() => switchMode('login')}
           className="flex-1 py-2 text-sm font-semibold transition-colors"
           style={{
@@ -61,6 +62,7 @@ export default function LoginPage() {
           Sign In
         </button>
         <button
+          type="button"
           onClick={() => switchMode('register')}
           className="flex-1 py-2 text-sm font-semibold transition-colors"
           style={{

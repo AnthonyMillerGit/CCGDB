@@ -782,7 +782,8 @@ export default function CollectionGamePage() {
           <button
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={safePage === 1}
-            className="text-sm px-3 py-1.5 rounded"
+            aria-label="Previous page"
+            className="text-sm px-3 py-2 rounded"
             style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: safePage === 1 ? 'var(--text-muted)' : 'var(--text-primary)', cursor: safePage === 1 ? 'not-allowed' : 'pointer' }}
           >
             ‹ Prev
@@ -802,7 +803,9 @@ export default function CollectionGamePage() {
                 <button
                   key={p}
                   onClick={() => setPage(p)}
-                  className="text-sm w-8 h-8 rounded"
+                  aria-label={`Page ${p}`}
+                  aria-current={p === safePage ? 'page' : undefined}
+                  className="text-sm w-9 h-9 rounded"
                   style={{
                     backgroundColor: p === safePage ? 'var(--accent)' : 'var(--bg-surface)',
                     border: '1px solid var(--border)',
@@ -819,7 +822,8 @@ export default function CollectionGamePage() {
           <button
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={safePage === totalPages}
-            className="text-sm px-3 py-1.5 rounded"
+            aria-label="Next page"
+            className="text-sm px-3 py-2 rounded"
             style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: safePage === totalPages ? 'var(--text-muted)' : 'var(--text-primary)', cursor: safePage === totalPages ? 'not-allowed' : 'pointer' }}
           >
             Next ›
