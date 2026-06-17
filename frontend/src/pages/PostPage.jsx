@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useLayoutEffect, useState, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { generateHTML } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
@@ -83,6 +83,13 @@ export default function PostPage() {
     }
     load()
   }, [slug, navigate])
+
+  // Inject the rendered post HTML manually (NOT via dangerouslySetInnerHTML) so
+  // that later re-renders for toc/related state never re-assert and wipe the
+  // card-image / deck-box DOM that the hydration effects below build.
+  useLayoutEffect(() => {
+    if (bodyRef.current && post) bodyRef.current.innerHTML = renderBody(post.body)
+  }, [post])
 
   // Intercept internal link clicks for React Router
   useEffect(() => {
@@ -296,8 +303,6 @@ export default function PostPage() {
   if (loading) return <p className="text-center py-20" style={{ color: 'var(--text-muted)' }}>Loading…</p>
   if (!post) return null
 
-  const html = renderBody(post.body)
-
   return (
     <div className="max-w-3xl mx-auto">
       {/* Back + edit */}
@@ -369,7 +374,6 @@ export default function PostPage() {
       <div
         ref={bodyRef}
         className="editor-content max-w-none mb-12"
-        dangerouslySetInnerHTML={{ __html: html }}
         style={{ color: 'var(--text-primary)' }}
       />
 
