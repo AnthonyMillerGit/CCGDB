@@ -42,9 +42,13 @@ set -euo pipefail
 # Tables that reference card tables and need to be saved/restored
 # (users is NOT here — user accounts have no FK to card tables)
 USER_LINKED=(decks deck_cards wishlists user_collections user_favorite_games password_reset_tokens)
+# Post->game/card/set tag tables. They reference posts (never truncated) and the
+# card tables (restored from the dump with identical IDs). They ARE truncated
+# below, so they must be backed up and restored or every post loses its tags.
+POST_TAGS=(post_game_tags post_card_tags post_set_tags)
 
-echo "Step 1: Export user-linked data to /tmp files..."
-for t in "${USER_LINKED[@]}"; do
+echo "Step 1: Export user-linked + post-tag data to /tmp files..."
+for t in "${USER_LINKED[@]}" "${POST_TAGS[@]}"; do
   docker exec postgres psql -U ccgvault -d ccgdb -tAc "COPY $t TO STDOUT" > /tmp/ud_${t}.tsv
   lines=$(wc -l < /tmp/ud_${t}.tsv)
   echo "  $t: $lines rows"
@@ -94,6 +98,21 @@ echo ""
 echo "Step 4: Restore user-linked data in dependency order..."
 # decks must come before deck_cards; user_collections after printings
 for t in decks wishlists user_favorite_games password_reset_tokens deck_cards user_collections; do
+  count=$(wc -l < /tmp/ud_${t}.tsv)
+  if [ "$count" -gt 0 ]; then
+    docker exec -i postgres psql -U ccgvault -d ccgdb \
+      -c "SET session_replication_role = replica;" \
+      -c "COPY $t FROM STDIN;" \
+      < /tmp/ud_${t}.tsv
+    echo "  $t: $count rows restored"
+  else
+    echo "  $t: empty, skipped"
+  fi
+done
+
+echo ""
+echo "Step 4b: Restore post tag tables (post_game_tags / post_card_tags / post_set_tags)..."
+for t in "${POST_TAGS[@]}"; do
   count=$(wc -l < /tmp/ud_${t}.tsv)
   if [ "$count" -gt 0 ]; then
     docker exec -i postgres psql -U ccgvault -d ccgdb \
