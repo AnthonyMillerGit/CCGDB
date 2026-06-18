@@ -187,3 +187,42 @@
   cursor: pointer;
 }
 .editor-content .card-mention:hover { opacity: 0.85; }
+
+/* Tables (TipTap TableKit) — used in both the editor and rendered posts */
+.editor-content .tableWrapper { overflow-x: auto; margin: 1.25em 0; }
+.editor-content table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1.25em 0;
+  overflow: hidden;
+}
+.editor-content table td,
+.editor-content table th {
+  border: 1px solid var(--border);
+  padding: 7px 11px;
+  vertical-align: top;
+  position: relative;
+  min-width: 3rem;
+}
+.editor-content table th {
+  background: var(--bg-chip);
+  font-weight: 700;
+  text-align: left;
+}
+.editor-content table .selectedCell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 151, 167, 0.15);
+  pointer-events: none;
+}
+.editor-content table .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent);
+  cursor: col-resize;
+}

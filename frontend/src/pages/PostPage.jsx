@@ -4,6 +4,7 @@ import { generateHTML } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import TiptapImage from '@tiptap/extension-image'
 import TiptapLink from '@tiptap/extension-link'
+import { TableKit } from '@tiptap/extension-table'
 import DOMPurify from 'dompurify'
 import { API_URL } from '../config'
 import '../styles/editor.css'
@@ -14,7 +15,7 @@ import { DeckBoxBlock } from '../extensions/DeckBoxBlock.jsx'
 function renderBody(body) {
   if (!body || Object.keys(body).length === 0) return ''
   try {
-    const html = generateHTML(body, [StarterKit, TiptapImage, TiptapLink, CardImageBlock, DeckBoxBlock])
+    const html = generateHTML(body, [StarterKit, TiptapImage, TiptapLink, CardImageBlock, DeckBoxBlock, TableKit])
     return DOMPurify.sanitize(html, { ADD_ATTR: ['data-type', 'data-card-id', 'data-card-name', 'data-image-url', 'data-card-url', 'data-title', 'data-cards', 'data-game'] })
   } catch {
     return ''

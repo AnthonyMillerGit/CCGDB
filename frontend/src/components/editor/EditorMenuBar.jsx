@@ -23,7 +23,7 @@ function ToolBtn({ onClick, label, active, title }) {
   )
 }
 
-export default function EditorMenuBar({ editor, onOpenCardPicker, onOpenDeckBuilder }) {
+export default function EditorMenuBar({ editor, onOpenCardPicker, onOpenDeckBuilder, onImportMarkdown }) {
   const [, setTick] = useState(0)
 
   useEffect(() => {
@@ -74,6 +74,20 @@ export default function EditorMenuBar({ editor, onOpenCardPicker, onOpenDeckBuil
       <ToolBtn onClick={insertLink} label="🔗 Link" active={editor.isActive('link')} />
       <ToolBtn onClick={insertImage} label="🖼 Image" active={false} />
       <ToolBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} label="— Rule" active={false} />
+      <Divider />
+      {editor.isActive('table') ? (
+        <>
+          <ToolBtn onClick={() => editor.chain().focus().addColumnAfter().run()} label="+Col" title="Add column" active={false} />
+          <ToolBtn onClick={() => editor.chain().focus().deleteColumn().run()} label="−Col" title="Delete column" active={false} />
+          <ToolBtn onClick={() => editor.chain().focus().addRowAfter().run()} label="+Row" title="Add row" active={false} />
+          <ToolBtn onClick={() => editor.chain().focus().deleteRow().run()} label="−Row" title="Delete row" active={false} />
+          <ToolBtn onClick={() => editor.chain().focus().toggleHeaderRow().run()} label="Header" title="Toggle header row" active={false} />
+          <ToolBtn onClick={() => editor.chain().focus().deleteTable().run()} label="🗑 Table" title="Delete table" active={false} />
+        </>
+      ) : (
+        <ToolBtn onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} label="▦ Table" title="Insert a table" active={false} />
+      )}
+      {onImportMarkdown && <ToolBtn onClick={onImportMarkdown} label="⬇ MD" title="Import Markdown" active={false} />}
       <Divider />
       <ToolBtn onClick={() => editor.chain().focus().undo().run()} label="↩" title="Undo" active={false} />
       <ToolBtn onClick={() => editor.chain().focus().redo().run()} label="↪" title="Redo" active={false} />
