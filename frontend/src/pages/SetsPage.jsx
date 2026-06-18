@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useClickOutside } from '../hooks/useClickOutside'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { API_URL } from '../config'
 import { GAME_INFO } from '../data/gameInfo'
 import { useAuth } from '../context/AuthContext'
@@ -95,6 +95,7 @@ export default function SetsPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('all')
   const [featuredCard, setFeaturedCard] = useState(null)
+  const [posts, setPosts] = useState([])
 
   // Card search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -113,11 +114,13 @@ export default function SetsPage() {
       fetch(`${API_URL}/api/games/${slug}`).then(r => r.json()),
       fetch(`${API_URL}/api/games/${slug}/sets`).then(r => r.json()),
       fetch(`${API_URL}/api/cards/random?limit=1&game=${slug}`).then(r => r.json()).catch(() => []),
-    ]).then(([gameData, setsData, cardData]) => {
+      fetch(`${API_URL}/api/games/${slug}/posts`).then(r => r.json()).catch(() => []),
+    ]).then(([gameData, setsData, cardData, postsData]) => {
       setGame(gameData)
       setSets(setsData)
       setLoading(false)
       if (Array.isArray(cardData) && cardData[0]?.image_url) setFeaturedCard(cardData[0])
+      if (Array.isArray(postsData)) setPosts(postsData)
     })
   }, [slug])
 
@@ -234,6 +237,51 @@ export default function SetsPage() {
           />
         )}
       </div>
+
+      {/* ── Blog posts about this game ───────────────────────────────────── */}
+      {posts.length > 0 && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+              Blog posts about {game?.name}
+            </h2>
+            <Link to="/blog" className="text-xs hover:underline" style={{ color: 'var(--accent)' }}>
+              View all ↗
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {posts.slice(0, 2).map(post => (
+              <Link
+                key={post.id}
+                to={`/blog/${post.slug}`}
+                className="flex rounded-xl overflow-hidden transition-all"
+                style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', textDecoration: 'none', alignItems: 'stretch' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
+              >
+                <div style={{ flex: 1, padding: '0.85rem 1rem', minWidth: 0 }}>
+                  <h3 style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.95rem', lineHeight: 1.3, marginBottom: 5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {post.title}
+                  </h3>
+                  {post.excerpt && (
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: 1.5, marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {post.excerpt}
+                    </p>
+                  )}
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
+                    {post.published_at && new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </div>
+                </div>
+                {post.cover_image_url && (
+                  <div style={{ width: 92, flexShrink: 0, overflow: 'hidden' }}>
+                    <img src={post.cover_image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  </div>
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Card search ──────────────────────────────────────────────────── */}
       <div className="relative mb-6" ref={searchRef}>

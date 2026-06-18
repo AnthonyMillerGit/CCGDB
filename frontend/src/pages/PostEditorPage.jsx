@@ -6,6 +6,8 @@ import Placeholder from '@tiptap/extension-placeholder'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import Mention from '@tiptap/extension-mention'
+import { TableKit } from '@tiptap/extension-table'
+import { marked } from 'marked'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
 import { createMentionSuggestion } from '../components/mentionSuggestion'
@@ -62,6 +64,8 @@ export default function PostEditorPage() {
   const [showCardPicker, setShowCardPicker] = useState(false)
   const [showDeckBuilder, setShowDeckBuilder] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
+  const [showMdImport, setShowMdImport] = useState(false)
+  const [mdText, setMdText] = useState('')
   const [saveStatus, setSaveStatus] = useState(null)
   const dirtyRef = useRef(false)
 
@@ -79,6 +83,7 @@ export default function PostEditorPage() {
       Image.configure({ inline: false, allowBase64: false }),
       Link.configure({ openOnClick: false, HTMLAttributes: { rel: 'noopener noreferrer' } }),
       Mention.configure({ suggestion: createMentionSuggestion(() => gameTagIdsRef.current) }),
+      TableKit.configure({ table: { resizable: true } }),
     ],
     onUpdate: () => {
       dirtyRef.current = true
@@ -130,6 +135,16 @@ export default function PostEditorPage() {
     setShowDeckBuilder(false)
     editor?.chain().focus().insertDeckBox(attrs).run()
   }, [editor])
+
+  function handleImportMarkdown() {
+    if (!editor || !mdText.trim()) return
+    // Markdown → HTML → TipTap nodes (parsed via the registered extensions,
+    // so headings/lists/tables/images all become real editor blocks).
+    const html = marked.parse(mdText, { breaks: false, gfm: true })
+    editor.chain().focus().insertContent(html).run()
+    setMdText('')
+    setShowMdImport(false)
+  }
 
   async function handleSave(publish) {
     if (!title.trim()) { setError('Title is required'); return }
@@ -252,6 +267,36 @@ export default function PostEditorPage() {
           onClose={() => setShowDeckBuilder(false)}
         />
       )}
+      {showMdImport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setShowMdImport(false)}>
+          <div className="w-full max-w-2xl rounded-xl p-5" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
+            onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Import Markdown</h3>
+            <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
+              Paste Markdown — headings, lists, tables, links, and images convert to editor blocks and insert at your cursor.
+            </p>
+            <textarea
+              value={mdText} onChange={e => setMdText(e.target.value)} rows={12} autoFocus
+              placeholder={'# Heading\n\nSome **bold** text and a [link](https://…).\n\n| Col | Col |\n|-----|-----|\n| a   | b   |'}
+              className="w-full px-3 py-2 rounded text-sm font-mono resize-y outline-none"
+              style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+            />
+            <div className="flex justify-end gap-2 mt-3">
+              <button type="button" onClick={() => setShowMdImport(false)}
+                className="px-4 py-2 rounded text-sm font-semibold"
+                style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
+                Cancel
+              </button>
+              <button type="button" onClick={handleImportMarkdown} disabled={!mdText.trim()}
+                className="px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
+                style={{ backgroundColor: 'var(--accent)', color: '#fff' }}>
+                Import
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
@@ -327,6 +372,7 @@ export default function PostEditorPage() {
           editor={editor}
           onOpenCardPicker={() => setShowCardPicker(true)}
           onOpenDeckBuilder={() => setShowDeckBuilder(true)}
+          onImportMarkdown={() => setShowMdImport(true)}
         />
         <div style={{ backgroundColor: 'var(--bg-chip)' }}>
           <EditorContent editor={editor} />

@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useLayoutEffect, useState, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { generateHTML } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import TiptapImage from '@tiptap/extension-image'
 import TiptapLink from '@tiptap/extension-link'
+import { TableKit } from '@tiptap/extension-table'
 import DOMPurify from 'dompurify'
 import { API_URL } from '../config'
 import '../styles/editor.css'
@@ -14,7 +15,7 @@ import { DeckBoxBlock } from '../extensions/DeckBoxBlock.jsx'
 function renderBody(body) {
   if (!body || Object.keys(body).length === 0) return ''
   try {
-    const html = generateHTML(body, [StarterKit, TiptapImage, TiptapLink, CardImageBlock, DeckBoxBlock])
+    const html = generateHTML(body, [StarterKit, TiptapImage, TiptapLink, CardImageBlock, DeckBoxBlock, TableKit])
     return DOMPurify.sanitize(html, { ADD_ATTR: ['data-type', 'data-card-id', 'data-card-name', 'data-image-url', 'data-card-url', 'data-title', 'data-cards', 'data-game'] })
   } catch {
     return ''
@@ -67,6 +68,8 @@ export default function PostPage() {
   const { user } = useAuth()
   const [post, setPost] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [related, setRelated] = useState([])
+  const [toc, setToc] = useState([])
   const bodyRef = useRef(null)
 
   useEffect(() => {
@@ -81,6 +84,13 @@ export default function PostPage() {
     }
     load()
   }, [slug, navigate])
+
+  // Inject the rendered post HTML manually (NOT via dangerouslySetInnerHTML) so
+  // that later re-renders for toc/related state never re-assert and wipe the
+  // card-image / deck-box DOM that the hydration effects below build.
+  useLayoutEffect(() => {
+    if (bodyRef.current && post) bodyRef.current.innerHTML = renderBody(post.body)
+  }, [post])
 
   // Intercept internal link clicks for React Router
   useEffect(() => {
@@ -203,11 +213,96 @@ export default function PostPage() {
     return () => preview.remove()
   }, [post])
 
+  // Related posts — other posts sharing this post's first game tag
+  useEffect(() => {
+    if (!post?.game_tags?.length) { setRelated([]); return }
+    const gslug = post.game_tags[0].game_slug
+    fetch(`${API_URL}/api/games/${gslug}/posts`)
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data)) setRelated(data.filter(p => p.slug !== post.slug).slice(0, 3))
+      })
+      .catch(() => {})
+  }, [post])
+
+  // Build a table of contents from the body's H2 headings (and give them ids)
+  useEffect(() => {
+    const el = bodyRef.current
+    if (!el) return
+    const items = [...el.querySelectorAll('h2')].map((h, i) => ({ i, text: h.textContent }))
+    setToc(items)
+  }, [post])
+
+  // Card-mention hovers: link tagged card names in the prose to their card page
+  // and show a floating image preview on hover (also covers the "Cards Mentioned" pills).
+  useEffect(() => {
+    const el = bodyRef.current
+    if (!el || !post?.card_tags?.length) return
+    const cards = {}
+    for (const t of post.card_tags) if (t.image_url) cards[t.card_name] = { id: t.card_id, img: t.image_url }
+    const names = Object.keys(cards).sort((a, b) => b.length - a.length)
+    if (names.length) {
+      const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const rx = new RegExp('(?<![A-Za-z0-9])(' + names.map(esc).join('|') + ')(?![A-Za-z0-9])', 'g')
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null)
+      const nodes = []; let nd
+      while ((nd = walker.nextNode())) {
+        if (nd.nodeValue.trim() && !nd.parentElement.closest('a')) nodes.push(nd)
+      }
+      nodes.forEach(node => {
+        const t = node.nodeValue; rx.lastIndex = 0
+        if (!rx.test(t)) return; rx.lastIndex = 0
+        const frag = document.createDocumentFragment()
+        let last = 0, m
+        while ((m = rx.exec(t))) {
+          if (m.index > last) frag.appendChild(document.createTextNode(t.slice(last, m.index)))
+          const info = cards[m[1]]
+          const a = document.createElement('a')
+          a.href = '/cards/' + info.id
+          a.className = 'card-mention'
+          a.dataset.img = info.img
+          a.textContent = m[1]
+          frag.appendChild(a)
+          last = m.index + m[1].length
+        }
+        if (last < t.length) frag.appendChild(document.createTextNode(t.slice(last)))
+        node.parentNode.replaceChild(frag, node)
+      })
+    }
+
+    // Floating preview shared by body mentions + "Cards Mentioned" pills
+    const preview = document.createElement('div')
+    preview.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;display:none;'
+    const pImg = document.createElement('img')
+    pImg.style.cssText = 'width:240px;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,0.7);display:block;'
+    preview.appendChild(pImg); document.body.appendChild(preview)
+    function place(e) {
+      const pad = 16, w = 240, h = 336
+      let x = e.clientX + pad, y = e.clientY + pad
+      if (x + w > innerWidth) x = e.clientX - w - pad
+      if (y + h > innerHeight) y = Math.max(8, innerHeight - h - pad)
+      preview.style.left = x + 'px'; preview.style.top = y + 'px'
+    }
+    function over(e) { const a = e.target.closest('[data-card-img]'); if (!a) return; pImg.src = a.dataset.cardImg; preview.style.display = 'block'; place(e) }
+    function over2(e) { const a = e.target.closest('.card-mention'); if (!a) return; pImg.src = a.dataset.img; preview.style.display = 'block'; place(e) }
+    function move(e) { if (preview.style.display === 'block') place(e) }
+    function out(e) { if (e.target.closest('.card-mention') || e.target.closest('[data-card-img]')) preview.style.display = 'none' }
+    document.addEventListener('mouseover', over)
+    document.addEventListener('mouseover', over2)
+    document.addEventListener('mousemove', move)
+    document.addEventListener('mouseout', out)
+    return () => {
+      preview.remove()
+      document.removeEventListener('mouseover', over)
+      document.removeEventListener('mouseover', over2)
+      document.removeEventListener('mousemove', move)
+      document.removeEventListener('mouseout', out)
+    }
+  }, [post])
+
 
   if (loading) return <p className="text-center py-20" style={{ color: 'var(--text-muted)' }}>Loading…</p>
   if (!post) return null
-
-  const html = renderBody(post.body)
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -248,11 +343,38 @@ export default function PostPage() {
         <span>{new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
       </div>
 
+      {/* Table of contents */}
+      {toc.length >= 3 && (
+        <nav className="mb-8 p-4 rounded-xl" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Contents</p>
+          <ol className="flex flex-col gap-1" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            {toc.map(item => (
+              <li key={item.i}>
+                <a
+                  href="#"
+                  onClick={e => {
+                    e.preventDefault()
+                    const h = bodyRef.current?.querySelectorAll('h2')[item.i]
+                    if (h) {
+                      const y = h.getBoundingClientRect().top + window.scrollY - 16
+                      window.scrollTo({ top: y, behavior: 'smooth' })
+                    }
+                  }}
+                  className="text-sm hover:underline"
+                  style={{ color: 'var(--accent)' }}
+                >
+                  {item.text}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )}
+
       {/* Body */}
       <div
         ref={bodyRef}
         className="editor-content max-w-none mb-12"
-        dangerouslySetInnerHTML={{ __html: html }}
         style={{ color: 'var(--text-primary)' }}
       />
 
@@ -279,6 +401,7 @@ export default function PostPage() {
               <div className="flex flex-wrap gap-2">
                 {post.card_tags.map(t => (
                   <Link key={t.card_id} to={`/cards/${t.card_id}`}
+                    data-card-img={t.image_url || undefined}
                     className="text-xs px-3 py-1 rounded-full"
                     style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
                     {t.card_name}
@@ -287,6 +410,36 @@ export default function PostPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Related posts */}
+      {related.length > 0 && (
+        <div className="pt-8 mt-8 border-t" style={{ borderColor: 'var(--border)' }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>
+            More about {post.game_tags[0].game_name}
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {related.map(rp => (
+              <Link
+                key={rp.id}
+                to={`/blog/${rp.slug}`}
+                className="rounded-xl overflow-hidden transition-all"
+                style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', textDecoration: 'none' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
+              >
+                {rp.cover_image_url && (
+                  <div style={{ height: 90, overflow: 'hidden' }}>
+                    <img src={rp.cover_image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  </div>
+                )}
+                <div style={{ padding: '0.7rem 0.85rem' }}>
+                  <p style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.85rem', lineHeight: 1.3 }}>{rp.title}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>

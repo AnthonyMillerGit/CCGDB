@@ -5,6 +5,50 @@
   --breakpoint-ultra: 160rem; /* 2560px */
 }
 
+/* Visible keyboard focus for all interactive elements. Uses box-shadow (not
+   outline) so it survives the many `outline-none` utilities in the codebase.
+   :focus-visible only fires for keyboard/AT navigation, not mouse clicks. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible,
+[role="button"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-page), 0 0 0 4px var(--accent);
+  border-radius: 4px;
+}
+
+/* Honour the OS "reduce motion" preference (foil-shift, spinners, transitions). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Skip-to-content link: off-screen until focused. */
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -3rem;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  background-color: var(--accent-maroon);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: top 0.15s ease;
+}
+.skip-link:focus {
+  top: 0.5rem;
+}
+
 .foil-rainbow {
   background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #c77dff, #ff6b6b);
   background-size: 200% auto;
@@ -57,7 +101,7 @@
   --bg-header:      #040f17;
   --bg-footer:      #040f17;
   --text-primary:   #f3f4f4;
-  --text-muted:     #4a7a7d;
+  --text-muted:     #6f9b9e;
   --text-panel:     #c8e0e8;
   --border:         #1d546d;
   --border-panel:   #1d546d;

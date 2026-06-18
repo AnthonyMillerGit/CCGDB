@@ -56,8 +56,9 @@ type PostSetTag struct {
 }
 
 type PostCardTag struct {
-	CardID   int    `json:"card_id"`
-	CardName string `json:"card_name"`
+	CardID   int     `json:"card_id"`
+	CardName string  `json:"card_name"`
+	ImageURL *string `json:"image_url"`
 }
 
 type CreatePostRequest struct {
@@ -135,7 +136,11 @@ func (a *App) loadPostTags(r *http.Request, postID int) ([]PostGameTag, []PostSe
 	}
 
 	crows, err := a.db.Query(r.Context(), `
-		SELECT c.id, c.name FROM post_card_tags pct
+		SELECT c.id, c.name, (
+			SELECT p.image_url FROM printings p
+			WHERE p.card_id = c.id AND p.image_url IS NOT NULL AND p.image_url <> ''
+			ORDER BY p.id LIMIT 1
+		) FROM post_card_tags pct
 		JOIN cards c ON c.id = pct.card_id
 		WHERE pct.post_id = $1
 	`, postID)
@@ -143,7 +148,9 @@ func (a *App) loadPostTags(r *http.Request, postID int) ([]PostGameTag, []PostSe
 		defer crows.Close()
 		for crows.Next() {
 			var t PostCardTag
-			crows.Scan(&t.CardID, &t.CardName)
+			var img *string
+			crows.Scan(&t.CardID, &t.CardName, &img)
+			t.ImageURL = a.imgURL(img)
 			cardTags = append(cardTags, t)
 		}
 	}
@@ -211,21 +218,74 @@ func (a *App) listPosts(w http.ResponseWriter, r *http.Request) {
 	if v, err := strconv.Atoi(r.URL.Query().Get("offset")); err == nil && v > 0 {
 		offset = v
 	}
+	game := r.URL.Query().Get("game")
+	ptype := r.URL.Query().Get("type")
 
-	rows, err := a.db.Query(r.Context(), `
+	q := `
 		SELECT p.id, u.username, p.title, p.slug, p.excerpt, p.post_type, p.cover_image_url, p.published_at, p.created_at
 		FROM posts p
 		JOIN users u ON u.id = p.author_id
-		WHERE p.published_at IS NOT NULL AND p.published_at <= NOW()
-		ORDER BY p.published_at DESC
-		LIMIT $1 OFFSET $2
-	`, limit, offset)
+		WHERE p.published_at IS NOT NULL AND p.published_at <= NOW()`
+	args := []interface{}{}
+	n := 1
+	if game != "" {
+		q += fmt.Sprintf(" AND EXISTS (SELECT 1 FROM post_game_tags pgt JOIN games g ON g.id = pgt.game_id WHERE pgt.post_id = p.id AND g.slug = $%d)", n)
+		args = append(args, game)
+		n++
+	}
+	if ptype != "" {
+		q += fmt.Sprintf(" AND p.post_type = $%d", n)
+		args = append(args, ptype)
+		n++
+	}
+	q += fmt.Sprintf(" ORDER BY p.published_at DESC LIMIT $%d OFFSET $%d", n, n+1)
+	args = append(args, limit, offset)
+
+	rows, err := a.db.Query(r.Context(), q, args...)
 	if err != nil {
 		jsonError(w, "Database error", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
 	jsonResponse(w, scanPostSummaries(rows), http.StatusOK)
+}
+
+// getBlogFilters returns the games (with post counts) and post types that have
+// published posts — used to build the blog list's filter chips.
+func (a *App) getBlogFilters(w http.ResponseWriter, r *http.Request) {
+	type gameFilter struct {
+		Slug  string `json:"slug"`
+		Name  string `json:"name"`
+		Count int    `json:"count"`
+	}
+	games := []gameFilter{}
+	grows, err := a.db.Query(r.Context(), `
+		SELECT g.slug, g.name, COUNT(*) FROM post_game_tags pgt
+		JOIN games g ON g.id = pgt.game_id
+		JOIN posts p ON p.id = pgt.post_id
+		WHERE p.published_at IS NOT NULL AND p.published_at <= NOW()
+		GROUP BY g.slug, g.name ORDER BY COUNT(*) DESC, g.name`)
+	if err == nil {
+		defer grows.Close()
+		for grows.Next() {
+			var f gameFilter
+			grows.Scan(&f.Slug, &f.Name, &f.Count)
+			games = append(games, f)
+		}
+	}
+	types := []string{}
+	trows, err := a.db.Query(r.Context(), `
+		SELECT DISTINCT post_type FROM posts
+		WHERE published_at IS NOT NULL AND published_at <= NOW() ORDER BY post_type`)
+	if err == nil {
+		defer trows.Close()
+		for trows.Next() {
+			var t string
+			trows.Scan(&t)
+			types = append(types, t)
+		}
+	}
+	jsonResponse(w, map[string]interface{}{"games": games, "types": types}, http.StatusOK)
 }
 
 func (a *App) getPost(w http.ResponseWriter, r *http.Request) {

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useClickOutside } from './hooks/useClickOutside'
 import { BrowserRouter, Routes, Route, useNavigate, Link, useLocation } from 'react-router-dom'
 import { API_URL, goToRandomCard } from './config'
@@ -30,8 +30,14 @@ function NavLink({ to, children }) {
   return (
     <Link
       to={to}
-      className="text-sm font-medium transition-colors"
-      style={{ color: active ? 'var(--accent)' : 'var(--text-muted)' }}
+      aria-current={active ? 'page' : undefined}
+      className="text-sm transition-colors"
+      style={{
+        color: active ? 'var(--accent)' : 'var(--text-muted)',
+        fontWeight: active ? 700 : 500,
+        textDecoration: active ? 'underline' : 'none',
+        textUnderlineOffset: '4px',
+      }}
     >
       {children}
     </Link>
@@ -116,8 +122,9 @@ function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="text-sm px-2.5 py-1.5 rounded transition-colors"
+      className="text-sm rounded transition-colors flex items-center justify-center flex-shrink-0 min-w-[40px] min-h-[40px]"
       style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {isDark ? '☀' : '☾'}
@@ -125,14 +132,48 @@ function ThemeToggle() {
   )
 }
 
-function MobileNav({ open, onClose }) {
+function MobileNav({ open, onClose, returnFocusRef }) {
   const navigate = useNavigate()
+  const panelRef = useRef(null)
+
+  // Close on Escape, trap Tab focus inside the drawer, and restore focus to the
+  // trigger on close.
+  useEffect(() => {
+    if (!open) return
+    const panel = panelRef.current
+    const trigger = returnFocusRef?.current
+    const focusables = panel?.querySelectorAll('button, a, [tabindex]:not([tabindex="-1"])')
+    focusables?.[0]?.focus()
+
+    function onKeyDown(e) {
+      if (e.key === 'Escape') { onClose(); return }
+      if (e.key === 'Tab' && focusables?.length) {
+        const first = focusables[0]
+        const last = focusables[focusables.length - 1]
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault(); last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault(); first.focus()
+        }
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      trigger?.focus()
+    }
+  }, [open, onClose, returnFocusRef])
+
   if (!open) return null
   function go(path) { onClose(); navigate(path) }
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Site navigation"
         className="fixed top-0 left-0 bottom-0 z-50 flex flex-col pt-16 pb-8 px-6 gap-6 w-64 shadow-2xl"
         style={{ backgroundColor: 'var(--bg-header)', borderRight: '1px solid var(--border)' }}
       >
@@ -154,17 +195,20 @@ function Header() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const hamburgerRef = useRef(null)
   return (
     <>
-      <MobileNav open={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
+      <MobileNav open={mobileNavOpen} onClose={() => setMobileNavOpen(false)} returnFocusRef={hamburgerRef} />
       <header
         className="px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-6"
         style={{ backgroundColor: 'var(--bg-header)', borderBottom: '3px solid var(--accent)' }}
       >
         <button
+          ref={hamburgerRef}
           className="md:hidden flex flex-col gap-1.5 p-1 flex-shrink-0"
           onClick={() => setMobileNavOpen(o => !o)}
           aria-label="Open navigation"
+          aria-expanded={mobileNavOpen}
         >
           <span className="block w-5 h-0.5" style={{ backgroundColor: 'var(--text-muted)' }} />
           <span className="block w-5 h-0.5" style={{ backgroundColor: 'var(--text-muted)' }} />
@@ -177,7 +221,7 @@ function Header() {
         >
           CCGVault
         </h1>
-        <nav className="hidden md:flex items-center gap-6">
+        <nav aria-label="Primary" className="hidden md:flex items-center gap-6">
           <NavLink to="/games">Games</NavLink>
           <NavLink to="/blog">Blog</NavLink>
           <button
@@ -241,8 +285,9 @@ function App() {
       <AuthProvider>
         <ThemeProvider>
         <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg-page)', color: 'var(--text-primary)' }}>
+          <a href="#main-content" className="skip-link">Skip to content</a>
           <Header />
-          <main className="flex-1 max-w-7xl ultra:max-w-[3200px] mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
+          <main id="main-content" className="flex-1 max-w-7xl 2xl:max-w-[1440px] 3xl:max-w-[1800px] ultra:max-w-[2400px] mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/games" element={<GamesPage />} />
