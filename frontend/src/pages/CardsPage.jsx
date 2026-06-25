@@ -720,7 +720,7 @@ export default function CardsPage() {
             const isOwned = quantity > 0
             const bulkQty = bulkQtys[card.printing_id] || 0
             return (
-              <div key={card.id} className="rounded-xl overflow-hidden border relative flex flex-col"
+              <div key={card.printing_id} className="rounded-xl overflow-hidden border relative flex flex-col"
                 title={card.name}
                 style={{ backgroundColor: bulkQty > 0 ? 'color-mix(in srgb, var(--accent) 12%, var(--bg-surface))' : 'var(--bg-surface)', borderColor: bulkQty > 0 ? 'var(--accent)' : 'var(--border)', borderWidth: bulkQty > 0 ? '2px' : '1px' }}>
                 {isOwned && (
@@ -772,7 +772,7 @@ export default function CardsPage() {
             const bulkQty     = bulkQtys[card.printing_id] || 0
             const cardRarityColor = rarityColor(card.rarity, setInfo?.game_slug)
             return (
-              <div key={card.id}
+              <div key={card.printing_id}
                 onClick={() => !isBulkActive && navigate(`/cards/${card.id}?printing=${card.printing_id}`)}
                 className={`rounded border px-2 py-1.5 flex flex-col gap-1 transition-colors ${!isBulkActive ? 'cursor-pointer hover:border-[#0097a7]' : ''}`}
                 style={{ backgroundColor: bulkQty > 0 ? 'color-mix(in srgb, var(--accent) 12%, var(--bg-chip))' : 'var(--bg-chip)', borderColor: bulkQty > 0 ? 'var(--accent)' : 'var(--border)', borderWidth: bulkQty > 0 ? '2px' : '1px' }}>

@@ -472,7 +472,7 @@ export default function DeckBuilderPage() {
             <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 xl:grid-cols-7 gap-2">
               {searchResults.map(card => (
                 <SearchCard
-                  key={card.id}
+                  key={card.printing_id}
                   card={card}
                   deckQty={cardQtyMap[card.id] || 0}
                   onAdd={() => handleAdd(card)}
