@@ -40,6 +40,8 @@ func (a *App) getGames(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, games, http.StatusOK)
 }
 
+// getRecentSets returns already-released sets, newest first. Empty placeholder
+// sets (no printings yet) are excluded so the row only shows real content.
 func (a *App) getRecentSets(w http.ResponseWriter, r *http.Request) {
 	limit := parseIntQuery(r, "limit", 10)
 	if limit > 50 {
@@ -51,6 +53,8 @@ func (a *App) getRecentSets(w http.ResponseWriter, r *http.Request) {
 		FROM sets s
 		JOIN games g ON g.id = s.game_id
 		WHERE s.release_date IS NOT NULL AND s.release_date <= CURRENT_DATE
+		  AND EXISTS (SELECT 1 FROM printings p WHERE p.set_id = s.id)
+		  AND (s.set_type IS NULL OR s.set_type NOT IN ('token', 'memorabilia'))
 		ORDER BY s.release_date DESC
 		LIMIT $1
 	`, limit)
@@ -59,7 +63,36 @@ func (a *App) getRecentSets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer rows.Close()
+	jsonResponse(w, a.scanRecentSets(rows), http.StatusOK)
+}
 
+// getUpcomingSets returns sets with a future release date, soonest first.
+// Unspoiled placeholders (no printings yet) are excluded.
+func (a *App) getUpcomingSets(w http.ResponseWriter, r *http.Request) {
+	limit := parseIntQuery(r, "limit", 10)
+	if limit > 50 {
+		limit = 50
+	}
+	rows, err := a.db.Query(r.Context(), `
+		SELECT s.id, s.name, s.release_date::text, s.total_cards,
+		       g.name, g.slug, g.card_back_image
+		FROM sets s
+		JOIN games g ON g.id = s.game_id
+		WHERE s.release_date > CURRENT_DATE
+		  AND EXISTS (SELECT 1 FROM printings p WHERE p.set_id = s.id)
+		  AND (s.set_type IS NULL OR s.set_type NOT IN ('token', 'memorabilia'))
+		ORDER BY s.release_date ASC
+		LIMIT $1
+	`, limit)
+	if err != nil {
+		jsonError(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	jsonResponse(w, a.scanRecentSets(rows), http.StatusOK)
+}
+
+func (a *App) scanRecentSets(rows pgx.Rows) []RecentSet {
 	sets := []RecentSet{}
 	for rows.Next() {
 		var s RecentSet
@@ -70,7 +103,7 @@ func (a *App) getRecentSets(w http.ResponseWriter, r *http.Request) {
 		s.CardBackImage = a.imgURL(s.CardBackImage)
 		sets = append(sets, s)
 	}
-	jsonResponse(w, sets, http.StatusOK)
+	return sets
 }
 
 func (a *App) getStats(w http.ResponseWriter, r *http.Request) {

@@ -80,6 +80,7 @@ func (a *App) routes() http.Handler {
 
 	// Specific set routes before parameterized card route
 	r.Get("/api/sets/recent", a.getRecentSets)
+	r.Get("/api/sets/upcoming", a.getUpcomingSets)
 	r.Get("/api/sets/{setID}", a.getSet)
 	r.Get("/api/sets/{setID}/cards", a.getSetCards)
 
