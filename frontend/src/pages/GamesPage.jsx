@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
@@ -8,9 +8,130 @@ function formatDate(str) {
   return new Date(str + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
+function SetCard({ set, upcoming = false }) {
+  return (
+    <div
+      className="flex-shrink-0 flex items-center gap-3 px-4 py-3 rounded-xl w-56 sm:w-[300px] snap-start"
+      style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
+    >
+      {set.card_back_image ? (
+        <img src={set.card_back_image} alt={set.game_name} className="shrink-0 rounded object-cover"
+          style={{ width: 42, height: 58 }} />
+      ) : (
+        <div className="shrink-0 rounded flex items-center justify-center text-xs font-bold"
+          style={{ width: 42, height: 58, backgroundColor: 'var(--bg-chip)', color: 'var(--text-muted)' }}>
+          {set.game_name.slice(0, 2).toUpperCase()}
+        </div>
+      )}
+      <div className="min-w-0">
+        <Link
+          to={`/sets/${set.set_id}`}
+          className="text-sm font-semibold leading-tight hover:underline block line-clamp-2"
+          style={{ color: 'var(--text-primary)' }}
+          onClick={e => e.stopPropagation()}
+        >
+          {set.set_name}
+        </Link>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <Link
+            to={`/games/${set.game_slug}`}
+            className="text-xs hover:underline truncate"
+            style={{ color: 'var(--accent)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {set.game_name}
+          </Link>
+        </div>
+        {set.release_date && (
+          <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+            {upcoming && (
+              <span className="font-semibold px-1 rounded" style={{ color: 'var(--accent)', backgroundColor: 'var(--bg-chip)' }}>
+                Upcoming
+              </span>
+            )}
+            {formatDate(set.release_date)}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ScrollRow({ title, children }) {
+  const scrollRef = useRef(null)
+  const [canLeft, setCanLeft] = useState(false)
+  const [canRight, setCanRight] = useState(false)
+
+  const updateArrows = () => {
+    const el = scrollRef.current
+    if (!el) return
+    setCanLeft(el.scrollLeft > 1)
+    setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1)
+  }
+
+  useEffect(() => {
+    updateArrows()
+    const el = scrollRef.current
+    if (!el) return
+    el.addEventListener('scroll', updateArrows, { passive: true })
+    window.addEventListener('resize', updateArrows)
+    return () => {
+      el.removeEventListener('scroll', updateArrows)
+      window.removeEventListener('resize', updateArrows)
+    }
+  }, [children])
+
+  const scrollBy = dir => {
+    const el = scrollRef.current
+    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' })
+  }
+
+  const arrowStyle = {
+    backgroundColor: 'var(--bg-surface)',
+    border: '1px solid var(--border)',
+    color: 'var(--text-primary)',
+    backdropFilter: 'blur(6px)',
+    WebkitBackdropFilter: 'blur(6px)',
+  }
+
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>
+        {title}
+      </p>
+      <div className="relative group">
+        {canLeft && (
+          <button
+            aria-label="Scroll left"
+            onClick={() => scrollBy(-1)}
+            className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full shadow-md flex items-center justify-center transition-opacity opacity-90 hover:opacity-100"
+            style={arrowStyle}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+          </button>
+        )}
+        <div ref={scrollRef} className="flex gap-3 overflow-x-auto pb-1 snap-x snap-mandatory no-scrollbar">
+          {children}
+        </div>
+        {canRight && (
+          <button
+            aria-label="Scroll right"
+            onClick={() => scrollBy(1)}
+            className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full shadow-md flex items-center justify-center transition-opacity opacity-90 hover:opacity-100"
+            style={arrowStyle}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function GamesPage() {
   const [games, setGames] = useState([])
   const [recentSets, setRecentSets] = useState([])
+  const [upcomingSets, setUpcomingSets] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [favorites, setFavorites] = useState(new Set())
@@ -21,9 +142,11 @@ export default function GamesPage() {
     Promise.all([
       fetch(`${API_URL}/api/games`).then(r => r.json()),
       fetch(`${API_URL}/api/sets/recent?limit=10`).then(r => r.json()),
-    ]).then(([gamesData, setsData]) => {
+      fetch(`${API_URL}/api/sets/upcoming?limit=10`).then(r => r.json()),
+    ]).then(([gamesData, setsData, upcomingData]) => {
       setGames(Array.isArray(gamesData) ? gamesData : [])
       setRecentSets(Array.isArray(setsData) ? setsData : [])
+      setUpcomingSets(Array.isArray(upcomingData) ? upcomingData : [])
       setLoading(false)
     })
   }, [])
@@ -89,54 +212,25 @@ export default function GamesPage() {
         />
       </div>
 
+      {/* Upcoming */}
+      {upcomingSets.length > 0 && !search && (
+        <div className="mb-8">
+          <ScrollRow title="✦ Upcoming">
+            {upcomingSets.map(set => (
+              <SetCard key={set.set_id} set={set} upcoming />
+            ))}
+          </ScrollRow>
+        </div>
+      )}
+
       {/* Recently released */}
       {recentSets.length > 0 && !search && (
         <div className="mb-10">
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>
-            ✦ Recently Released
-          </p>
-          <div className="flex gap-3 overflow-x-auto pb-1 snap-x snap-mandatory">
+          <ScrollRow title="✦ Recently Released">
             {recentSets.map(set => (
-              <div
-                key={set.set_id}
-                className="flex-shrink-0 flex items-center gap-3 px-3 py-2.5 rounded-xl w-40 sm:w-[220px] snap-start"
-                style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
-              >
-                {set.card_back_image ? (
-                  <img src={set.card_back_image} alt={set.game_name} className="shrink-0 rounded object-cover"
-                    style={{ width: 36, height: 50 }} />
-                ) : (
-                  <div className="shrink-0 rounded flex items-center justify-center text-xs font-bold"
-                    style={{ width: 36, height: 50, backgroundColor: 'var(--bg-chip)', color: 'var(--text-muted)' }}>
-                    {set.game_name.slice(0, 2).toUpperCase()}
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <Link
-                    to={`/sets/${set.set_id}`}
-                    className="text-sm font-semibold leading-tight hover:underline block truncate"
-                    style={{ color: 'var(--text-primary)' }}
-                    onClick={e => e.stopPropagation()}
-                  >
-                    {set.set_name}
-                  </Link>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <Link
-                      to={`/games/${set.game_slug}`}
-                      className="text-xs hover:underline truncate"
-                      style={{ color: 'var(--accent)' }}
-                      onClick={e => e.stopPropagation()}
-                    >
-                      {set.game_name}
-                    </Link>
-                  </div>
-                  {set.release_date && (
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{formatDate(set.release_date)}</p>
-                  )}
-                </div>
-              </div>
+              <SetCard key={set.set_id} set={set} />
             ))}
-          </div>
+          </ScrollRow>
         </div>
       )}
 
