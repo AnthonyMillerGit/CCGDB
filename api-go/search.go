@@ -80,7 +80,7 @@ func (a *App) searchMentions(w http.ResponseWriter, r *http.Request) {
 			if setRows.Scan(&id, &name, &gameName) == nil {
 				results = append(results, MentionResult{
 					Type: "set", ID: id, Name: name,
-					URL: "/sets/" + strconv.Itoa(id),
+					URL:      "/sets/" + strconv.Itoa(id),
 					Subtitle: gameName,
 				})
 			}

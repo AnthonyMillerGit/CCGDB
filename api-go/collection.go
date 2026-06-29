@@ -33,10 +33,10 @@ func (a *App) getCollection(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var (
-			card                       CollectionCard
-			gameID                     int
-			gameName, gameSlug         string
-			cardBackImage              *string
+			card               CollectionCard
+			gameID             int
+			gameName, gameSlug string
+			cardBackImage      *string
 		)
 		if err := rows.Scan(
 			&card.ID, &card.PrintingID, &card.Quantity, &card.Finish, &card.Condition, &card.AddedAt,
