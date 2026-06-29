@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   StyleSheet,
   SectionList,
 } from 'react-native'
+import { useFocusEffect } from '@react-navigation/native'
 import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../api/config'
 
@@ -70,7 +71,7 @@ function CollectionView({ user, authFetch, logout, navigation }) {
       .catch(() => setLoading(false))
   }, [authFetch])
 
-  useEffect(() => { load() }, [load])
+  useFocusEffect(useCallback(() => { load() }, [load]))
 
   if (loading) {
     return (

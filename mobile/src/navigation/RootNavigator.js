@@ -8,6 +8,10 @@ import SearchScreen from '../screens/SearchScreen'
 import CollectionScreen from '../screens/CollectionScreen'
 import LoginScreen from '../screens/LoginScreen'
 import RegisterScreen from '../screens/RegisterScreen'
+import DecksScreen from '../screens/DecksScreen'
+import DeckDetailScreen from '../screens/DeckDetailScreen'
+import DeckAddCardsScreen from '../screens/DeckAddCardsScreen'
+import CreateDeckScreen from '../screens/CreateDeckScreen'
 
 const Tab = createBottomTabNavigator()
 const Stack = createNativeStackNavigator()
@@ -39,6 +43,19 @@ function CollectionStack() {
   )
 }
 
+function DecksStack() {
+  return (
+    <Stack.Navigator screenOptions={screenOpts}>
+      <Stack.Screen name="Decks" component={DecksScreen} options={{ title: 'My Decks' }} />
+      <Stack.Screen name="CreateDeck" component={CreateDeckScreen} options={{ title: 'New Deck' }} />
+      <Stack.Screen name="DeckDetail" component={DeckDetailScreen} options={{ title: 'Deck' }} />
+      <Stack.Screen name="DeckAddCards" component={DeckAddCardsScreen} options={{ title: 'Add Cards' }} />
+      <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Sign In' }} />
+      <Stack.Screen name="Register" component={RegisterScreen} options={{ title: 'Create Account' }} />
+    </Stack.Navigator>
+  )
+}
+
 export default function RootNavigator() {
   return (
     <Tab.Navigator
@@ -52,6 +69,7 @@ export default function RootNavigator() {
       <Tab.Screen name="Browse" component={BrowseStack} />
       <Tab.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />
       <Tab.Screen name="Collection" component={CollectionStack} />
+      <Tab.Screen name="DecksTab" component={DecksStack} options={{ title: 'Decks' }} />
     </Tab.Navigator>
   )
 }

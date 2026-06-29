@@ -10,6 +10,10 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native'
+import { useFocusEffect } from '@react-navigation/native'
+import { useAuth } from '../context/AuthContext'
+import { useQtyEditor } from '../hooks/useQtyEditor'
+import { addToCollection, setCollectionQuantity, removeFromCollection } from '../api/collection'
 import { API_URL } from '../api/config'
 
 const NUM_COLUMNS = 3
@@ -29,10 +33,14 @@ const RARITY_COLOR = {
 
 export default function SetDetailScreen({ route, navigation }) {
   const { setId, setName, gameSlug, gameName } = route.params
+  const { user, authFetch } = useAuth()
   const [cards, setCards] = useState([])
   const [filtered, setFiltered] = useState([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  // owned quantities for the 'normal' finish, keyed by printing_id
+  const [qtys, setQtys] = useState({})
+  const { pending, run } = useQtyEditor()
 
   useEffect(() => {
     navigation.setOptions({ title: setName })
@@ -46,6 +54,37 @@ export default function SetDetailScreen({ route, navigation }) {
       })
       .catch(() => setLoading(false))
   }, [setId])
+
+  // Refresh owned quantities whenever the screen regains focus (e.g. after
+  // editing a card on the detail screen). Hidden entirely when logged out.
+  useFocusEffect(useCallback(() => {
+    if (!user) { setQtys({}); return }
+    let active = true
+    authFetch(`${API_URL}/api/users/me/collection/set/${setId}`)
+      .then(r => (r.ok ? r.json() : {}))
+      .then(map => { if (active) setQtys(map && typeof map === 'object' ? map : {}) })
+      .catch(() => {})
+    return () => { active = false }
+  }, [user, authFetch, setId]))
+
+  const changeQty = useCallback((item, delta) => {
+    const pid = item.printing_id
+    const cur = qtys[pid] || 0
+    const target = cur + delta
+    if (target < 0) return
+    return run(pid, async () => {
+      if (target === 0) {
+        const res = await removeFromCollection(authFetch, pid)
+        if (res.ok) setQtys(q => { const n = { ...q }; delete n[pid]; return n })
+      } else if (cur === 0) {
+        const res = await addToCollection(authFetch, { printingId: pid, quantity: target })
+        if (res.ok) { const it = await res.json(); setQtys(q => ({ ...q, [pid]: it.quantity })) }
+      } else {
+        const res = await setCollectionQuantity(authFetch, pid, { quantity: target })
+        if (res.ok) { const it = await res.json(); setQtys(q => ({ ...q, [pid]: it.quantity })) }
+      }
+    })
+  }, [qtys, run, authFetch])
 
   const onSearch = useCallback((text) => {
     setSearch(text)
@@ -84,9 +123,15 @@ export default function SetDetailScreen({ route, navigation }) {
         numColumns={NUM_COLUMNS}
         contentContainerStyle={styles.grid}
         columnWrapperStyle={styles.row}
+        extraData={{ qtys, pending }}
         renderItem={({ item }) => (
           <CardTile
             card={item}
+            showControls={!!user}
+            qty={qtys[item.printing_id] || 0}
+            busy={!!pending[item.printing_id]}
+            onAdd={() => changeQty(item, 1)}
+            onDec={() => changeQty(item, -1)}
             onPress={() => navigation.navigate('CardDetail', {
               cardId: item.id,
               printingId: item.printing_id,
@@ -104,31 +149,74 @@ export default function SetDetailScreen({ route, navigation }) {
   )
 }
 
-function CardTile({ card, onPress }) {
+function CardTile({ card, onPress, showControls, qty, busy, onAdd, onDec }) {
   const rarityColor = RARITY_COLOR[card.rarity] || '#8892a4'
+  const owned = qty > 0
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.75}>
-      {card.image_url ? (
-        <Image
-          source={{ uri: card.image_url }}
-          style={styles.cardImage}
-          resizeMode="cover"
-        />
-      ) : (
-        <View style={[styles.cardImage, styles.cardPlaceholder]}>
-          <Text style={styles.placeholderText} numberOfLines={3}>{card.name}</Text>
+    <View style={styles.card}>
+      <TouchableOpacity onPress={onPress} activeOpacity={0.75}>
+        <View>
+          {card.image_url ? (
+            <Image
+              source={{ uri: card.image_url }}
+              style={styles.cardImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={[styles.cardImage, styles.cardPlaceholder]}>
+              <Text style={styles.placeholderText} numberOfLines={3}>{card.name}</Text>
+            </View>
+          )}
+          {card.collector_number && (
+            <View style={styles.numberBadge}>
+              <Text style={styles.numberText}>{card.collector_number}</Text>
+            </View>
+          )}
+          {owned && (
+            <View style={styles.ownedBadge}>
+              <Text style={styles.ownedBadgeText}>{qty}</Text>
+            </View>
+          )}
+          <View style={[styles.rarityUnderline, { backgroundColor: rarityColor }]} />
         </View>
-      )}
-      {card.collector_number && (
-        <View style={styles.numberBadge}>
-          <Text style={styles.numberText}>{card.collector_number}</Text>
-        </View>
-      )}
-      <View style={styles.rarityBar}>
-        <View style={[styles.rarityDot, { backgroundColor: rarityColor }]} />
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+
+      {showControls ? (
+        owned ? (
+          <View style={styles.stepper}>
+            <TouchableOpacity
+              style={[styles.stepBtn, busy && styles.stepDisabled]}
+              activeOpacity={0.7}
+              disabled={busy}
+              onPress={onDec}
+              hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
+            >
+              <Text style={styles.stepText}>−</Text>
+            </TouchableOpacity>
+            <Text style={styles.stepQty}>{qty}</Text>
+            <TouchableOpacity
+              style={[styles.stepBtn, busy && styles.stepDisabled]}
+              activeOpacity={0.7}
+              disabled={busy}
+              onPress={onAdd}
+              hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
+            >
+              <Text style={styles.stepText}>+</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={[styles.addBtn, busy && styles.stepDisabled]}
+            activeOpacity={0.7}
+            disabled={busy}
+            onPress={onAdd}
+          >
+            <Text style={styles.addText}>＋ Add</Text>
+          </TouchableOpacity>
+        )
+      ) : null}
+    </View>
   )
 }
 
@@ -203,13 +291,76 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '600',
   },
-  rarityBar: {
+  ownedBadge: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    paddingHorizontal: 4,
+    backgroundColor: '#08D9D6',
     alignItems: 'center',
-    marginTop: 4,
+    justifyContent: 'center',
   },
-  rarityDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  ownedBadgeText: {
+    color: '#252A34',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  rarityUnderline: {
+    position: 'absolute',
+    left: 8,
+    right: 8,
+    bottom: 4,
+    height: 3,
+    borderRadius: 2,
+  },
+  stepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 5,
+    backgroundColor: '#2d3243',
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: '#363d52',
+    paddingHorizontal: 4,
+    height: 30,
+  },
+  stepBtn: {
+    width: 30,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepText: {
+    color: '#08D9D6',
+    fontSize: 19,
+    fontWeight: '700',
+    lineHeight: 22,
+  },
+  stepQty: {
+    color: '#EAEAEA',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  stepDisabled: {
+    opacity: 0.4,
+  },
+  addBtn: {
+    marginTop: 5,
+    height: 30,
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: '#363d52',
+    backgroundColor: '#2d3243',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addText: {
+    color: '#8892a4',
+    fontSize: 12,
+    fontWeight: '600',
   },
 })

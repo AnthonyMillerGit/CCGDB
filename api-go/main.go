@@ -100,9 +100,9 @@ func (a *App) routes() http.Handler {
 	r.Get("/api/games/{slug}/posts", a.getGamePosts)
 	r.Get("/api/cards/{cardID}/posts", a.getCardPosts)
 
-	loginLimiter    := newRateLimiter(10, 15*time.Minute)
+	loginLimiter := newRateLimiter(10, 15*time.Minute)
 	registerLimiter := newRateLimiter(5, time.Hour)
-	resetLimiter    := newRateLimiter(5, time.Hour)
+	resetLimiter := newRateLimiter(5, time.Hour)
 
 	r.Post("/api/auth/register", registerLimiter.middleware(a.register))
 	r.Post("/api/auth/login", loginLimiter.middleware(a.login))

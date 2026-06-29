@@ -15,21 +15,21 @@ import (
 // ── Models ────────────────────────────────────────────────────────────────────
 
 type Post struct {
-	ID             int             `json:"id"`
-	AuthorID       int             `json:"author_id"`
-	AuthorName     string          `json:"author_name"`
-	Title          string          `json:"title"`
-	Slug           string          `json:"slug"`
-	Excerpt        *string         `json:"excerpt"`
-	Body           json.RawMessage `json:"body"`
-	PostType       string          `json:"post_type"`
-	CoverImageURL  *string         `json:"cover_image_url"`
-	PublishedAt    *time.Time      `json:"published_at"`
-	CreatedAt      time.Time       `json:"created_at"`
-	UpdatedAt      time.Time       `json:"updated_at"`
-	GameTags       []PostGameTag   `json:"game_tags"`
-	SetTags        []PostSetTag    `json:"set_tags"`
-	CardTags       []PostCardTag   `json:"card_tags"`
+	ID            int             `json:"id"`
+	AuthorID      int             `json:"author_id"`
+	AuthorName    string          `json:"author_name"`
+	Title         string          `json:"title"`
+	Slug          string          `json:"slug"`
+	Excerpt       *string         `json:"excerpt"`
+	Body          json.RawMessage `json:"body"`
+	PostType      string          `json:"post_type"`
+	CoverImageURL *string         `json:"cover_image_url"`
+	PublishedAt   *time.Time      `json:"published_at"`
+	CreatedAt     time.Time       `json:"created_at"`
+	UpdatedAt     time.Time       `json:"updated_at"`
+	GameTags      []PostGameTag   `json:"game_tags"`
+	SetTags       []PostSetTag    `json:"set_tags"`
+	CardTags      []PostCardTag   `json:"card_tags"`
 }
 
 type PostSummary struct {
