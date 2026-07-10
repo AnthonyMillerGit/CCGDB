@@ -11,6 +11,7 @@ import {
   Dimensions,
 } from 'react-native'
 import { API_URL } from '../api/config'
+import { monogramColor, monogramLabel } from '../theme/monogram'
 
 const NUM_COLUMNS = 3
 const CARD_MARGIN = 8
@@ -91,6 +92,7 @@ export default function GamesScreen({ navigation }) {
 
 function GameCard({ game, onPress }) {
   const imageUri = game.card_back_image || null
+  const { bg, fg } = monogramColor(game.slug || game.name)
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.75}>
@@ -101,8 +103,10 @@ function GameCard({ game, onPress }) {
           resizeMode="cover"
         />
       ) : (
-        <View style={[styles.cardImage, styles.cardPlaceholder]}>
-          <Text style={styles.placeholderText}>{game.name.slice(0, 2).toUpperCase()}</Text>
+        <View style={[styles.cardImage, styles.cardPlaceholder, { backgroundColor: bg }]}>
+          <Text style={[styles.placeholderText, { color: fg }]}>
+            {monogramLabel(null, game.name)}
+          </Text>
         </View>
       )}
       <Text style={styles.cardName} numberOfLines={2}>{game.name}</Text>
