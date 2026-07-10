@@ -10,6 +10,7 @@ import {
   Image,
 } from 'react-native'
 import { API_URL } from '../api/config'
+import { monogramColor, monogramLabel } from '../theme/monogram'
 
 function formatDate(str) {
   if (!str) return null
@@ -87,15 +88,7 @@ export default function GameDetailScreen({ route, navigation }) {
               gameName,
             })}
           >
-            {item.icon_url ? (
-              <Image
-                source={{ uri: item.icon_url }}
-                style={styles.icon}
-                resizeMode="contain"
-              />
-            ) : (
-              <View style={styles.icon} />
-            )}
+            <SetIcon item={item} />
             <View style={styles.rowBody}>
               <Text style={styles.setName} numberOfLines={1}>{item.name}</Text>
               <View style={styles.meta}>
@@ -124,6 +117,23 @@ export default function GameDetailScreen({ route, navigation }) {
           </View>
         }
       />
+    </View>
+  )
+}
+
+// Set thumbnail: real artwork when the game provides it (MTG/Pokémon), else a
+// colored monogram of the set code so every row has an anchor and the list
+// isn't a column of blank squares.
+function SetIcon({ item }) {
+  if (item.icon_url) {
+    return <Image source={{ uri: item.icon_url }} style={styles.icon} resizeMode="contain" />
+  }
+  const { bg, fg } = monogramColor(item.code || item.name)
+  return (
+    <View style={[styles.icon, styles.mono, { backgroundColor: bg }]}>
+      <Text style={[styles.monoText, { color: fg }]} numberOfLines={1}>
+        {monogramLabel(item.code, item.name)}
+      </Text>
     </View>
   )
 }
@@ -176,6 +186,15 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 6,
+  },
+  mono: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  monoText: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.3,
   },
   rowBody: {
     flex: 1,
