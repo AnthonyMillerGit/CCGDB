@@ -6,15 +6,14 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
-  Modal,
   StyleSheet,
   Dimensions,
 } from 'react-native'
 import { useAuth } from '../context/AuthContext'
 import { useQtyEditor } from '../hooks/useQtyEditor'
 import { addToCollection, setCollectionQuantity, removeFromCollection } from '../api/collection'
-import { addCardToDeck } from '../api/decks'
 import { API_URL } from '../api/config'
+import DeckPickerModal from '../components/DeckPickerModal'
 
 const FINISHES = ['normal', 'foil']
 
@@ -233,101 +232,26 @@ export default function CardDetailScreen({ route, navigation }) {
 }
 
 function DeckAddButton({ card, navigation }) {
-  const { user, authFetch } = useAuth()
+  const { user } = useAuth()
   const [visible, setVisible] = useState(false)
-  const [decks, setDecks] = useState(null) // null = not loaded yet
-  const [busyId, setBusyId] = useState(null)
-  const [doneId, setDoneId] = useState(null)
 
   if (!user || !card) return null
 
-  function open() {
-    setVisible(true)
-    setDecks(null)
-    setDoneId(null)
-    authFetch(`${API_URL}/api/users/me/decks`)
-      .then(r => (r.ok ? r.json() : []))
-      .then(data => {
-        const list = Array.isArray(data) ? data : []
-        setDecks(list.filter(d => d.game_id === card.game_id))
-      })
-      .catch(() => setDecks([]))
-  }
-
-  async function addToDeck(deck) {
-    if (busyId) return
-    setBusyId(deck.id)
-    try {
-      const res = await addCardToDeck(authFetch, deck.id, { cardId: card.id, quantity: 1 })
-      if (res.ok) {
-        setDoneId(deck.id)
-        setTimeout(() => setVisible(false), 700)
-      }
-    } catch {
-      // ignore
-    } finally {
-      setBusyId(null)
-    }
-  }
-
   return (
     <View style={styles.section}>
-      <TouchableOpacity style={styles.deckAddBtn} activeOpacity={0.8} onPress={open}>
+      <TouchableOpacity style={styles.deckAddBtn} activeOpacity={0.8} onPress={() => setVisible(true)}>
         <Text style={styles.deckAddText}>＋ Add to a deck</Text>
       </TouchableOpacity>
 
-      <Modal visible={visible} transparent animationType="fade" onRequestClose={() => setVisible(false)}>
-        <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setVisible(false)}>
-          <TouchableOpacity style={styles.modalCard} activeOpacity={1}>
-            <Text style={styles.modalTitle}>Add “{card.name}”</Text>
-            <Text style={styles.modalSub}>{card.game} decks</Text>
-
-            {decks === null ? (
-              <View style={styles.modalLoading}><ActivityIndicator color="#08D9D6" /></View>
-            ) : decks.length === 0 ? (
-              <View style={styles.modalEmpty}>
-                <Text style={styles.modalEmptyText}>No {card.game} decks yet.</Text>
-                <TouchableOpacity
-                  style={styles.modalNewBtn}
-                  activeOpacity={0.85}
-                  onPress={() => {
-                    setVisible(false)
-                    navigation.navigate('DecksTab', { screen: 'CreateDeck' })
-                  }}
-                >
-                  <Text style={styles.modalNewBtnText}>＋ New Deck</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <ScrollView style={styles.modalList}>
-                {decks.map(deck => (
-                  <TouchableOpacity
-                    key={deck.id}
-                    style={styles.modalDeckRow}
-                    activeOpacity={0.7}
-                    disabled={!!busyId}
-                    onPress={() => addToDeck(deck)}
-                  >
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.modalDeckName} numberOfLines={1}>{deck.name}</Text>
-                      <Text style={styles.modalDeckMeta}>
-                        {deck.total_cards} card{deck.total_cards !== 1 ? 's' : ''}
-                      </Text>
-                    </View>
-                    {busyId === deck.id ? (
-                      <ActivityIndicator color="#08D9D6" />
-                    ) : doneId === deck.id ? (
-                      <Text style={styles.modalAdded}>✓ Added</Text>
-                    ) : (
-                      <Text style={styles.modalPlus}>＋</Text>
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            )}
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </Modal>
+      <DeckPickerModal
+        visible={visible}
+        onClose={() => setVisible(false)}
+        navigation={navigation}
+        cardId={card.id}
+        cardName={card.name}
+        gameSlug={card.game_slug}
+        gameName={card.game}
+      />
     </View>
   )
 }
@@ -729,90 +653,6 @@ const styles = StyleSheet.create({
   deckAddText: {
     color: '#08D9D6',
     fontSize: 15,
-    fontWeight: '700',
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  modalCard: {
-    backgroundColor: '#252A34',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#363d52',
-    padding: 18,
-    maxHeight: '70%',
-  },
-  modalTitle: {
-    color: '#EAEAEA',
-    fontSize: 17,
-    fontWeight: '700',
-  },
-  modalSub: {
-    color: '#8892a4',
-    fontSize: 12,
-    marginTop: 2,
-    marginBottom: 12,
-    textTransform: 'capitalize',
-  },
-  modalLoading: {
-    paddingVertical: 28,
-    alignItems: 'center',
-  },
-  modalEmpty: {
-    paddingVertical: 16,
-    alignItems: 'center',
-    gap: 14,
-  },
-  modalEmptyText: {
-    color: '#8892a4',
-    fontSize: 14,
-  },
-  modalNewBtn: {
-    backgroundColor: '#08D9D6',
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 28,
-  },
-  modalNewBtnText: {
-    color: '#252A34',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  modalList: {
-    flexGrow: 0,
-  },
-  modalDeckRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    backgroundColor: '#2d3243',
-    borderWidth: 1,
-    borderColor: '#363d52',
-    marginBottom: 8,
-  },
-  modalDeckName: {
-    color: '#EAEAEA',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  modalDeckMeta: {
-    color: '#8892a4',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  modalPlus: {
-    color: '#08D9D6',
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  modalAdded: {
-    color: '#08D9D6',
-    fontSize: 13,
     fontWeight: '700',
   },
 })
