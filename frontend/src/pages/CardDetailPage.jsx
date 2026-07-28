@@ -401,6 +401,14 @@ export default function CardDetailPage() {
     load()
   }, [cardId])
 
+  // Reset the flip state whenever the shown printing changes — navigating to a
+  // new card (e.g. Random Card reuses the /cards/:id route without remounting)
+  // or selecting a different printing. Without this, a `flipped` back face
+  // stays stuck across cards that may have no back image at all.
+  useEffect(() => {
+    setFlipped(false)
+  }, [selectedPrinting?.id])
+
   useEffect(() => {
     if (!user) { setCardCollectionItems([]); return }
     authFetch(`${API_URL}/api/users/me/collection/card/${cardId}`)

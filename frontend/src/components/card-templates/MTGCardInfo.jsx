@@ -42,7 +42,9 @@ export default function MTGCardInfo({ card, flipped }) {
   const attrs = card.attributes || {}
   const cardFaces = attrs.card_faces || []
   const isDoubleFaced = cardFaces.length > 0
-  const activeFace = isDoubleFaced ? (flipped ? cardFaces[1] : cardFaces[0]) : {}
+  // Fall back to {} if the requested face is missing (e.g. flipped on a card
+  // that only has a single face) so we never dereference undefined.
+  const activeFace = (isDoubleFaced ? (flipped ? cardFaces[1] : cardFaces[0]) : {}) || {}
 
   const power      = isDoubleFaced ? activeFace.power      : attrs.power
   const toughness  = isDoubleFaced ? activeFace.toughness  : attrs.toughness
