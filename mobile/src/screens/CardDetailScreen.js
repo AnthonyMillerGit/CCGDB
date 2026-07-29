@@ -13,6 +13,7 @@ import { useAuth } from '../context/AuthContext'
 import { useQtyEditor } from '../hooks/useQtyEditor'
 import { addToCollection, setCollectionQuantity, removeFromCollection } from '../api/collection'
 import { API_URL } from '../api/config'
+import { formatSetDate } from '../utils/dates'
 import DeckPickerModal from '../components/DeckPickerModal'
 
 const FINISHES = ['normal', 'foil']
@@ -176,13 +177,11 @@ export default function CardDetailScreen({ route, navigation }) {
                 <Text style={styles.attrVal}>{selectedPrinting.artist}</Text>
               </View>
             )}
-            {selectedPrinting.release_date && (
+            {formatSetDate(selectedPrinting.release_date, selectedPrinting.date_precision, { short: true }) && (
               <View style={styles.attrRow}>
                 <Text style={styles.attrKey}>Released</Text>
                 <Text style={styles.attrVal}>
-                  {new Date(selectedPrinting.release_date + 'T00:00:00').toLocaleDateString('en-US', {
-                    year: 'numeric', month: 'short', day: 'numeric',
-                  })}
+                  {formatSetDate(selectedPrinting.release_date, selectedPrinting.date_precision, { short: true })}
                 </Text>
               </View>
             )}

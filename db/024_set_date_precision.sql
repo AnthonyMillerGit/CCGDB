@@ -42,3 +42,24 @@ WHERE gp.game_id = s.game_id;
 -- Any set whose game had zero dated sets (so no game_pct row) and any remaining
 -- null-date set: mark unknown.
 UPDATE sets SET date_precision = 'unknown' WHERE release_date IS NULL;
+
+-- Bulk placeholders that the day-of-month test misses: some dates were faked
+-- quarterly/yearly and encoded on the 30th/31st (end of month) rather than the
+-- 1st, in otherwise real-date games. A date shared by an implausibly large
+-- number of sets in one game (>= 20) cannot be a real simultaneous release —
+-- genuine multi-product days top out around 13 (e.g. MTG Commander drops) — so
+-- it's a placeholder. Downgrade to year precision (the value is not trustworthy
+-- beyond, at most, its year). Example: 51 Weiss Schwarz sets all on 2014-10-31.
+WITH bulk AS (
+  SELECT game_id, release_date
+  FROM sets
+  WHERE release_date IS NOT NULL
+  GROUP BY game_id, release_date
+  HAVING COUNT(*) >= 20
+)
+UPDATE sets s
+SET date_precision = 'year'
+FROM bulk b
+WHERE s.game_id = b.game_id
+  AND s.release_date = b.release_date
+  AND s.date_precision = 'exact';
