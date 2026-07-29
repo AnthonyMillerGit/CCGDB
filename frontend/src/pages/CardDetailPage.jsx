@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useClickOutside } from '../hooks/useClickOutside'
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
+import { formatSetDate } from '../utils/dates'
 import MTGCardInfo           from '../components/card-templates/MTGCardInfo'
 import PokemonCardInfo       from '../components/card-templates/PokemonCardInfo'
 import MECCGCardInfo         from '../components/card-templates/MECCGCardInfo'
@@ -688,7 +689,7 @@ export default function CardDetailPage() {
               {selectedPrinting.release_date && (
                 <div>
                   <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>Released</p>
-                  <p className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>{selectedPrinting.release_date}</p>
+                  <p className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>{formatSetDate(selectedPrinting.release_date, selectedPrinting.date_precision)}</p>
                 </div>
               )}
               {selectedPrinting.artist && (

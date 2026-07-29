@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { rarityColor, rarityRank } from '../theme'
 import { parseAttrs, getAttrVal, attrValToSortable, compareAttrVals, formatAttrKey, isPrimitiveAttrVal } from '../utils/cardAttributes'
 import { useClickOutside } from '../hooks/useClickOutside'
+import { formatSetDate } from '../utils/dates'
 
 const isTouchDevice = window.matchMedia('(hover: none)').matches
 const DEFAULT_PER  = isTouchDevice ? 25 : 0
@@ -401,7 +402,7 @@ export default function CardsPage() {
             <p style={{ color: 'var(--text-muted)' }}>
               {cards.length} cards
               {setInfo.release_date && (
-                <span> · {new Date(setInfo.release_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                <span> · {formatSetDate(setInfo.release_date, setInfo.date_precision)}</span>
               )}
             </p>
             {user && (

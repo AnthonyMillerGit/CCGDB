@@ -12,12 +12,12 @@ func (a *App) getSet(w http.ResponseWriter, r *http.Request) {
 	}
 	var s SetDetail
 	err = a.db.QueryRow(r.Context(), `
-		SELECT s.id, s.name, s.code, s.release_date::text,
+		SELECT s.id, s.name, s.code, s.release_date::text, s.date_precision,
 		       g.name AS game_name, g.slug AS game_slug
 		FROM sets s
 		JOIN games g ON g.id = s.game_id
 		WHERE s.id = $1
-	`, setID).Scan(&s.ID, &s.Name, &s.Code, &s.ReleaseDate, &s.GameName, &s.GameSlug)
+	`, setID).Scan(&s.ID, &s.Name, &s.Code, &s.ReleaseDate, &s.DatePrecision, &s.GameName, &s.GameSlug)
 	if err != nil {
 		jsonError(w, "Set not found", http.StatusNotFound)
 		return
@@ -135,7 +135,7 @@ func (a *App) getCard(w http.ResponseWriter, r *http.Request) {
 		SELECT p.id, p.collector_number, p.rarity, p.image_url,
 		       p.back_image_url, p.artist, p.flavor_text,
 		       p.set_id, s.name AS set_name, s.code AS set_code,
-		       s.release_date::text
+		       s.release_date::text, s.date_precision
 		FROM printings p
 		JOIN sets s ON s.id = p.set_id
 		WHERE p.card_id = $1
@@ -152,7 +152,7 @@ func (a *App) getCard(w http.ResponseWriter, r *http.Request) {
 		var p Printing
 		if err := pRows.Scan(&p.ID, &p.CollectorNumber, &p.Rarity, &p.ImageURL,
 			&p.BackImageURL, &p.Artist, &p.FlavorText,
-			&p.SetID, &p.SetName, &p.SetCode, &p.ReleaseDate); err != nil {
+			&p.SetID, &p.SetName, &p.SetCode, &p.ReleaseDate, &p.DatePrecision); err != nil {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}
@@ -173,7 +173,7 @@ func (a *App) getPrinting(w http.ResponseWriter, r *http.Request) {
 	err = a.db.QueryRow(r.Context(), `
 		SELECT p.id, p.collector_number, p.rarity, p.image_url,
 		       p.back_image_url, p.artist, p.flavor_text,
-		       s.name AS set_name, s.code AS set_code, s.release_date::text,
+		       s.name AS set_name, s.code AS set_code, s.release_date::text, s.date_precision,
 		       c.id AS card_id, c.name AS card_name, COALESCE(c.card_type, ''),
 		       c.rules_text, c.attributes,
 		       g.name AS game, g.slug AS game_slug
@@ -185,7 +185,7 @@ func (a *App) getPrinting(w http.ResponseWriter, r *http.Request) {
 	`, printingID).Scan(
 		&p.ID, &p.CollectorNumber, &p.Rarity, &p.ImageURL,
 		&p.BackImageURL, &p.Artist, &p.FlavorText,
-		&p.SetName, &p.SetCode, &p.ReleaseDate,
+		&p.SetName, &p.SetCode, &p.ReleaseDate, &p.DatePrecision,
 		&p.CardID, &p.CardName, &p.CardType,
 		&p.RulesText, &p.Attributes,
 		&p.Game, &p.GameSlug,

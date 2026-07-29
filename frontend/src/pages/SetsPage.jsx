@@ -4,6 +4,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { API_URL } from '../config'
 import { GAME_INFO } from '../data/gameInfo'
 import { useAuth } from '../context/AuthContext'
+import { formatSetDate } from '../utils/dates'
 
 const MTG_TABS = [
   { key: 'all', label: 'All' },
@@ -47,13 +48,6 @@ function getTabsForGame(slug) {
   return [{ key: 'all', label: 'All' }]
 }
 
-function formatDate(dateStr) {
-  if (!dateStr) return 'Unknown'
-  const d = new Date(dateStr)
-  if (isNaN(d)) return dateStr
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-}
-
 function SetRow({ set, isLast, onClick }) {
   const [hovered, setHovered] = useState(false)
   return (
@@ -75,7 +69,7 @@ function SetRow({ set, isLast, onClick }) {
       </div>
       <div className="flex items-center gap-3 sm:gap-6 shrink-0">
         <span className="text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>
-          {formatDate(set.release_date)}
+          {formatSetDate(set.release_date, set.date_precision) || 'Unknown'}
         </span>
         <span
           className="text-sm transition-colors duration-150 hidden sm:block"

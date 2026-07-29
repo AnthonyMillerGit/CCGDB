@@ -11,15 +11,7 @@ import {
 } from 'react-native'
 import { API_URL } from '../api/config'
 import { monogramColor, monogramLabel } from '../theme/monogram'
-
-function formatDate(str) {
-  if (!str) return null
-  return new Date(str + 'T00:00:00').toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
+import { formatSetDate } from '../utils/dates'
 
 export default function GameDetailScreen({ route, navigation }) {
   const { gameSlug, gameName } = route.params
@@ -77,7 +69,9 @@ export default function GameDetailScreen({ route, navigation }) {
         keyExtractor={item => String(item.id)}
         contentContainerStyle={styles.list}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
-        renderItem={({ item }) => (
+        renderItem={({ item }) => {
+          const releaseText = formatSetDate(item.release_date, item.date_precision, { short: true })
+          return (
           <TouchableOpacity
             style={styles.row}
             activeOpacity={0.7}
@@ -95,8 +89,8 @@ export default function GameDetailScreen({ route, navigation }) {
                 {item.set_type && (
                   <Text style={styles.chip}>{item.set_type}</Text>
                 )}
-                {item.release_date && (
-                  <Text style={styles.metaText}>{formatDate(item.release_date)}</Text>
+                {releaseText && (
+                  <Text style={styles.metaText}>{releaseText}</Text>
                 )}
               </View>
             </View>
@@ -110,7 +104,8 @@ export default function GameDetailScreen({ route, navigation }) {
               <Text style={styles.chevron}>›</Text>
             </View>
           </TouchableOpacity>
-        )}
+          )
+        }}
         ListEmptyComponent={
           <View style={styles.centered}>
             <Text style={styles.emptyText}>No sets found.</Text>
