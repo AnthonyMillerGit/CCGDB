@@ -19,20 +19,22 @@ type Game struct {
 // ── Sets ──────────────────────────────────────────────────────────────────────
 
 type SetSummary struct {
-	ID          int     `json:"id"`
-	Name        string  `json:"name"`
-	Code        string  `json:"code"`
-	ReleaseDate *string `json:"release_date"`
-	TotalCards  *int    `json:"total_cards"`
-	IconURL     *string `json:"icon_url"`
-	SetType     *string `json:"set_type"`
-	Publisher   *string `json:"publisher"`
+	ID            int     `json:"id"`
+	Name          string  `json:"name"`
+	Code          string  `json:"code"`
+	ReleaseDate   *string `json:"release_date"`
+	DatePrecision *string `json:"date_precision"`
+	TotalCards    *int    `json:"total_cards"`
+	IconURL       *string `json:"icon_url"`
+	SetType       *string `json:"set_type"`
+	Publisher     *string `json:"publisher"`
 }
 
 type RecentSet struct {
 	SetID         int     `json:"set_id"`
 	SetName       string  `json:"set_name"`
 	ReleaseDate   *string `json:"release_date"`
+	DatePrecision *string `json:"date_precision"`
 	TotalCards    *int    `json:"total_cards"`
 	GameName      string  `json:"game_name"`
 	GameSlug      string  `json:"game_slug"`
@@ -40,12 +42,13 @@ type RecentSet struct {
 }
 
 type SetDetail struct {
-	ID          int     `json:"id"`
-	Name        string  `json:"name"`
-	Code        string  `json:"code"`
-	ReleaseDate *string `json:"release_date"`
-	GameName    string  `json:"game_name"`
-	GameSlug    string  `json:"game_slug"`
+	ID            int     `json:"id"`
+	Name          string  `json:"name"`
+	Code          string  `json:"code"`
+	ReleaseDate   *string `json:"release_date"`
+	DatePrecision *string `json:"date_precision"`
+	GameName      string  `json:"game_name"`
+	GameSlug      string  `json:"game_slug"`
 }
 
 type SetCard struct {
@@ -87,6 +90,7 @@ type Printing struct {
 	SetName         string  `json:"set_name"`
 	SetCode         string  `json:"set_code"`
 	ReleaseDate     *string `json:"release_date"`
+	DatePrecision   *string `json:"date_precision"`
 }
 
 type CardDetail struct {
@@ -112,6 +116,7 @@ type PrintingDetail struct {
 	SetName         string          `json:"set_name"`
 	SetCode         string          `json:"set_code"`
 	ReleaseDate     *string         `json:"release_date"`
+	DatePrecision   *string         `json:"date_precision"`
 	CardID          int             `json:"card_id"`
 	CardName        string          `json:"card_name"`
 	CardType        string          `json:"card_type"`

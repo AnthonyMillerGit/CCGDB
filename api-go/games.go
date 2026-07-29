@@ -48,7 +48,7 @@ func (a *App) getRecentSets(w http.ResponseWriter, r *http.Request) {
 		limit = 50
 	}
 	rows, err := a.db.Query(r.Context(), `
-		SELECT s.id, s.name, s.release_date::text, s.total_cards,
+		SELECT s.id, s.name, s.release_date::text, s.date_precision, s.total_cards,
 		       g.name, g.slug, g.card_back_image
 		FROM sets s
 		JOIN games g ON g.id = s.game_id
@@ -74,7 +74,7 @@ func (a *App) getUpcomingSets(w http.ResponseWriter, r *http.Request) {
 		limit = 50
 	}
 	rows, err := a.db.Query(r.Context(), `
-		SELECT s.id, s.name, s.release_date::text, s.total_cards,
+		SELECT s.id, s.name, s.release_date::text, s.date_precision, s.total_cards,
 		       g.name, g.slug, g.card_back_image
 		FROM sets s
 		JOIN games g ON g.id = s.game_id
@@ -96,7 +96,7 @@ func (a *App) scanRecentSets(rows pgx.Rows) []RecentSet {
 	sets := []RecentSet{}
 	for rows.Next() {
 		var s RecentSet
-		if err := rows.Scan(&s.SetID, &s.SetName, &s.ReleaseDate, &s.TotalCards,
+		if err := rows.Scan(&s.SetID, &s.SetName, &s.ReleaseDate, &s.DatePrecision, &s.TotalCards,
 			&s.GameName, &s.GameSlug, &s.CardBackImage); err != nil {
 			continue
 		}
@@ -172,7 +172,7 @@ func (a *App) getGameAttributeKeys(w http.ResponseWriter, r *http.Request) {
 func (a *App) getGameSets(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 	rows, err := a.db.Query(r.Context(), `
-		SELECT s.id, s.name, s.code, s.release_date::text, s.total_cards, s.icon_url, s.set_type, s.publisher
+		SELECT s.id, s.name, s.code, s.release_date::text, s.date_precision, s.total_cards, s.icon_url, s.set_type, s.publisher
 		FROM sets s
 		JOIN games g ON g.id = s.game_id
 		WHERE g.slug = $1
@@ -187,7 +187,7 @@ func (a *App) getGameSets(w http.ResponseWriter, r *http.Request) {
 	sets := []SetSummary{}
 	for rows.Next() {
 		var s SetSummary
-		if err := rows.Scan(&s.ID, &s.Name, &s.Code, &s.ReleaseDate, &s.TotalCards, &s.IconURL, &s.SetType, &s.Publisher); err != nil {
+		if err := rows.Scan(&s.ID, &s.Name, &s.Code, &s.ReleaseDate, &s.DatePrecision, &s.TotalCards, &s.IconURL, &s.SetType, &s.Publisher); err != nil {
 			jsonError(w, "Database error", http.StatusInternalServerError)
 			return
 		}

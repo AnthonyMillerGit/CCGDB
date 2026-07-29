@@ -2,13 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
-
-function formatDate(str) {
-  if (!str) return null
-  return new Date(str + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-}
+import { formatSetDate } from '../utils/dates'
 
 function SetCard({ set, upcoming = false }) {
+  const dateStr = formatSetDate(set.release_date, set.date_precision, { short: true })
   return (
     <div
       className="flex-shrink-0 flex items-center gap-3 px-4 py-3 rounded-xl w-56 sm:w-[300px] snap-start"
@@ -42,14 +39,14 @@ function SetCard({ set, upcoming = false }) {
             {set.game_name}
           </Link>
         </div>
-        {set.release_date && (
+        {dateStr && (
           <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
             {upcoming && (
               <span className="font-semibold px-1 rounded" style={{ color: 'var(--accent)', backgroundColor: 'var(--bg-chip)' }}>
                 Upcoming
               </span>
             )}
-            {formatDate(set.release_date)}
+            {dateStr}
           </p>
         )}
       </div>
