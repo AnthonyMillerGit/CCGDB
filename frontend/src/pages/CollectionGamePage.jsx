@@ -6,6 +6,7 @@ import { rarityColor, rarityRank } from '../theme'
 import { getAttrVal, attrValToSortable, compareAttrVals, formatAttrKey, isPrimitiveAttrVal } from '../utils/cardAttributes'
 import { useClickOutside } from '../hooks/useClickOutside'
 import { CONDITION_LABELS, CONDITION_COLORS, FINISHES, QuantityControl, ListCardRow } from '../components/collection/CollectionCardRow'
+import { displayCardName } from '../utils/cardName'
 
 const isTouchDevice = window.matchMedia('(hover: none)').matches
 
@@ -623,15 +624,15 @@ export default function CollectionGamePage() {
       {printingGroups.length > 0 && (() => {
         const gridCard = group => (
           <div key={group.printing_id} className="flex flex-col rounded-xl overflow-hidden"
-            title={group.card_name}
+            title={displayCardName(group, group.collector_number)}
             style={{ border: `1px solid ${editMode ? '#b86a0066' : 'var(--border)'}`, backgroundColor: 'var(--bg-surface)' }}>
             {/* Name + rarity above image */}
             <div className="flex items-center gap-1 p-1.5 pb-1">
               <span
                 className="text-xs font-medium truncate rounded px-1.5 py-0.5 flex-1 min-w-0"
                 style={{ backgroundColor: 'var(--bg-chip)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-                title={group.card_name}
-              >{group.card_name}</span>
+                title={displayCardName(group, group.collector_number)}
+              >{displayCardName(group, group.collector_number)}</span>
               {group.rarity && (
                 <span
                   className="text-xs shrink-0 capitalize rounded px-1.5 py-0.5"

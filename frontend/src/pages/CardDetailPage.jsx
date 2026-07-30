@@ -33,6 +33,7 @@ import GenericCardInfo       from '../components/card-templates/GenericCardInfo'
 import { API_URL } from '../config'
 import { useAuth } from '../context/AuthContext'
 import { rarityColor } from '../theme'
+import { displayCardName } from '../utils/cardName'
 
 const CONDITIONS = ['NM', 'LP', 'MP', 'HP', 'DM']
 const FINISHES   = ['normal', 'foil', 'other']
@@ -527,7 +528,7 @@ export default function CardDetailPage() {
                 src={flipped && selectedPrinting.back_image_url
                   ? selectedPrinting.back_image_url
                   : selectedPrinting.image_url}
-                alt={card.name}
+                alt={displayCardName(card, selectedPrinting?.collector_number)}
                 className="w-full max-w-xs sm:max-w-sm md:w-80 lg:w-96 rounded-xl shadow-2xl"
               />
               {selectedPrinting.back_image_url && (
@@ -610,7 +611,7 @@ export default function CardDetailPage() {
             {card.game}
           </Link>
 
-          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold leading-tight mt-2 mb-2 break-words" style={{ color: 'var(--text-primary)' }}>{card.name}</h2>
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold leading-tight mt-2 mb-2 break-words" style={{ color: 'var(--text-primary)' }}>{displayCardName(card, selectedPrinting?.collector_number)}</h2>
 
           <p className="text-xl mb-4" style={{ color: 'var(--text-muted)' }}>{card.card_type}</p>
 

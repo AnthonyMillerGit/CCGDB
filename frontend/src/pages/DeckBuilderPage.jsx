@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../config'
+import { displayCardName } from '../utils/cardName'
 
 // ── Deck card row (left panel) ────────────────────────────────────────────────
 
@@ -417,10 +418,10 @@ export default function DeckBuilderPage() {
                     backgroundColor: 'var(--bg-surface)',
                     boxShadow: '0 0 40px rgba(8, 217, 214, 0.25)',
                   }}>
-                  <img src={hoveredCard.image_url} alt={hoveredCard.card_name || hoveredCard.name} className="w-full" />
+                  <img src={hoveredCard.image_url} alt={displayCardName(hoveredCard, hoveredCard.collector_number)} className="w-full" />
                   <div className="px-3 py-2.5">
                     <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                      {hoveredCard.card_name || hoveredCard.name}
+                      {displayCardName(hoveredCard, hoveredCard.collector_number)}
                     </p>
                     {hoveredCard.card_type && (
                       <p className="text-xs mt-0.5" style={{ color: 'var(--accent)' }}>{hoveredCard.card_type}</p>

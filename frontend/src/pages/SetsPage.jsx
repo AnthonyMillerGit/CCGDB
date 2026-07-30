@@ -5,6 +5,7 @@ import { API_URL } from '../config'
 import { GAME_INFO } from '../data/gameInfo'
 import { useAuth } from '../context/AuthContext'
 import { formatSetDate } from '../utils/dates'
+import { displayCardName } from '../utils/cardName'
 
 const MTG_TABS = [
   { key: 'all', label: 'All' },
@@ -320,7 +321,7 @@ export default function SetsPage() {
                     {/* Thumbnail */}
                     <div className="shrink-0 cursor-pointer" onClick={() => navigate(`/cards/${card.id}`)}>
                       {card.image_url
-                        ? <img src={card.image_url} alt={card.name} className="rounded" style={{ width: 36, height: 50, objectFit: 'cover' }} />
+                        ? <img src={card.image_url} alt={displayCardName(card)} className="rounded" style={{ width: 36, height: 50, objectFit: 'cover' }} />
                         : <div className="rounded flex items-center justify-center" style={{ width: 36, height: 50, backgroundColor: 'var(--bg-surface)' }}>
                             <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.2 }}>{card.name.slice(0,6)}</span>
                           </div>
@@ -330,7 +331,7 @@ export default function SetsPage() {
                     <p className="flex-1 text-sm font-semibold truncate cursor-pointer"
                       style={{ color: 'var(--text-primary)' }}
                       onClick={() => navigate(`/cards/${card.id}`)}>
-                      {card.name}
+                      {displayCardName(card)}
                     </p>
                   </div>
                   {/* One row per printing */}
