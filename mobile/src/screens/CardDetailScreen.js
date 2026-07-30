@@ -15,6 +15,7 @@ import { addToCollection, setCollectionQuantity, removeFromCollection } from '..
 import { API_URL } from '../api/config'
 import { formatSetDate } from '../utils/dates'
 import DeckPickerModal from '../components/DeckPickerModal'
+import { displayCardName } from '../utils/cardName'
 
 const FINISHES = ['normal', 'foil']
 
@@ -100,14 +101,14 @@ export default function CardDetailScreen({ route, navigation }) {
           />
         ) : (
           <View style={[styles.cardImage, styles.imagePlaceholder]}>
-            <Text style={styles.placeholderText}>{card.name}</Text>
+            <Text style={styles.placeholderText}>{displayCardName(card, selectedPrinting?.collector_number)}</Text>
           </View>
         )}
       </View>
 
       {/* Name + type */}
       <View style={styles.header}>
-        <Text style={styles.cardName}>{card.name}</Text>
+        <Text style={styles.cardName}>{displayCardName(card, selectedPrinting?.collector_number)}</Text>
         {card.card_type ? (
           <Text style={styles.cardType}>{card.card_type}</Text>
         ) : null}
@@ -247,7 +248,7 @@ function DeckAddButton({ card, navigation }) {
         onClose={() => setVisible(false)}
         navigation={navigation}
         cardId={card.id}
-        cardName={card.name}
+        cardName={displayCardName(card)}
         gameSlug={card.game_slug}
         gameName={card.game}
       />

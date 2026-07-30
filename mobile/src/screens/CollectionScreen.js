@@ -12,6 +12,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native'
 import { useAuth } from '../context/AuthContext'
 import { API_URL } from '../api/config'
+import { displayCardName } from '../utils/cardName'
 
 export default function CollectionScreen({ navigation }) {
   const { user, authFetch, logout } = useAuth()
@@ -118,7 +119,7 @@ function CollectionView({ user, authFetch, logout, navigation }) {
                 params: {
                   cardId: item.card_id,
                   printingId: item.printing_id,
-                  cardName: item.card_name,
+                  cardName: displayCardName(item, item.collector_number),
                 },
               })}
             />
@@ -155,7 +156,7 @@ function CollectionRow({ item, onPress }) {
         <View style={[styles.thumb, styles.thumbPlaceholder]} />
       )}
       <View style={styles.rowBody}>
-        <Text style={styles.cardName} numberOfLines={1}>{item.card_name}</Text>
+        <Text style={styles.cardName} numberOfLines={1}>{displayCardName(item, item.collector_number)}</Text>
         <Text style={styles.setName} numberOfLines={1}>{item.set_name}</Text>
         {item.rarity && (
           <Text style={styles.rarity}>{item.rarity}</Text>

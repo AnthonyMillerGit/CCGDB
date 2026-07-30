@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { API_URL } from '../config'
 import { GAME_COLORS } from '../theme'
+import { displayCardName } from '../utils/cardName'
 
 const LISTBOX_ID = 'search-suggestions'
 const optionId = (i) => `search-option-${i}`
@@ -143,7 +144,7 @@ export default function SearchBar() {
                   {card.image_url ? (
                     <img
                       src={card.image_url}
-                      alt={card.name}
+                      alt={displayCardName(card)}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -156,7 +157,7 @@ export default function SearchBar() {
                 {/* Card info */}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
-                    {card.name}
+                    {displayCardName(card)}
                   </p>
                   <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
                     {[card.card_type, card.set_name].filter(Boolean).join(' · ')}

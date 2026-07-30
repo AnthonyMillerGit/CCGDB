@@ -6,6 +6,7 @@ import { rarityColor, rarityRank } from '../theme'
 import { parseAttrs, getAttrVal, attrValToSortable, compareAttrVals, formatAttrKey, isPrimitiveAttrVal } from '../utils/cardAttributes'
 import { useClickOutside } from '../hooks/useClickOutside'
 import { formatSetDate } from '../utils/dates'
+import { displayCardName } from '../utils/cardName'
 
 const isTouchDevice = window.matchMedia('(hover: none)').matches
 const DEFAULT_PER  = isTouchDevice ? 25 : 0
@@ -500,7 +501,7 @@ export default function CardsPage() {
                         <div className="flex items-center gap-3 px-3 pt-2.5 pb-1.5">
                           <div className="shrink-0 cursor-pointer" onClick={() => navigate(`/cards/${card.id}`)}>
                             {card.image_url
-                              ? <img src={card.image_url} alt={card.name} className="rounded" style={{ width: 36, height: 50, objectFit: 'cover' }} />
+                              ? <img src={card.image_url} alt={displayCardName(card)} className="rounded" style={{ width: 36, height: 50, objectFit: 'cover' }} />
                               : <div className="rounded flex items-center justify-center" style={{ width: 36, height: 50, backgroundColor: 'var(--bg-surface)' }}>
                                   <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.2 }}>{card.name.slice(0,6)}</span>
                                 </div>
@@ -509,7 +510,7 @@ export default function CardsPage() {
                           <p className="flex-1 text-sm font-semibold truncate cursor-pointer"
                             style={{ color: 'var(--text-primary)' }}
                             onClick={() => navigate(`/cards/${card.id}`)}>
-                            {card.name}
+                            {displayCardName(card)}
                           </p>
                         </div>
                         <div className="flex flex-col pb-1.5 pl-14 pr-3 gap-1">

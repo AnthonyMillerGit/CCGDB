@@ -12,6 +12,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { API_URL } from '../api/config'
+import { displayCardName } from '../utils/cardName'
 
 const MIN_CHARS = 2
 const DEBOUNCE_MS = 350
@@ -140,7 +141,7 @@ export default function SearchScreen({ navigation }) {
                     params: {
                       cardId: item.id,
                       printingId: item.printing_id,
-                      cardName: item.name,
+                      cardName: displayCardName(item, item.collector_number),
                     },
                   })
                 }}
@@ -162,7 +163,7 @@ function ResultRow({ item, onPress }) {
         <View style={[styles.thumb, styles.thumbPlaceholder]} />
       )}
       <View style={styles.rowBody}>
-        <Text style={styles.cardName} numberOfLines={1}>{item.name}</Text>
+        <Text style={styles.cardName} numberOfLines={1}>{displayCardName(item, item.collector_number)}</Text>
         {item.card_type ? (
           <Text style={styles.cardType} numberOfLines={1}>{item.card_type}</Text>
         ) : null}
